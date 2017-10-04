@@ -1,6 +1,7 @@
 package com.keylesspalace.tusky.adapter;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.preference.PreferenceManager;
 import android.support.annotation.DrawableRes;
@@ -228,8 +229,9 @@ class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 });
             }
         }
-
-        if (sensitive) {
+        SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(context);
+        Boolean isAlwayShowSensitive = pm.getBoolean("alwayShowSensitiveMedia",false);
+        if (sensitive && (!isAlwayShowSensitive)) {
             sensitiveMediaWarning.setVisibility(showingSensitive ? View.GONE : View.VISIBLE);
             sensitiveMediaShow.setVisibility(showingSensitive ? View.VISIBLE : View.GONE);
             sensitiveMediaShow.setOnClickListener(new View.OnClickListener(){
