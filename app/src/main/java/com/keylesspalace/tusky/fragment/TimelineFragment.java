@@ -519,6 +519,11 @@ public class TimelineFragment extends SFragment implements
     }
 
     @Override
+    public void onQuote(int position) {
+        super.quote(statuses.get(position).getAsRight());
+    }
+
+    @Override
     public void onMore(View view, final int position) {
         super.more(statuses.get(position).getAsRight(), view, position);
     }

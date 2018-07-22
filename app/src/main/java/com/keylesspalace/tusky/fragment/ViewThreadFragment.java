@@ -301,6 +301,11 @@ public final class ViewThreadFragment extends SFragment implements
     }
 
     @Override
+    public void onQuote(int position) {
+        super.quote(statuses.get(position));
+    }
+
+    @Override
     public void onMore(View view, int position) {
         super.more(statuses.get(position), view, position);
     }

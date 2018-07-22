@@ -424,6 +424,11 @@ public class NotificationsFragment extends SFragment implements
     }
 
     @Override
+    public void onQuote(int position) {
+        super.quote(notifications.get(position).getAsRight().getStatus());
+    }
+
+    @Override
     public void onMore(View view, int position) {
         Notification notification = notifications.get(position).getAsRight();
         super.more(notification.getStatus(), view, position);

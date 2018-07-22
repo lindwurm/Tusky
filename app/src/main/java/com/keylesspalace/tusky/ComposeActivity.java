@@ -115,7 +115,6 @@ import com.keylesspalace.tusky.view.TootButton;
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.mikepenz.iconics.IconicsDrawable;
 import com.squareup.picasso.Picasso;
-import at.connyduck.sparkbutton.helpers.Utils;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -134,6 +133,7 @@ import java.util.Locale;
 
 import javax.inject.Inject;
 
+import at.connyduck.sparkbutton.helpers.Utils;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
@@ -165,6 +165,7 @@ public final class ComposeActivity
     private static final String CONTENT_WARNING_EXTRA = "content_warning";
     private static final String MENTIONED_USERNAMES_EXTRA = "netnioned_usernames";
     private static final String REPLYING_STATUS_AUTHOR_USERNAME_EXTRA = "replying_author_nickname_extra";
+    private static final String MOVE_CURSOR_TO_TOP = "move_cursor_to_top";
     private static final String REPLYING_STATUS_CONTENT_EXTRA = "replying_status_content";
     // Mastodon only counts URLs as this long in terms of status character limits
     static final int MAXIMUM_URL_LENGTH = 23;
@@ -323,7 +324,7 @@ public final class ComposeActivity
         tootButton.setOnClickListener(v -> onSendClicked());
         pickButton.setOnClickListener(v -> openPickDialog());
         visibilityButton.setOnClickListener(v -> showComposeOptions());
-        contentWarningButton.setOnClickListener(v-> onContentWarningChanged());
+        contentWarningButton.setOnClickListener(v -> onContentWarningChanged());
         emojiButton.setOnClickListener(v -> showEmojis());
         hideMediaToggle.setOnClickListener(v -> toggleHideMedia());
 
@@ -408,6 +409,11 @@ public final class ComposeActivity
                 textEditor.setText(savedTootText);
             }
 
+            if(intent.getBooleanExtra(MOVE_CURSOR_TO_TOP,false)){
+                textEditor.setSelection(0,textEditor.length());
+                textEditor.setSelection(0);
+            }
+
             String savedJsonUrls = intent.getStringExtra(SAVED_JSON_URLS_EXTRA);
             if (!TextUtils.isEmpty(savedJsonUrls)) {
                 // try to redo a list of media
@@ -431,7 +437,7 @@ public final class ComposeActivity
                 TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(replyTextView, null, null, arrowDownIcon, null);
 
                 replyTextView.setOnClickListener(v -> {
-                    TransitionManager.beginDelayedTransition((ViewGroup)replyContentTextView.getParent());
+                    TransitionManager.beginDelayedTransition((ViewGroup) replyContentTextView.getParent());
 
                     if (replyContentTextView.getVisibility() != View.VISIBLE) {
                         replyContentTextView.setVisibility(View.VISIBLE);
@@ -629,10 +635,10 @@ public final class ComposeActivity
     }
 
     private void updateHideMediaToggle() {
-        TransitionManager.beginDelayedTransition((ViewGroup)hideMediaToggle.getParent());
+        TransitionManager.beginDelayedTransition((ViewGroup) hideMediaToggle.getParent());
 
         @ColorInt int color;
-        if(mediaQueued.size() == 0) {
+        if (mediaQueued.size() == 0) {
             hideMediaToggle.setVisibility(View.GONE);
         } else {
             hideMediaToggle.setVisibility(View.VISIBLE);
@@ -722,8 +728,8 @@ public final class ComposeActivity
 
     private void showEmojis() {
 
-        if(emojiView.getAdapter() != null) {
-            if(emojiView.getAdapter().getItemCount() == 0) {
+        if (emojiView.getAdapter() != null) {
+            if (emojiView.getAdapter().getItemCount() == 0) {
                 String errorMessage = getString(R.string.error_no_custom_emojis, accountManager.getActiveAccount().getDomain());
                 Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
             } else {
@@ -932,7 +938,7 @@ public final class ComposeActivity
             spoilerText = contentWarningEditor.getText().toString();
         }
         int characterCount = calculateTextLength();
-        if (characterCount <= 0 && mediaQueued.size()==0) {
+        if (characterCount <= 0 && mediaQueued.size() == 0) {
             textEditor.setError(getString(R.string.error_empty));
             enableButtons();
         } else if (characterCount <= maximumTootCharacters) {
@@ -997,7 +1003,7 @@ public final class ComposeActivity
             // Continue only if the File was successfully created
             if (photoFile != null) {
                 photoUploadUri = FileProvider.getUriForFile(this,
-                        BuildConfig.APPLICATION_ID+".fileprovider",
+                        BuildConfig.APPLICATION_ID + ".fileprovider",
                         photoFile);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUploadUri);
                 startActivityForResult(intent, MEDIA_TAKE_PHOTO_RESULT);
@@ -1372,7 +1378,7 @@ public final class ComposeActivity
 
     private void showContentWarning(boolean show) {
         statusHideText = show;
-        TransitionManager.beginDelayedTransition((ViewGroup)contentWarningBar.getParent());
+        TransitionManager.beginDelayedTransition((ViewGroup) contentWarningBar.getParent());
         if (show) {
             statusMarkSensitive = true;
             contentWarningBar.setVisibility(View.VISIBLE);
@@ -1458,14 +1464,14 @@ public final class ComposeActivity
 
     @Override
     public void onEmojiSelected(@NotNull String shortcode) {
-        textEditor.getText().insert(textEditor.getSelectionStart(), ":"+shortcode+": ");
+        textEditor.getText().insert(textEditor.getSelectionStart(), ":" + shortcode + ": ");
     }
 
     private void loadCachedInstanceMetadata(@NotNull AccountEntity activeAccount) {
         InstanceEntity instanceEntity = database.instanceDao()
                 .loadMetadataForInstance(activeAccount.getDomain());
 
-        if(instanceEntity != null) {
+        if (instanceEntity != null) {
             Integer max = instanceEntity.getMaximumTootCharacters();
             maximumTootCharacters = (max == null ? STATUS_CHARACTER_LIMIT : max);
             emojiList = instanceEntity.getEmojiList();
@@ -1487,8 +1493,7 @@ public final class ComposeActivity
     }
 
     // Accessors for testing, hence package scope
-    int getMaximumTootCharacters()
-    {
+    int getMaximumTootCharacters() {
         return maximumTootCharacters;
     }
 
@@ -1598,6 +1603,7 @@ public final class ComposeActivity
         private String replyingStatusAuthor;
         @Nullable
         private String replyingStatusContent;
+        private boolean moveCursorToTop = false;
 
         public IntentBuilder savedTootUid(int uid) {
             this.savedTootUid = uid;
@@ -1644,6 +1650,11 @@ public final class ComposeActivity
             return this;
         }
 
+        public IntentBuilder moveCursorToTop(boolean cursor) {
+            this.moveCursorToTop = cursor;
+            return this;
+        }
+
         public Intent build(Context context) {
             Intent intent = new Intent(context, ComposeActivity.class);
 
@@ -1675,6 +1686,8 @@ public final class ComposeActivity
             if (replyingStatusAuthor != null) {
                 intent.putExtra(REPLYING_STATUS_AUTHOR_USERNAME_EXTRA, replyingStatusAuthor);
             }
+            intent.putExtra(MOVE_CURSOR_TO_TOP, moveCursorToTop);
+
             return intent;
         }
     }

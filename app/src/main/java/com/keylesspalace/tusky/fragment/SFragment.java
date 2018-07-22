@@ -48,6 +48,8 @@ import com.keylesspalace.tusky.viewdata.AttachmentViewData;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
@@ -62,6 +64,7 @@ public abstract class SFragment extends BaseFragment {
     protected String loggedInUsername;
 
     protected abstract TimelineCases timelineCases();
+
     protected abstract void removeItem(int position);
 
     protected abstract void onReblog(final boolean reblog, final int position);
@@ -91,8 +94,8 @@ public abstract class SFragment extends BaseFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if(context instanceof BottomSheetActivity) {
-            bottomSheetActivity = (BottomSheetActivity)context;
+        if (context instanceof BottomSheetActivity) {
+            bottomSheetActivity = (BottomSheetActivity) context;
         } else {
             throw new IllegalStateException("Fragment must be attached to a BottomSheetActivity!");
         }
@@ -134,6 +137,21 @@ public abstract class SFragment extends BaseFragment {
                 .mentionedUsernames(mentionedUsernames)
                 .repyingStatusAuthor(actionableStatus.getAccount().getLocalUsername())
                 .replyingStatusContent(actionableStatus.getContent().toString())
+                .build(getContext());
+        startActivity(intent);
+    }
+
+    protected void quote(Status status) {
+        final String id = status.getActionableId();
+        String url = status.getUrl();
+        String regBfr = "(.*)/@(.*)/([0-9]*)";
+        String regAft = "$1/users/$2/statuses/$3";
+        Pattern p = Pattern.compile(regBfr);
+        Matcher m = p.matcher(url);
+        url = m.replaceAll(regAft);
+        Intent intent = new ComposeActivity.IntentBuilder()
+                .savedTootText("\n~~~~~~~~~~\n[" + id + "][" + url + "]")
+                .moveCursorToTop(true)
                 .build(getContext());
         startActivity(intent);
     }
@@ -271,6 +289,4 @@ public abstract class SFragment extends BaseFragment {
         intent.putExtra("status_content", HtmlUtils.toHtml(statusContent));
         startActivity(intent);
     }
-
-
 }

@@ -167,6 +167,13 @@ class SearchFragment : SFragment(), StatusActionListener, Injectable {
         }
     }
 
+    override fun onQuote(position: Int) {
+        val status = searchAdapter.getStatusAtPosition(position)
+        if(status != null) {
+            super.quote(status)
+        }
+    }
+
     override fun onMore(view: View?, position: Int) {
         val status = searchAdapter.getStatusAtPosition(position)
         if(status != null) {

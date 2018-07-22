@@ -31,11 +31,11 @@ import com.keylesspalace.tusky.viewdata.StatusViewData;
 import com.mikepenz.iconics.utils.Utils;
 import com.squareup.picasso.Picasso;
 
-import at.connyduck.sparkbutton.SparkButton;
-import at.connyduck.sparkbutton.SparkEventListener;
-
 import java.util.Date;
 import java.util.List;
+
+import at.connyduck.sparkbutton.SparkButton;
+import at.connyduck.sparkbutton.SparkEventListener;
 
 abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private View container;
@@ -44,6 +44,7 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private ImageButton replyButton;
     private SparkButton reblogButton;
     private SparkButton favouriteButton;
+    private ImageButton quoteButton;
     private ImageButton moreButton;
     private boolean favourited;
     private boolean reblogged;
@@ -76,6 +77,7 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         replyButton = itemView.findViewById(R.id.status_reply);
         reblogButton = itemView.findViewById(R.id.status_reblog);
         favouriteButton = itemView.findViewById(R.id.status_favourite);
+        quoteButton = itemView.findViewById(R.id.status_quote);
         moreButton = itemView.findViewById(R.id.status_more);
         reblogged = false;
         favourited = false;
@@ -439,6 +441,12 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
             @Override
             public void onEventAnimationStart(ImageView button, boolean buttonState) {
+            }
+        });
+        quoteButton.setOnClickListener(view -> {
+            int position = getAdapterPosition();
+            if (position != RecyclerView.NO_POSITION) {
+                listener.onQuote(position);
             }
         });
         moreButton.setOnClickListener(v -> {

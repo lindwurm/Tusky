@@ -388,6 +388,22 @@
             android:layout_weight="1" />
 
         <ImageButton
+            android:id="@+id/status_quote"
+            style="?attr/image_button_style"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/action_quote"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            app:srcCompat="@drawable/ic_quote_24dp" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <ImageButton
             android:id="@+id/status_more"
             style="?attr/image_button_style"
             android:layout_width="32dp"
