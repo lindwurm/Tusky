@@ -154,8 +154,6 @@ public final class ComposeActivity
     private static final int MEDIA_PICK_RESULT = 1;
     private static final int MEDIA_TAKE_PHOTO_RESULT = 2;
     private static final int PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
-    @Px
-    private static final int THUMBNAIL_SIZE = 128;
 
     private static final String SAVED_TOOT_UID_EXTRA = "saved_toot_uid";
     private static final String SAVED_TOOT_TEXT_EXTRA = "saved_toot_text";
@@ -211,6 +209,7 @@ public final class ComposeActivity
     private int savedTootUid = 0;
     private List<Emoji> emojiList;
     private int maximumTootCharacters = STATUS_CHARACTER_LIMIT;
+    private @Px int thumbnailViewSize;
 
     private SaveTootHelper saveTootHelper;
 
@@ -341,6 +340,8 @@ public final class ComposeActivity
 
         actionPhotoTake.setOnClickListener(v -> initiateCameraApp());
         actionPhotoPick.setOnClickListener(v -> onMediaPick());
+
+        thumbnailViewSize = getResources().getDimensionPixelSize(R.dimen.compose_media_preview_size);
 
         /* Initialise all the state, or restore it from a previous run, to determine a "starting"
          * state. */
@@ -533,7 +534,7 @@ public final class ComposeActivity
             }
         } else if (savedMediaQueued != null) {
             for (SavedQueuedMedia item : savedMediaQueued) {
-                Bitmap preview = MediaUtils.getImageThumbnail(getContentResolver(), item.uri, THUMBNAIL_SIZE);
+                Bitmap preview = MediaUtils.getImageThumbnail(getContentResolver(), item.uri, thumbnailViewSize);
                 addMediaToQueue(item.id, item.type, preview, item.uri, item.mediaSize, item.readyStage, item.description);
             }
         } else if (intent != null && savedInstanceState == null) {
@@ -1039,11 +1040,10 @@ public final class ComposeActivity
         item.readyStage = readyStage;
         ImageView view = item.preview;
         Resources resources = getResources();
-        int side = resources.getDimensionPixelSize(R.dimen.compose_media_preview_side);
         int margin = resources.getDimensionPixelSize(R.dimen.compose_media_preview_margin);
         int marginBottom = resources.getDimensionPixelSize(
                 R.dimen.compose_media_preview_margin_bottom);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(side, side);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(thumbnailViewSize, thumbnailViewSize);
         layoutParams.setMargins(margin, 0, margin, marginBottom);
         view.setLayoutParams(layoutParams);
         view.setScaleType(ImageView.ScaleType.CENTER_CROP);
@@ -1349,7 +1349,7 @@ public final class ComposeActivity
                         displayTransientError(R.string.error_media_upload_image_or_video);
                         return;
                     }
-                    Bitmap bitmap = MediaUtils.getVideoThumbnail(this, uri, THUMBNAIL_SIZE);
+                    Bitmap bitmap = MediaUtils.getVideoThumbnail(this, uri, thumbnailViewSize);
                     if (bitmap != null) {
                         addMediaToQueue(QueuedMedia.Type.VIDEO, bitmap, uri, mediaSize);
                     } else {
@@ -1358,7 +1358,7 @@ public final class ComposeActivity
                     break;
                 }
                 case "image": {
-                    Bitmap bitmap = MediaUtils.getImageThumbnail(contentResolver, uri, THUMBNAIL_SIZE);
+                    Bitmap bitmap = MediaUtils.getImageThumbnail(contentResolver, uri, thumbnailViewSize);
                     if (bitmap != null) {
                         addMediaToQueue(QueuedMedia.Type.IMAGE, bitmap, uri, mediaSize);
                     } else {
