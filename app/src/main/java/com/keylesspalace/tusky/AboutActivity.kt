@@ -13,6 +13,7 @@ import android.widget.TextView
 import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.util.CustomURLSpan
 import kotlinx.android.synthetic.main.activity_about.*
+import kotlinx.android.synthetic.main.activity_about_ex.*
 import kotlinx.android.synthetic.main.toolbar_basic.*
 
 class AboutActivity : BottomSheetActivity(), Injectable {
@@ -28,6 +29,9 @@ class AboutActivity : BottomSheetActivity(), Injectable {
         }
 
         setTitle(R.string.about_title_activity)
+
+        tuskyexGithubLink.setClickableTextWithoutUnderlines(R.string.tuskyex_build_github)
+        tuskyexDevAccLink.setClickableTextWithoutUnderlines(R.string.tuskyex_build_dev_acc)
 
         versionTextView.text = getString(R.string.about_tusky_version, BuildConfig.VERSION_NAME)
 

@@ -1,6 +1,8 @@
 package com.keylesspalace.tusky.adapter;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
@@ -177,15 +179,19 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
     // This should only be called after setReblogged, in order to override the tint correctly.
     private void setRebloggingEnabled(boolean enabled, Status.Visibility visibility) {
-        reblogButton.setEnabled(enabled && visibility != Status.Visibility.PRIVATE);
+        reblogButton.setEnabled(enabled && visibility != Status.Visibility.PRIVATE && visibility != Status.Visibility.LIMITED);
 
         if (enabled) {
             int inactiveId;
             int activeId;
             if (visibility == Status.Visibility.PRIVATE) {
                 inactiveId = ThemeUtils.getDrawableId(reblogButton.getContext(),
-                        R.attr.status_reblog_disabled_drawable, R.drawable.reblog_private_dark);
+                        R.attr.status_reblog_disabled_private_drawable, R.drawable.reblog_private_dark);
                 activeId = R.drawable.reblog_private_active;
+            } else if (visibility == Status.Visibility.LIMITED) {
+                inactiveId = ThemeUtils.getDrawableId(reblogButton.getContext(),
+                        R.attr.status_reblog_disabled_limited_drawable, R.drawable.reblog_limited_dark);
+                activeId = R.drawable.reblog_limited_active;
             } else {
                 inactiveId = ThemeUtils.getDrawableId(reblogButton.getContext(),
                         R.attr.status_reblog_inactive_drawable, R.drawable.reblog_inactive_dark);
@@ -200,10 +206,33 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                         R.attr.status_reblog_direct_drawable, R.drawable.reblog_direct_dark);
             } else {
                 disabledId = ThemeUtils.getDrawableId(reblogButton.getContext(),
-                        R.attr.status_reblog_disabled_drawable, R.drawable.reblog_private_dark);
+                        R.attr.status_reblog_disabled_private_drawable, R.drawable.reblog_private_dark);
             }
             reblogButton.setInactiveImage(disabledId);
             reblogButton.setActiveImage(disabledId);
+        }
+    }
+
+    private void setQuoteEnabled(boolean enabled, Status.Visibility visibility) {
+        quoteButton.setEnabled(enabled && visibility != Status.Visibility.PRIVATE && visibility != Status.Visibility.LIMITED);
+
+        if (enabled && visibility != Status.Visibility.PRIVATE && visibility != Status.Visibility.LIMITED) {
+            int activeId;
+            activeId = ThemeUtils.getDrawableId(quoteButton.getContext(),
+                    R.attr.status_quote_drawable, R.drawable.ic_quote_24dp);
+            quoteButton.setImageResource(activeId);
+        } else {
+            //int disabledId;
+            //disabledId = ThemeUtils.getDrawableId(quoteButton.getContext(),
+            //        R.attr.status_quote_disabled_drawable, R.drawable.ic_quote_disabled_24dp);
+            //quoteButton.setImageResource(disabledId);
+
+            Resources res=quoteButton.getContext().getResources();
+            Drawable disableIcon=res.getDrawable(R.drawable.ic_quote_disabled_24dp);
+            if(disableIcon!=null){
+                disableIcon.setColorFilter(res.getColor(R.color.status_reblog_button_disabled_dark), PorterDuff.Mode.DST_IN);
+            }
+            quoteButton.setImageDrawable(disableIcon);
         }
     }
 
@@ -501,6 +530,7 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
         setupButtons(listener, status.getSenderId());
         setRebloggingEnabled(status.getRebloggingEnabled(), status.getVisibility());
+        setQuoteEnabled(status.getRebloggingEnabled(), status.getVisibility());
         if (status.getSpoilerText() == null || status.getSpoilerText().isEmpty()) {
             hideSpoilerText();
         } else {

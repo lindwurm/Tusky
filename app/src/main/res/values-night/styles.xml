@@ -25,10 +25,13 @@
         <item name="image_button_style">@style/AppTheme.ImageButton.Dark</item>
         <item name="status_reblog_small_drawable">@drawable/ic_reblog_dark_18dp</item>
         <item name="status_reblog_inactive_drawable">@drawable/reblog_inactive_dark</item>
-        <item name="status_reblog_disabled_drawable">@drawable/reblog_private_dark</item>
+        <item name="status_reblog_disabled_private_drawable">@drawable/reblog_private_dark</item>
+        <item name="status_reblog_disabled_limited_drawable">@drawable/reblog_limited_dark</item>
         <item name="status_reblog_direct_drawable">@drawable/reblog_direct_dark</item>
         <item name="status_favourite_active_drawable">@drawable/favourite_active_dark</item>
         <item name="status_favourite_inactive_drawable">@drawable/favourite_inactive_dark</item>
+        <item name="status_quote_drawable">@drawable/ic_quote_24dp</item>
+        <item name="status_quote_disabled_drawable">@drawable/ic_quote_disabled_24dp</item>
         <item name="content_warning_button">@drawable/toggle_small</item>
         <item name="sensitive_media_warning_background_color">@color/color_background_dark</item>
         <item name="media_preview_unloaded_drawable">@drawable/media_preview_unloaded_dark</item>

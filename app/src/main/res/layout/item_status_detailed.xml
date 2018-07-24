@@ -396,7 +396,7 @@
             android:contentDescription="@string/action_quote"
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
-            app:srcCompat="@drawable/ic_quote_24dp" />
+            app:srcCompat="@drawable/ic_quote_disabled_24dp" />
 
         <Space
             android:layout_width="0dp"

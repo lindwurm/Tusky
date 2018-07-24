@@ -57,7 +57,9 @@ data class Status(
         @SerializedName("private")
         PRIVATE(3),
         @SerializedName("direct")
-        DIRECT(4);
+        DIRECT(4),
+        @SerializedName("limited")
+        LIMITED(9);
 
         fun serverString(): String {
             return when (this) {
@@ -65,6 +67,8 @@ data class Status(
                 UNLISTED -> "unlisted"
                 PRIVATE -> "private"
                 DIRECT -> "direct"
+
+                LIMITED -> "limited"
                 UNKNOWN -> "unknown"
             }
         }
@@ -74,6 +78,8 @@ data class Status(
             @JvmStatic
             fun byNum(num: Int): Visibility {
                 return when (num) {
+                    9 -> LIMITED
+
                     4 -> DIRECT
                     3 -> PRIVATE
                     2 -> UNLISTED
@@ -90,6 +96,8 @@ data class Status(
                     "unlisted" -> UNLISTED
                     "private" -> PRIVATE
                     "direct" -> DIRECT
+
+                    "limited" -> LIMITED
                     "unknown" -> UNKNOWN
                     else -> UNKNOWN
                 }
@@ -125,27 +133,27 @@ data class Status(
         @SerializedName("username")
         var localUsername: String? = null
 
-      override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
 
-        other as Mention
+            other as Mention
 
-        if (id != other.id) return false
-        if (url != other.url) return false
-        if (username != other.username) return false
-        if (localUsername != other.localUsername) return false
+            if (id != other.id) return false
+            if (url != other.url) return false
+            if (username != other.username) return false
+            if (localUsername != other.localUsername) return false
 
-        return true
-      }
+            return true
+        }
 
-      override fun hashCode(): Int {
-        var result = id?.hashCode() ?: 0
-        result = 31 * result + (url?.hashCode() ?: 0)
-        result = 31 * result + (username?.hashCode() ?: 0)
-        result = 31 * result + (localUsername?.hashCode() ?: 0)
-        return result
-      }
+        override fun hashCode(): Int {
+            var result = id?.hashCode() ?: 0
+            result = 31 * result + (url?.hashCode() ?: 0)
+            result = 31 * result + (username?.hashCode() ?: 0)
+            result = 31 * result + (localUsername?.hashCode() ?: 0)
+            return result
+        }
 
     }
 
