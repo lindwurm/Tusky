@@ -32,7 +32,6 @@ import com.keylesspalace.tusky.BottomSheetActivity;
 import com.keylesspalace.tusky.ComposeActivity;
 import com.keylesspalace.tusky.R;
 import com.keylesspalace.tusky.ReportActivity;
-import com.keylesspalace.tusky.TuskyApplication;
 import com.keylesspalace.tusky.ViewMediaActivity;
 import com.keylesspalace.tusky.ViewTagActivity;
 import com.keylesspalace.tusky.ViewVideoActivity;
@@ -230,6 +229,15 @@ public abstract class SFragment extends BaseFragment {
                 case R.id.status_delete: {
                     timelineCases().delete(id);
                     removeItem(position);
+                    return true;
+                }
+                case R.id.status_edit: {
+                    String editContent = content.toString();
+                    timelineCases().delete(id);
+                    Intent intent = new ComposeActivity.IntentBuilder()
+                            .savedTootText(editContent)
+                            .build(getContext());
+                    startActivity(intent);
                     return true;
                 }
             }
