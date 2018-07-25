@@ -209,7 +209,8 @@ public final class ComposeActivity
     private int savedTootUid = 0;
     private List<Emoji> emojiList;
     private int maximumTootCharacters = STATUS_CHARACTER_LIMIT;
-    private @Px int thumbnailViewSize;
+    private @Px
+    int thumbnailViewSize;
 
     private SaveTootHelper saveTootHelper;
 
@@ -410,8 +411,8 @@ public final class ComposeActivity
                 textEditor.setText(savedTootText);
             }
 
-            if(intent.getBooleanExtra(MOVE_CURSOR_TO_TOP,false)){
-                textEditor.setSelection(0,textEditor.length());
+            if (intent.getBooleanExtra(MOVE_CURSOR_TO_TOP, false)) {
+                textEditor.setSelection(0, textEditor.length());
                 textEditor.setSelection(0);
             }
 
