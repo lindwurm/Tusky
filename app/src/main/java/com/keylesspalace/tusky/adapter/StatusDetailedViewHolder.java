@@ -3,6 +3,7 @@ package com.keylesspalace.tusky.adapter;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.text.SpannableStringBuilder;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.keylesspalace.tusky.R;
+import com.keylesspalace.tusky.ViewThreadActivity;
 import com.keylesspalace.tusky.entity.Card;
 import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.interfaces.StatusActionListener;
@@ -29,6 +31,8 @@ import com.squareup.picasso.Picasso;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class StatusDetailedViewHolder extends StatusBaseViewHolder {
     private TextView reblogs;
@@ -97,7 +101,7 @@ class StatusDetailedViewHolder extends StatusBaseViewHolder {
         setApplication(status.getApplication());
 
         View.OnLongClickListener longClickListener = view -> {
-            TextView textView = (TextView)view;
+            TextView textView = (TextView) view;
             ClipboardManager clipboard = (ClipboardManager) view.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clip = ClipData.newPlainText("toot", textView.getText());
             clipboard.setPrimaryClip(clip);
@@ -110,7 +114,7 @@ class StatusDetailedViewHolder extends StatusBaseViewHolder {
         content.setOnLongClickListener(longClickListener);
         contentWarningDescription.setOnLongClickListener(longClickListener);
 
-        if(status.getAttachments().size() == 0 && status.getCard() != null && !TextUtils.isEmpty(status.getCard().getUrl())) {
+        if (status.getAttachments().size() == 0 && status.getCard() != null && !TextUtils.isEmpty(status.getCard().getUrl())) {
             final Card card = status.getCard();
             cardView.setVisibility(View.VISIBLE);
             cardTitle.setText(card.getTitle());
@@ -118,10 +122,10 @@ class StatusDetailedViewHolder extends StatusBaseViewHolder {
 
             cardUrl.setText(card.getUrl());
 
-            if(card.getWidth() > 0 && card.getHeight() > 0 && !TextUtils.isEmpty(card.getImage())) {
+            if (card.getWidth() > 0 && card.getHeight() > 0 && !TextUtils.isEmpty(card.getImage())) {
                 cardImage.setVisibility(View.VISIBLE);
 
-                if(card.getWidth() > card.getHeight()) {
+                if (card.getWidth() > card.getHeight()) {
                     cardView.setOrientation(LinearLayout.VERTICAL);
                     cardImage.getLayoutParams().height = cardImage.getContext().getResources()
                             .getDimensionPixelSize(R.dimen.card_image_vertical_height);
@@ -151,7 +155,22 @@ class StatusDetailedViewHolder extends StatusBaseViewHolder {
                 cardImage.setVisibility(View.GONE);
             }
 
-            cardView.setOnClickListener(v -> LinkHelper.openLink(card.getUrl(), v.getContext()));
+            cardView.setOnClickListener(view -> {
+                String url = card.getUrl();
+                String regex = ".*/users/[^/]+/statuses/([0-9]+)";
+                String replace = "$1";
+                Pattern p = Pattern.compile(regex);
+                Matcher m = p.matcher(url);
+                if (m.find()) {
+                    String id = m.replaceAll(replace);
+                    Intent intent = new Intent(view.getContext(), ViewThreadActivity.class);
+                    intent.putExtra("id", id);
+                    intent.putExtra("url", url);
+                    view.getContext().startActivity(intent);
+                } else {
+                    LinkHelper.openLink(url, view.getContext());
+                }
+            });
 
         } else {
             cardView.setVisibility(View.GONE);

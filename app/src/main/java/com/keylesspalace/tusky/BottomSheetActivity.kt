@@ -49,17 +49,17 @@ abstract class BottomSheetActivity : BaseActivity() {
         super.onPostCreate(savedInstanceState)
 
         val bottomSheetLayout: LinearLayout = findViewById(R.id.item_status_bottom_sheet)
-            bottomSheet = BottomSheetBehavior.from(bottomSheetLayout)
-            bottomSheet.state = BottomSheetBehavior.STATE_HIDDEN
-            bottomSheet.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-                override fun onStateChanged(bottomSheet: View, newState: Int) {
-                   if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                        cancelActiveSearch()
-                    }
+        bottomSheet = BottomSheetBehavior.from(bottomSheetLayout)
+        bottomSheet.state = BottomSheetBehavior.STATE_HIDDEN
+        bottomSheet.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                    cancelActiveSearch()
                 }
+            }
 
-                override fun onSlide(bottomSheet: View, slideOffset: Float) {}
-            })
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+        })
 
     }
 
@@ -83,7 +83,7 @@ abstract class BottomSheetActivity : BaseActivity() {
                     // which is good, because pleroma returns a different url
                     // than the public post link
                     val searchResult = response.body()
-                    if(searchResult != null) {
+                    if (searchResult != null) {
                         if (searchResult.statuses.isNotEmpty()) {
                             viewThread(searchResult.statuses[0])
                             return
@@ -160,11 +160,11 @@ abstract class BottomSheetActivity : BaseActivity() {
     }
 
     private fun showQuerySheet() {
-            bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+        bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
     }
 
     private fun hideQuerySheet() {
-            bottomSheet.state = BottomSheetBehavior.STATE_HIDDEN
+        bottomSheet.state = BottomSheetBehavior.STATE_HIDDEN
     }
 }
 
@@ -174,6 +174,7 @@ abstract class BottomSheetActivity : BaseActivity() {
 // https://pleroma.foo.bar/users/43456787654678
 // https://pleroma.foo.bar/notice/43456787654678
 // https://pleroma.foo.bar/objects/d4643c42-3ae0-4b73-b8b0-c725f5819207
+// https://mastodon.foo.bar/users/User/statuses/000000000000000000
 fun looksLikeMastodonUrl(urlString: String): Boolean {
     val uri: URI
     try {
@@ -193,5 +194,6 @@ fun looksLikeMastodonUrl(urlString: String): Boolean {
             path.matches("^/users/[^/]+$".toRegex()) ||
             path.matches("^/@[^/]+/\\d+$".toRegex()) ||
             path.matches("^/notice/\\d+$".toRegex()) ||
-            path.matches("^/objects/[-a-f0-9]+$".toRegex())
+            path.matches("^/objects/[-a-f0-9]+$".toRegex()) ||
+            path.matches("^/users/[^/]+/statuses/[0-9]+$".toRegex())
 }

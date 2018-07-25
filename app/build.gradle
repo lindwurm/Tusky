@@ -19,8 +19,8 @@ android {
         applicationId "com.keylesspalace.tusky"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 10049
-        versionName "2.2.3 ex"
+        versionCode 10050
+        versionName "2.2.4 ex"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary true
     }
@@ -115,7 +115,7 @@ dependencies {
 
     debugImplementation 'im.dino:dbinspector:3.4.1@aar'
     implementation 'io.reactivex.rxjava2:rxjava:2.1.16'
-    
+
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
     implementation 'com.uber.autodispose:autodispose-android-archcomponents:0.8.0'
     implementation 'com.uber.autodispose:autodispose-kotlin:0.8.0'
