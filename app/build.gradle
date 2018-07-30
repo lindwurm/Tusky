@@ -19,8 +19,8 @@ android {
         applicationId "com.keylesspalace.tusky"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 10052
-        versionName "2.3.0 ex"
+        versionCode 10053
+        versionName "2.3.1 ex"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary true
     }

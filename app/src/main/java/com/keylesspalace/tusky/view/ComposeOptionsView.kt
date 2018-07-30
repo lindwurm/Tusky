@@ -36,7 +36,7 @@ class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: Attr
             publicRadioButton.setButtonDrawable(R.drawable.ic_public_24dp)
             unlistedRadioButton.setButtonDrawable(R.drawable.ic_lock_open_24dp)
             privateRadioButton.setButtonDrawable(R.drawable.ic_lock_outline_24dp)
-            limitedRadioButton.setButtonDrawable(R.drawable.ic_limited_24px)
+            limitedRadioButton.setButtonDrawable(R.drawable.ic_limited_24dp)
             directRadioButton.setButtonDrawable(R.drawable.ic_email_24dp)
         }
 

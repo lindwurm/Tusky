@@ -173,7 +173,7 @@ public final class ComposeActivity
     private static final String[] CAN_USE_LIMITED = {"itabashi.0j0.jp"};
     //Used for 1024 chars
     private static final String ITABASHI_DOMAIN = "itabashi.0j0.jp";
-    private static final int ITABASHI_CHARS_LIMIT=1024;
+    private static final int ITABASHI_CHARS_LIMIT = 1024;
 
     @Inject
     public MastodonApi mastodonApi;
@@ -294,8 +294,8 @@ public final class ComposeActivity
                 }
             });
 
-            if(activeAccount.getDomain().equals(ITABASHI_DOMAIN)){
-                maximumTootCharacters=ITABASHI_CHARS_LIMIT;
+            if (activeAccount.getDomain().equals(ITABASHI_DOMAIN)) {
+                maximumTootCharacters = ITABASHI_CHARS_LIMIT;
             }
 
             mastodonApi.getCustomEmojis().enqueue(new Callback<List<Emoji>>() {
@@ -722,6 +722,13 @@ public final class ComposeActivity
                 Drawable envelope = AppCompatResources.getDrawable(this, R.drawable.ic_email_24dp);
                 if (envelope != null) {
                     visibilityButton.setImageDrawable(envelope);
+                }
+                break;
+            }
+            case LIMITED: {
+                Drawable dontLook = AppCompatResources.getDrawable(this, R.drawable.ic_limited_24dp);
+                if (dontLook != null) {
+                    visibilityButton.setImageDrawable(dontLook);
                 }
                 break;
             }
