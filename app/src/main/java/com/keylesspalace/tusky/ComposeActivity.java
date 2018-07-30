@@ -125,6 +125,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -160,14 +161,19 @@ public final class ComposeActivity
     private static final String SAVED_TOOT_TEXT_EXTRA = "saved_toot_text";
     private static final String SAVED_JSON_URLS_EXTRA = "saved_json_urls";
     private static final String IN_REPLY_TO_ID_EXTRA = "in_reply_to_id";
-    private static final String REPLY_VISIBILITY_EXTRA = "reply_visibilty";
+    private static final String REPLY_VISIBILITY_EXTRA = "reply_visibility";
     private static final String CONTENT_WARNING_EXTRA = "content_warning";
-    private static final String MENTIONED_USERNAMES_EXTRA = "netnioned_usernames";
+    private static final String MENTIONED_USERNAMES_EXTRA = "mentioned_usernames";
     private static final String REPLYING_STATUS_AUTHOR_USERNAME_EXTRA = "replying_author_nickname_extra";
     private static final String MOVE_CURSOR_TO_TOP = "move_cursor_to_top";
     private static final String REPLYING_STATUS_CONTENT_EXTRA = "replying_status_content";
     // Mastodon only counts URLs as this long in terms of status character limits
     static final int MAXIMUM_URL_LENGTH = 23;
+
+    private static final String[] CAN_USE_LIMITED = {"itabashi.0j0.jp"};
+    //Used for 1024 chars
+    private static final String ITABASHI_DOMAIN = "itabashi.0j0.jp";
+    private static final int ITABASHI_CHARS_LIMIT=1024;
 
     @Inject
     public MastodonApi mastodonApi;
@@ -288,6 +294,10 @@ public final class ComposeActivity
                 }
             });
 
+            if(activeAccount.getDomain().equals(ITABASHI_DOMAIN)){
+                maximumTootCharacters=ITABASHI_CHARS_LIMIT;
+            }
+
             mastodonApi.getCustomEmojis().enqueue(new Callback<List<Emoji>>() {
                 @Override
                 public void onResponse(@NonNull Call<List<Emoji>> call, @NonNull Response<List<Emoji>> response) {
@@ -308,6 +318,9 @@ public final class ComposeActivity
         }
 
         composeOptionsView = findViewById(R.id.composeOptionsBottomSheet);
+        if (Arrays.asList(CAN_USE_LIMITED).contains(activeAccount.getDomain())) {
+            composeOptionsView.allowLimited(true);
+        }
         composeOptionsView.setListener(this);
 
         composeOptionsBehavior = BottomSheetBehavior.from(composeOptionsView);
@@ -505,7 +518,7 @@ public final class ComposeActivity
         }
 
         // work around Android platform bug -> https://issuetracker.google.com/issues/67102093
-        if(Build.VERSION.SDK_INT == Build.VERSION_CODES.O || Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1 ) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O || Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1) {
             textEditor.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
 

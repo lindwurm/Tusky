@@ -18,6 +18,7 @@ package com.keylesspalace.tusky.view
 import android.content.Context
 import android.os.Build
 import android.util.AttributeSet
+import android.view.View
 import android.widget.LinearLayout
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.entity.Status
@@ -31,10 +32,11 @@ class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: Attr
     init {
         inflate(context, R.layout.view_compose_options, this)
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             publicRadioButton.setButtonDrawable(R.drawable.ic_public_24dp)
             unlistedRadioButton.setButtonDrawable(R.drawable.ic_lock_open_24dp)
             privateRadioButton.setButtonDrawable(R.drawable.ic_lock_outline_24dp)
+            limitedRadioButton.setButtonDrawable(R.drawable.ic_limited_24px)
             directRadioButton.setButtonDrawable(R.drawable.ic_email_24dp)
         }
 
@@ -46,12 +48,21 @@ class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: Attr
                     Status.Visibility.UNLISTED
                 R.id.privateRadioButton ->
                     Status.Visibility.PRIVATE
+                R.id.limitedRadioButton ->
+                    Status.Visibility.LIMITED
                 R.id.directRadioButton ->
                     Status.Visibility.DIRECT
                 else ->
                     Status.Visibility.PUBLIC
             }
             listener?.onVisibilityChanged(visibility)
+        }
+    }
+
+    fun allowLimited(allowed: Boolean = true) {
+        limitedRadioButton.visibility = when (allowed) {
+            true -> View.VISIBLE
+            else -> View.GONE
         }
     }
 
@@ -63,6 +74,8 @@ class ComposeOptionsView @JvmOverloads constructor(context: Context, attrs: Attr
                 R.id.unlistedRadioButton
             Status.Visibility.PRIVATE ->
                 R.id.privateRadioButton
+            Status.Visibility.LIMITED ->
+                R.id.limitedRadioButton
             Status.Visibility.DIRECT ->
                 R.id.directRadioButton
             else ->

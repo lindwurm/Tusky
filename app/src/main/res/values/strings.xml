@@ -345,5 +345,6 @@
     <string name="tuskyex_build_github">Github Project Page:\nhttps://github.com/kyori19/Tusky</string>
     <string name="tuskyex_build_dev_acc">Developer Mastodon Account:\nhttps://itabashi.0j0.jp/@ars42525</string>
     <string name="action_edit">Delete and Edit</string>
+    <string name="visibility_limited">Limited: Post to followed user by you only.</string>
 
 </resources>

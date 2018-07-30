@@ -53,6 +53,20 @@
             app:buttonTint="?attr/compound_button_color" />
 
         <android.support.v7.widget.AppCompatRadioButton
+            android:id="@+id/limitedRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_marginTop="4dp"
+            android:layout_weight="1"
+            android:paddingEnd="0dp"
+            android:paddingStart="10dp"
+            android:text="@string/visibility_limited"
+            android:textColor="?android:textColorTertiary"
+            app:buttonTint="?attr/compound_button_color"
+            android:visibility="gone" />
+
+        <android.support.v7.widget.AppCompatRadioButton
             android:id="@+id/directRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
