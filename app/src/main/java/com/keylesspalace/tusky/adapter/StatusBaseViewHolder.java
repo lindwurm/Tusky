@@ -1,9 +1,11 @@
 package com.keylesspalace.tusky.adapter;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.preference.PreferenceManager;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -33,8 +35,10 @@ import com.keylesspalace.tusky.viewdata.StatusViewData;
 import com.mikepenz.iconics.utils.Utils;
 import com.squareup.picasso.Picasso;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import at.connyduck.sparkbutton.SparkButton;
 import at.connyduck.sparkbutton.SparkEventListener;
@@ -132,25 +136,40 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     }
 
     protected void setCreatedAt(@Nullable Date createdAt) {
-        // This is the visible timestampInfo.
-        String readout;
-        /* This one is for screen-readers. Frequently, they would mispronounce timestamps like "17m"
-         * as 17 meters instead of minutes. */
-        CharSequence readoutAloud;
-        if (createdAt != null) {
-            long then = createdAt.getTime();
-            long now = new Date().getTime();
-            readout = DateUtils.getRelativeTimeSpanString(timestampInfo.getContext(), then, now);
-            readoutAloud = android.text.format.DateUtils.getRelativeTimeSpanString(then, now,
-                    android.text.format.DateUtils.SECOND_IN_MILLIS,
-                    android.text.format.DateUtils.FORMAT_ABBREV_RELATIVE);
+        SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(timestampInfo.getContext());
+        if (defPrefs.getBoolean("absoluteTimeView", true)) {
+            String time = "ERROR!";
+            if (createdAt != null) {
+                SimpleDateFormat sdf;
+                if (new Date().getTime() - createdAt.getTime() > 86400000L) {
+                    sdf = new SimpleDateFormat("MM/dd HH:mm:ss", Locale.getDefault());
+                } else {
+                    sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+                }
+                time = sdf.format(createdAt);
+                timestampInfo.setText(time);
+            }
         } else {
-            // unknown minutes~
-            readout = "?m";
-            readoutAloud = "? minutes";
+            // This is the visible timestampInfo.
+            String readout;
+            /* This one is for screen-readers. Frequently, they would mispronounce timestamps like "17m"
+             * as 17 meters instead of minutes. */
+            CharSequence readoutAloud;
+            if (createdAt != null) {
+                long then = createdAt.getTime();
+                long now = new Date().getTime();
+                readout = DateUtils.getRelativeTimeSpanString(timestampInfo.getContext(), then, now);
+                readoutAloud = android.text.format.DateUtils.getRelativeTimeSpanString(then, now,
+                        android.text.format.DateUtils.SECOND_IN_MILLIS,
+                        android.text.format.DateUtils.FORMAT_ABBREV_RELATIVE);
+            } else {
+                // unknown minutes~
+                readout = "?m";
+                readoutAloud = "? minutes";
+            }
+            timestampInfo.setText(readout);
+            timestampInfo.setContentDescription(readoutAloud);
         }
-        timestampInfo.setText(readout);
-        timestampInfo.setContentDescription(readoutAloud);
     }
 
     protected void showContent(boolean show) {
@@ -227,9 +246,9 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             //        R.attr.status_quote_disabled_drawable, R.drawable.ic_quote_disabled_24dp);
             //quoteButton.setImageResource(disabledId);
 
-            Resources res=quoteButton.getContext().getResources();
-            Drawable disableIcon=res.getDrawable(R.drawable.ic_quote_disabled_24dp);
-            if(disableIcon!=null){
+            Resources res = quoteButton.getContext().getResources();
+            Drawable disableIcon = res.getDrawable(R.drawable.ic_quote_disabled_24dp);
+            if (disableIcon != null) {
                 disableIcon.setColorFilter(res.getColor(R.color.status_reblog_button_disabled_dark), PorterDuff.Mode.DST_IN);
             }
             quoteButton.setImageDrawable(disableIcon);

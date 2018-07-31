@@ -27,6 +27,7 @@ import android.support.v7.widget.PopupMenu;
 import android.text.Spanned;
 import android.view.Menu;
 import android.view.View;
+import android.widget.Toast;
 
 import com.keylesspalace.tusky.BottomSheetActivity;
 import com.keylesspalace.tusky.ComposeActivity;
@@ -144,16 +145,23 @@ public abstract class SFragment extends BaseFragment {
     protected void quote(Status status) {
         final String id = status.getActionableId();
         String url = status.getUrl();
-        String regBfr = "(.*)/@(.*)/([0-9]*)";
-        String regAft = "$1/users/$2/statuses/$3";
-        Pattern p = Pattern.compile(regBfr);
-        Matcher m = p.matcher(url);
-        url = m.replaceAll(regAft);
-        Intent intent = new ComposeActivity.IntentBuilder()
-                .savedTootText("\n~~~~~~~~~~\n[" + id + "][" + url + "]")
-                .moveCursorToTop(true)
-                .build(getContext());
-        startActivity(intent);
+        if (status.getReblog() != null) {
+            url = status.getReblog().getUrl();
+        }
+        if (url != null) {
+            String regBfr = "(.*)/@(.*)/([0-9]*)";
+            String regAft = "$1/users/$2/statuses/$3";
+            Pattern p = Pattern.compile(regBfr);
+            Matcher m = p.matcher(url);
+            url = m.replaceAll(regAft);
+            Intent intent = new ComposeActivity.IntentBuilder()
+                    .savedTootText("\n~~~~~~~~~~\n[" + id + "][" + url + "]")
+                    .moveCursorToTop(true)
+                    .build(getContext());
+            startActivity(intent);
+        } else {
+            Toast.makeText(getContext(), "An error occurred.\nURL is null!", Toast.LENGTH_LONG).show();
+        }
     }
 
     protected void more(final Status status, View view, final int position) {

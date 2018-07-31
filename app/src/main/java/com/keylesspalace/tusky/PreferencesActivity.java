@@ -122,6 +122,10 @@ public class PreferencesActivity extends BaseActivity
                 restartActivitiesOnExit = true;
                 break;
             }
+            case "absoluteTimeView": {
+                restartActivitiesOnExit = true;
+                break;
+            }
             case "notificationsEnabled": {
                 boolean enabled = sharedPreferences.getBoolean("notificationsEnabled", true);
                 if (enabled) {
