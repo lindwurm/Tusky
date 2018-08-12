@@ -17,11 +17,16 @@ package com.keylesspalace.tusky;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
@@ -34,10 +39,13 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -49,6 +57,8 @@ import android.support.transition.TransitionManager;
 import android.support.v13.view.inputmethod.InputConnectionCompat;
 import android.support.v13.view.inputmethod.InputContentInfoCompat;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewCompat;
@@ -136,6 +146,8 @@ import java.util.Locale;
 import javax.inject.Inject;
 
 import at.connyduck.sparkbutton.helpers.Utils;
+import jp.kyori.tusky.NotificationPickDialogFragment;
+import jp.kyori.tusky.NotifyListBroadcastReceiver;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
@@ -192,6 +204,7 @@ public final class ComposeActivity
     private ImageButton visibilityButton;
     private Button contentWarningButton;
     private ImageButton emojiButton;
+    private ImageButton nowPlayingButton;
     private ImageButton hideMediaToggle;
 
     private ComposeOptionsView composeOptionsView;
@@ -221,6 +234,18 @@ public final class ComposeActivity
 
     private SaveTootHelper saveTootHelper;
 
+    private boolean buttonExecFlag = true;
+
+    @SuppressLint("HandlerLeak")
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            Bundle bundle = msg.getData();
+            ArrayList<String[]> list = (ArrayList<String[]>) bundle.getSerializable("list");
+            selectNotification(list);
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -238,6 +263,7 @@ public final class ComposeActivity
         visibilityButton = findViewById(R.id.composeToggleVisibilityButton);
         contentWarningButton = findViewById(R.id.composeContentWarningButton);
         emojiButton = findViewById(R.id.composeEmojiButton);
+        nowPlayingButton = findViewById(R.id.composeNowPlayingButton);
         hideMediaToggle = findViewById(R.id.composeHideMediaButton);
         emojiView = findViewById(R.id.emojiView);
         emojiList = Collections.emptyList();
@@ -334,12 +360,17 @@ public final class ComposeActivity
 
         enableButton(emojiButton, false, false);
 
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
+            nowPlayingButton.setVisibility(View.GONE);
+        }
+
         // Setup the interface buttons.
         tootButton.setOnClickListener(v -> onSendClicked());
         pickButton.setOnClickListener(v -> openPickDialog());
         visibilityButton.setOnClickListener(v -> showComposeOptions());
         contentWarningButton.setOnClickListener(v -> onContentWarningChanged());
         emojiButton.setOnClickListener(v -> showEmojis());
+        nowPlayingButton.setOnClickListener(v -> startNowPlayingExec());
         hideMediaToggle.setOnClickListener(v -> toggleHideMedia());
 
         TextView actionPhotoTake = findViewById(R.id.action_photo_take);
@@ -426,8 +457,7 @@ public final class ComposeActivity
             }
 
             if (intent.getBooleanExtra(MOVE_CURSOR_TO_TOP, false)) {
-                textEditor.setSelection(0, textEditor.length());
-                textEditor.setSelection(0);
+                moveCursorToTop();
             }
 
             String savedJsonUrls = intent.getStringExtra(SAVED_JSON_URLS_EXTRA);
@@ -694,6 +724,7 @@ public final class ComposeActivity
         visibilityButton.setClickable(true);
         emojiButton.setClickable(true);
         hideMediaToggle.setClickable(true);
+        nowPlayingButton.setClickable(true);
         tootButton.setEnabled(true);
     }
 
@@ -773,6 +804,81 @@ public final class ComposeActivity
 
         }
 
+    }
+
+    private void startNowPlayingExec() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            if (canAccessNotification() && buttonExecFlag) {
+                buttonExecFlag = false;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    NotificationChannel channel = new NotificationChannel("GetMediaNotification", "Get Notifications!", NotificationManager.IMPORTANCE_MIN);
+                    channel.setDescription("Do not disable this notification!!");
+                    channel.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
+                    channel.enableVibration(false);
+                    channel.enableLights(false);
+                    channel.setShowBadge(false);
+                    NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                    if (notificationManager != null) {
+                        notificationManager.createNotificationChannel(channel);
+                    }
+                }
+                NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "GetMediaNotification");
+                builder.setContentText("reload");
+                builder.setContentTitle("reload");
+                builder.setSmallIcon(R.drawable.ic_trans_notification);
+                builder.setPriority(Notification.PRIORITY_MIN);
+                notificationManagerCompat.notify("notificationListHook", 219, builder.build());
+
+                NotifyListBroadcastReceiver receiver = new NotifyListBroadcastReceiver(handler);
+                IntentFilter intentFilter = new IntentFilter();
+                intentFilter.addAction("NOTIFICATION_LIST");
+                registerReceiver(receiver, intentFilter);
+            } else {
+                Toast.makeText(this, R.string.toast_notification_confirm, Toast.LENGTH_LONG).show();
+                showNotificationAccessSettingMenu();
+            }
+        } else {
+            Toast.makeText(this, "Sorry, this feature cannot be used on your device.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void selectNotification(ArrayList<String[]> arrayList) {
+        Bundle args = new Bundle();
+        args.putSerializable("list", arrayList);
+        NotificationPickDialogFragment dialogFragment = new NotificationPickDialogFragment();
+        dialogFragment.setArguments(args);
+        dialogFragment.show(getSupportFragmentManager(), "musicDialog");
+        buttonExecFlag = true;
+    }
+
+    public void addStringAfter(String str) {
+        textEditor.setText(String.format("%s\n%s", textEditor.getText(), str));
+        moveCursorToTop();
+    }
+
+    @TargetApi(22)
+    private void showNotificationAccessSettingMenu() {
+        Intent intent = new Intent();
+        intent.setAction(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS);
+        startActivity(intent);
+    }
+
+    private boolean canAccessNotification() {
+        ContentResolver contentResolver = getContentResolver();
+        String rawListeners = Settings.Secure.getString(contentResolver,
+                "enabled_notification_listeners");
+        if (rawListeners == null || "".equals(rawListeners)) {
+            return false;
+        } else {
+            String[] listeners = rawListeners.split(":");
+            for (String listener : listeners) {
+                if (listener.startsWith(getPackageName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void openPickDialog() {
@@ -1522,6 +1628,11 @@ public final class ComposeActivity
     // Accessors for testing, hence package scope
     int getMaximumTootCharacters() {
         return maximumTootCharacters;
+    }
+
+    void moveCursorToTop() {
+        textEditor.setSelection(0, textEditor.length());
+        textEditor.setSelection(0);
     }
 
     public static final class QueuedMedia {

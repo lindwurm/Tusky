@@ -265,6 +265,17 @@
             android:tooltipText="@string/action_emoji_keyboard"
             app:srcCompat="@drawable/ic_emoji_24dp" />
 
+        <ImageButton
+            android:id="@+id/composeNowPlayingButton"
+            style="?attr/image_button_style"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="4dp"
+            android:contentDescription="@string/action_now_playing"
+            android:padding="4dp"
+            android:tooltipText="@string/action_now_playing"
+            app:srcCompat="@drawable/ic_music_note_24dp" />
+
         <android.support.v4.widget.Space
             android:layout_width="0dp"
             android:layout_height="wrap_content"
