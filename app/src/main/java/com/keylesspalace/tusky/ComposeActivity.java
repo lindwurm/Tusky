@@ -121,7 +121,6 @@ import com.keylesspalace.tusky.view.ComposeOptionsListener;
 import com.keylesspalace.tusky.view.ComposeOptionsView;
 import com.keylesspalace.tusky.view.EditTextTyped;
 import com.keylesspalace.tusky.view.ProgressImageView;
-import com.keylesspalace.tusky.view.RoundedTransformation;
 import com.keylesspalace.tusky.view.TootButton;
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.mikepenz.iconics.IconicsDrawable;
@@ -249,6 +248,11 @@ public final class ComposeActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String theme = preferences.getString("appTheme", ThemeUtils.APP_THEME_DEFAULT);
+        if (theme.equals("black")) {
+            setTheme(R.style.TuskyDialogActivityBlackTheme);
+        }
         setContentView(R.layout.activity_compose);
 
         replyTextView = findViewById(R.id.composeReplyView);
@@ -293,7 +297,6 @@ public final class ComposeActivity
                 composeAvatar.setImageResource(R.drawable.avatar_default);
             } else {
                 Picasso.with(this).load(activeAccount.getProfilePictureUrl())
-                        .transform(new RoundedTransformation(25))
                         .error(R.drawable.avatar_default)
                         .placeholder(R.drawable.avatar_default)
                         .into(composeAvatar);
@@ -427,7 +430,6 @@ public final class ComposeActivity
         if (intent != null) {
 
             if (startingVisibility == Status.Visibility.UNKNOWN) {
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
                 Status.Visibility preferredVisibility = Status.Visibility.byString(
                         preferences.getString("defaultPostPrivacy",
                                 Status.Visibility.PUBLIC.serverString()));
@@ -1016,7 +1018,7 @@ public final class ComposeActivity
 
         startService(sendIntent);
 
-        finish();
+        finishWithoutSlideOutAnimation();
 
     }
 
@@ -1267,6 +1269,7 @@ public final class ComposeActivity
                             Attachment attachment = response.body();
                             if (response.isSuccessful() && attachment != null) {
                                 item.description = attachment.getDescription();
+                                item.preview.setChecked(item.description != null && !item.description.isEmpty());
                                 dialog.dismiss();
                             } else {
                                 showFailedCaptionMessage();
@@ -1554,10 +1557,10 @@ public final class ComposeActivity
             new AlertDialog.Builder(this)
                     .setMessage(R.string.compose_save_draft)
                     .setPositiveButton(R.string.action_save, (d, w) -> saveDraftAndFinish())
-                    .setNegativeButton(R.string.action_delete, (d, w) -> finish())
+                    .setNegativeButton(R.string.action_delete, (d, w) -> finishWithoutSlideOutAnimation())
                     .show();
         } else {
-            finish();
+            finishWithoutSlideOutAnimation();
         }
     }
 

@@ -32,6 +32,7 @@ import android.support.annotation.ColorInt
 import android.support.annotation.Px
 import android.support.design.widget.*
 import android.support.text.emoji.EmojiCompat
+import android.support.v4.app.ActivityOptionsCompat
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewCompat
@@ -49,7 +50,6 @@ import com.keylesspalace.tusky.interfaces.ActionButtonActivity
 import com.keylesspalace.tusky.interfaces.LinkListener
 import com.keylesspalace.tusky.pager.AccountPagerAdapter
 import com.keylesspalace.tusky.util.*
-import com.keylesspalace.tusky.view.RoundedTransformation
 import com.keylesspalace.tusky.viewmodel.AccountViewModel
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjector
@@ -144,8 +144,6 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasSupportF
 
         val intent = intent
         accountId = intent.getStringExtra(KEY_ACCOUNT_ID)
-
-        loadedAccount = null
 
         // set toolbar top margin according to system window insets
         ViewCompat.setOnApplyWindowInsetsListener(accountCoordinatorLayout) { _, insets ->
@@ -275,7 +273,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasSupportF
                 else -> throw AssertionError()
             }
             val accountListIntent = AccountListActivity.newIntent(this, type, accountId)
-            startActivity(accountListIntent)
+            startActivityWithSlideInAnimation(accountListIntent)
         }
         accountFollowers.setOnClickListener(accountListClickListener)
         accountFollowing.setOnClickListener(accountListClickListener)
@@ -314,12 +312,20 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasSupportF
 
             Picasso.with(this)
                     .load(account.avatar)
-                    .transform(RoundedTransformation(25f))
                     .placeholder(R.drawable.avatar_default)
                     .into(accountAvatarImageView)
             Picasso.with(this)
                     .load(account.header)
                     .into(accountHeaderImageView)
+
+            accountAvatarImageView.setOnClickListener { avatarView ->
+                val intent = ViewMediaActivity.newAvatarIntent(avatarView.context, account.avatar)
+
+                ViewCompat.setTransitionName(avatarView, account.avatar)
+                val options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, avatarView, account.avatar)
+
+                startActivity(intent, options.toBundle())
+            }
 
             accountFieldAdapter.fields = account.fields ?: emptyList()
             accountFieldAdapter.emojis = account.emojis ?: emptyList()
@@ -340,7 +346,6 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasSupportF
 
                 Picasso.with(this)
                         .load(movedAccount.avatar)
-                        .transform(RoundedTransformation(25f))
                         .placeholder(R.drawable.avatar_default)
                         .into(accountMovedAvatar)
 
@@ -535,20 +540,20 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasSupportF
             val intent = ComposeActivity.IntentBuilder()
                     .mentionedUsernames(setOf(it.username))
                     .build(this)
-            startActivity(intent)
+            startActivityWithSlideInAnimation(intent)
         }
     }
 
     override fun onViewTag(tag: String) {
         val intent = Intent(this, ViewTagActivity::class.java)
         intent.putExtra("hashtag", tag)
-        startActivity(intent)
+        startActivityWithSlideInAnimation(intent)
     }
 
     override fun onViewAccount(id: String) {
         val intent = Intent(this, AccountActivity::class.java)
         intent.putExtra("id", id)
-        startActivity(intent)
+        startActivityWithSlideInAnimation(intent)
     }
 
     override fun onViewUrl(url: String) {
