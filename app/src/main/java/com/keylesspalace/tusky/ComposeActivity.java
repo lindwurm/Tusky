@@ -1216,6 +1216,49 @@ public final class ComposeActivity
         }
     }
 
+    public void addCoverToQueue(QueuedMedia.Type type, Bitmap preview,
+                                byte[] imageBytes, long mediaSize) {
+        addCoverToQueue(null, type, preview, imageBytes, mediaSize, null, null);
+    }
+
+    private void addCoverToQueue(@Nullable String id, ComposeActivity.QueuedMedia.Type type, Bitmap preview, byte[] imageBytes,
+                                 long mediaSize, ComposeActivity.QueuedMedia.ReadyStage readyStage, @Nullable String description) {
+        final QueuedMedia item = new QueuedMedia(type, imageBytes, new ProgressImageView(this),
+                mediaSize, description);
+        item.id = id;
+        item.readyStage = readyStage;
+        item.uri = Uri.parse("");
+        ImageView view = item.preview;
+        Resources resources = getResources();
+        int margin = resources.getDimensionPixelSize(R.dimen.compose_media_preview_margin);
+        int marginBottom = resources.getDimensionPixelSize(
+                R.dimen.compose_media_preview_margin_bottom);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(thumbnailViewSize, thumbnailViewSize);
+        layoutParams.setMargins(margin, 0, margin, marginBottom);
+        view.setLayoutParams(layoutParams);
+        view.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        view.setImageBitmap(preview);
+        view.setOnClickListener(v -> onMediaClick(item, v));
+        view.setContentDescription(getString(R.string.action_delete));
+        mediaPreviewBar.addView(view);
+        mediaQueued.add(item);
+        int queuedCount = mediaQueued.size();
+        if (queuedCount == 1) {
+            if (item.type == QueuedMedia.Type.VIDEO) {
+                enableButton(pickButton, false, false);
+            }
+        } else if (queuedCount >= Status.MAX_MEDIA_ATTACHMENTS) {
+            enableButton(pickButton, false, false);
+        }
+
+        updateHideMediaToggle();
+
+        if (item.readyStage != QueuedMedia.ReadyStage.UPLOADED) {
+            waitForMediaLatch.countUp();
+            uploadMedia(item);
+        }
+    }
+
     private void onMediaClick(QueuedMedia item, View view) {
         PopupMenu popup = new PopupMenu(this, view);
         final int addCaptionId = 1;
@@ -1347,7 +1390,10 @@ public final class ComposeActivity
     private void uploadMedia(final QueuedMedia item) {
         item.readyStage = QueuedMedia.ReadyStage.UPLOADING;
 
-        String mimeType = getContentResolver().getType(item.uri);
+        String mimeType = "image/jpeg";
+        if (!item.uri.toString().equals("")) {
+            mimeType = getContentResolver().getType(item.uri);
+        }
         MimeTypeMap map = MimeTypeMap.getSingleton();
         String fileExtension = map.getExtensionFromMimeType(mimeType);
         final String filename = String.format("%s_%s_%s.%s",
@@ -1658,12 +1704,21 @@ public final class ComposeActivity
             this.description = description;
         }
 
+        QueuedMedia(Type type, byte[] content, ProgressImageView preview, long mediaSize,
+                    String description) {
+            this.type = type;
+            this.content = content;
+            this.preview = preview;
+            this.mediaSize = mediaSize;
+            this.description = description;
+        }
+
         public enum Type {
             IMAGE,
             VIDEO
         }
 
-        enum ReadyStage {
+        public enum ReadyStage {
             DOWNSIZING,
             UPLOADING,
             UPLOADED

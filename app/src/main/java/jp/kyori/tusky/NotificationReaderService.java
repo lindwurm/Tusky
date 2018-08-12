@@ -3,12 +3,15 @@ package jp.kyori.tusky;
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.support.v4.app.NotificationManagerCompat;
 import android.text.SpannableString;
+import android.util.Base64;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -33,6 +36,11 @@ public class NotificationReaderService extends NotificationListenerService {
                 if (!statusBarNotification.isClearable() && !Arrays.asList(EXCLUDE_PACKAGE_NAMES).contains(statusBarNotification.getPackageName())) {
                     Notification notification = statusBarNotification.getNotification();
                     Bundle fang = notification.extras;
+                    Bitmap icon = (Bitmap) fang.get(Notification.EXTRA_LARGE_ICON);
+                    String iconStr = "";
+                    if (icon != null) {
+                        iconStr = convertBitmap2String(icon);
+                    }
                     switch (statusBarNotification.getPackageName()) {
                         case "com.sauzask.nicoid": {
                             String[] item = {fang.getString(Notification.EXTRA_TITLE),
@@ -64,7 +72,7 @@ public class NotificationReaderService extends NotificationListenerService {
                                 subText = heat.toString();
                             }
 
-                            String[] item = {title, "by " + text + " covered by " + subText};
+                            String[] item = {title, "by " + text + " covered by " + subText, iconStr};
                             notificationList.add(item);
 
                             break;
@@ -86,7 +94,7 @@ public class NotificationReaderService extends NotificationListenerService {
                                 text = joker.toString();
                             }
 
-                            String[] item = {title, "by " + text};
+                            String[] item = {title, "by " + text, iconStr};
                             notificationList.add(item);
                         }
                     }
@@ -98,5 +106,12 @@ public class NotificationReaderService extends NotificationListenerService {
             intent.setAction("NOTIFICATION_LIST");
             sendBroadcast(intent);
         }
+    }
+
+    private String convertBitmap2String(Bitmap bitmap) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] bytes = stream.toByteArray();
+        return Base64.encodeToString(bytes, Base64.NO_WRAP);
     }
 }
