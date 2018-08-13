@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.keylesspalace.tusky.MainActivity">
+
+    <android.support.design.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1" >
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -32,6 +38,8 @@
             android:layout_alignParentTop="true"
             android:layout_toEndOf="@id/drawer_toggle"
             android:background="?android:colorBackground"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             app:tabGravity="fill"
             app:tabIndicatorHeight="3dp"
             app:tabMaxWidth="0dp"
@@ -92,4 +100,30 @@
 
     <include layout="@layout/item_status_bottom_sheet"/>
 
-</android.support.design.widget.CoordinatorLayout>
+    </android.support.design.widget.CoordinatorLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/toot_edit_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:layout_weight="1"
+            android:inputType="textMultiLine"
+            android:hint="@string/toot_area_hint"
+            tools:ignore="NestedWeights" />
+
+        <Button
+            android:id="@+id/toot_button"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/action_send_public" />
+
+    </LinearLayout>
+
+</LinearLayout>

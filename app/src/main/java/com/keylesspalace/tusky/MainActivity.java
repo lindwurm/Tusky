@@ -33,6 +33,9 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
@@ -96,6 +99,9 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
     private Drawer drawer;
     private ViewPager viewPager;
 
+    private EditText tootEditText;
+    private Button quickTootButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,10 +130,24 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         viewPager = findViewById(R.id.pager);
 
+        tootEditText = findViewById(R.id.toot_edit_text);
+        quickTootButton = findViewById(R.id.toot_button);
+
         composeButton.setOnClickListener(v -> {
-            Intent composeIntent = new Intent(getApplicationContext(), ComposeActivity.class);
-            startActivity(composeIntent);
+            if (tootEditText.getText().length() == 0) {
+                Intent composeIntent = new Intent(getApplicationContext(), ComposeActivity.class);
+                startActivity(composeIntent);
+            } else {
+                Intent composeIntent = new ComposeActivity.IntentBuilder()
+                        .savedTootText(tootEditText.getText().toString())
+                        .build(getApplicationContext());
+                tootEditText.getText().clear();
+                startActivity(composeIntent);
+            }
         });
+
+        quickTootButton.setOnClickListener(this::quickToot);
+        tabLayout.requestFocus();
 
         setupDrawer();
 
@@ -380,7 +400,7 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
             drawer.addItem(debugItem);
         }
 
-        IDrawerItem exTextItem=new SecondaryDrawerItem()
+        IDrawerItem exTextItem = new SecondaryDrawerItem()
                 .withIdentifier(219)
                 .withName("TuskyEx Kyori Build")
                 .withDisabledTextColor(Color.YELLOW)
@@ -494,7 +514,7 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
                     .withSelectable(false)
                     .withIcon(GoogleMaterial.Icon.gmd_person_add);
             drawer.addItemAtPosition(followRequestsItem, 3);
-        } else if(!me.getLocked()){
+        } else if (!me.getLocked()) {
             drawer.removeItem(DRAWER_ITEM_FOLLOW_REQUESTS);
         }
 
@@ -507,8 +527,8 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
         List<AccountEntity> allAccounts = accountManager.getAllAccountsOrderedByActive();
 
         // reuse the already existing "add account" item
-        List<IProfile> profiles = new ArrayList<>(allAccounts.size()+1);
-        for (IProfile profile: headerResult.getProfiles()) {
+        List<IProfile> profiles = new ArrayList<>(allAccounts.size() + 1);
+        for (IProfile profile : headerResult.getProfiles()) {
             if (profile.getIdentifier() == DRAWER_ITEM_ADD_ACCOUNT) {
                 profiles.add(profile);
                 break;
@@ -534,6 +554,15 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
 
     private void onFetchUserInfoFailure(Exception exception) {
         Log.e(TAG, "Failed to fetch user info. " + exception.getMessage());
+    }
+
+    private void quickToot(View v) {
+        Intent composeIntent = new ComposeActivity.IntentBuilder()
+                .savedTootText(tootEditText.getText().toString())
+                .tootRightNow(true)
+                .build(v.getContext());
+        tootEditText.getText().clear();
+        v.getContext().startActivity(composeIntent);
     }
 
     @Nullable

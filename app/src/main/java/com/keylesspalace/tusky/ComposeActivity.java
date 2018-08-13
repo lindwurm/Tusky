@@ -178,6 +178,7 @@ public final class ComposeActivity
     private static final String REPLYING_STATUS_AUTHOR_USERNAME_EXTRA = "replying_author_nickname_extra";
     private static final String MOVE_CURSOR_TO_TOP = "move_cursor_to_top";
     private static final String REPLYING_STATUS_CONTENT_EXTRA = "replying_status_content";
+    private static final String TOOT_RIGHT_NOW = "toot_right_now";
     // Mastodon only counts URLs as this long in terms of status character limits
     static final int MAXIMUM_URL_LENGTH = 23;
 
@@ -503,6 +504,10 @@ public final class ComposeActivity
 
             if (intent.hasExtra(REPLYING_STATUS_CONTENT_EXTRA)) {
                 replyContentTextView.setText(intent.getStringExtra(REPLYING_STATUS_CONTENT_EXTRA));
+            }
+
+            if (intent.getBooleanExtra(TOOT_RIGHT_NOW, false)) {
+                sendStatus(startingText, Status.Visibility.PUBLIC,false,"");
             }
         }
 
@@ -1800,6 +1805,7 @@ public final class ComposeActivity
         @Nullable
         private String replyingStatusContent;
         private boolean moveCursorToTop = false;
+        private boolean tootRightNow = false;
 
         public IntentBuilder savedTootUid(int uid) {
             this.savedTootUid = uid;
@@ -1851,6 +1857,11 @@ public final class ComposeActivity
             return this;
         }
 
+        public IntentBuilder tootRightNow(boolean bool) {
+            this.tootRightNow = bool;
+            return this;
+        }
+
         public Intent build(Context context) {
             Intent intent = new Intent(context, ComposeActivity.class);
 
@@ -1883,6 +1894,7 @@ public final class ComposeActivity
                 intent.putExtra(REPLYING_STATUS_AUTHOR_USERNAME_EXTRA, replyingStatusAuthor);
             }
             intent.putExtra(MOVE_CURSOR_TO_TOP, moveCursorToTop);
+            intent.putExtra(TOOT_RIGHT_NOW, tootRightNow);
 
             return intent;
         }
