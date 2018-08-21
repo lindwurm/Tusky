@@ -183,7 +183,7 @@ public final class ComposeActivity
     // Mastodon only counts URLs as this long in terms of status character limits
     static final int MAXIMUM_URL_LENGTH = 23;
 
-    private static final String[] CAN_USE_LIMITED = {"itabashi.0j0.jp"};
+    private static final String[] CAN_USE_LIMITED = {"itabashi.0j0.jp", "odakyu.app"};
     //Used for 1024 chars
     private static final String ITABASHI_DOMAIN = "itabashi.0j0.jp";
     private static final int ITABASHI_CHARS_LIMIT = 1024;
