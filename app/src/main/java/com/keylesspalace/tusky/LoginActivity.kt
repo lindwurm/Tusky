@@ -107,6 +107,13 @@ class LoginActivity : AppCompatActivity(), Injectable {
 
     }
 
+    override fun finish() {
+        super.finish()
+        if(isAdditionalLogin()) {
+            overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
+        }
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
             onBackPressed()
@@ -147,6 +154,7 @@ class LoginActivity : AppCompatActivity(), Injectable {
                 if (!response.isSuccessful) {
                     loginButton.isEnabled = true
                     domainEditText.error = getString(R.string.error_failed_app_registration)
+                    setLoading(false)
                     Log.e(TAG, "App authentication failed. " + response.message())
                     return
                 }

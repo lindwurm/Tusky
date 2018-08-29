@@ -315,6 +315,8 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasSupportF
                     .into(accountAvatarImageView)
             Picasso.with(this)
                     .load(account.header)
+                    .fit() // prevents crash with large header images
+                    .centerCrop()
                     .into(accountHeaderImageView)
 
             accountAvatarImageView.setOnClickListener { avatarView ->
@@ -530,7 +532,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasSupportF
             val intent = ComposeActivity.IntentBuilder()
                     .mentionedUsernames(setOf(it.username))
                     .build(this)
-            startActivityWithSlideInAnimation(intent)
+            startActivity(intent)
         }
     }
 

@@ -415,7 +415,12 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
                 .withEnabled(false);
         drawer.addItem(exTextItem);
 
-        updateProfiles();
+        EmojiCompat.get().registerInitCallback(new EmojiCompat.InitCallback() {
+            @Override
+            public void onInitialized() {
+                updateProfiles();
+            }
+        });
     }
 
     private boolean handleProfileClick(IProfile profile, boolean current) {

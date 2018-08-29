@@ -139,7 +139,7 @@ public abstract class SFragment extends BaseFragment {
                 .repyingStatusAuthor(actionableStatus.getAccount().getLocalUsername())
                 .replyingStatusContent(actionableStatus.getContent().toString())
                 .build(getContext());
-        startActivity(intent);
+        getActivity().startActivity(intent);
     }
 
     protected void quote(Status status) {
