@@ -38,9 +38,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+<<<<<<< HEAD
 
 import at.connyduck.sparkbutton.SparkButton;
 import at.connyduck.sparkbutton.SparkEventListener;
+=======
+>>>>>>> AbsoluteTime
 
 import at.connyduck.sparkbutton.SparkButton;
 import at.connyduck.sparkbutton.SparkEventListener;
@@ -74,7 +77,11 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     TextView content;
     TextView contentWarningDescription;
 
-    StatusBaseViewHolder(View itemView) {
+    private boolean useAbsoluteTime;
+    private SimpleDateFormat shortSdf;
+    private SimpleDateFormat longSdf;
+
+    StatusBaseViewHolder(View itemView, boolean useAbsoluteTime) {
         super(itemView);
         container = itemView.findViewById(R.id.status_container);
         displayName = itemView.findViewById(R.id.status_display_name);
@@ -102,6 +109,10 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         mediaLabel = itemView.findViewById(R.id.status_media_label);
         contentWarningDescription = itemView.findViewById(R.id.status_content_warning_description);
         contentWarningButton = itemView.findViewById(R.id.status_content_warning_button);
+
+        this.useAbsoluteTime = useAbsoluteTime;
+        shortSdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+        longSdf = new SimpleDateFormat("MM/dd HH:mm:ss", Locale.getDefault());
     }
 
     protected abstract int getMediaPreviewHeight(Context context);
@@ -137,19 +148,18 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     }
 
     protected void setCreatedAt(@Nullable Date createdAt) {
-        SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(timestampInfo.getContext());
-        if (defPrefs.getBoolean("absoluteTimeView", true)) {
-            String time = "ERROR!";
+        if (useAbsoluteTime) {
+            String time;
             if (createdAt != null) {
-                SimpleDateFormat sdf;
-                if (new Date().getTime() - createdAt.getTime() > 86400000L) {
-                    sdf = new SimpleDateFormat("MM/dd HH:mm:ss", Locale.getDefault());
+                if (System.currentTimeMillis() - createdAt.getTime() > 86400000L) {
+                    time = longSdf.format(createdAt);
                 } else {
-                    sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+                    time = shortSdf.format(createdAt);
                 }
-                time = sdf.format(createdAt);
-                timestampInfo.setText(time);
+            } else {
+                time = "??:??:??";
             }
+            timestampInfo.setText(time);
         } else {
             // This is the visible timestampInfo.
             String readout;
@@ -309,7 +319,7 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
             final int urlIndex = i;
             previews[i].setOnClickListener(v -> {
-                if(getAdapterPosition() != RecyclerView.NO_POSITION) {
+                if (getAdapterPosition() != RecyclerView.NO_POSITION) {
                     listener.onViewMedia(getAdapterPosition(), urlIndex, v);
                 }
             });

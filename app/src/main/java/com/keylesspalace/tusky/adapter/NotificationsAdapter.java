@@ -16,12 +16,10 @@
 package com.keylesspalace.tusky.adapter;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
@@ -69,6 +67,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
     private StatusActionListener statusListener;
     private NotificationActionListener notificationActionListener;
     private boolean mediaPreviewEnabled;
+    private boolean useAbsoluteTime;
     private BidiFormatter bidiFormatter;
 
     public NotificationsAdapter(StatusActionListener statusListener,
@@ -78,6 +77,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
         this.statusListener = statusListener;
         this.notificationActionListener = notificationActionListener;
         mediaPreviewEnabled = true;
+        useAbsoluteTime = false;
         bidiFormatter = BidiFormatter.getInstance();
     }
 
@@ -89,7 +89,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             case VIEW_TYPE_MENTION: {
                 View view = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.item_status, parent, false);
-                return new StatusViewHolder(view);
+                return new StatusViewHolder(view, useAbsoluteTime);
             }
             case VIEW_TYPE_FOOTER: {
                 View view = LayoutInflater.from(parent.getContext())
@@ -99,7 +99,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             case VIEW_TYPE_STATUS_NOTIFICATION: {
                 View view = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.item_status_notification, parent, false);
-                return new StatusNotificationViewHolder(view);
+                return new StatusNotificationViewHolder(view, useAbsoluteTime);
             }
             case VIEW_TYPE_FOLLOW: {
                 View view = LayoutInflater.from(parent.getContext())
@@ -140,7 +140,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                     StatusNotificationViewHolder holder = (StatusNotificationViewHolder) viewHolder;
                     StatusViewData.Concrete statusViewData = concreteNotificaton.getStatusViewData();
 
-                    if(statusViewData == null) {
+                    if (statusViewData == null) {
                         holder.showNotificationContent(false);
                     } else {
                         holder.showNotificationContent(true);
@@ -241,6 +241,10 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
         return mediaPreviewEnabled;
     }
 
+    public void setUseAbsoluteTime(boolean useAbsoluteTime) {
+        this.useAbsoluteTime = useAbsoluteTime;
+    }
+
     public interface NotificationActionListener {
         void onViewAccount(String id);
 
@@ -319,7 +323,11 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
         private NotificationActionListener notificationActionListener;
         private StatusViewData.Concrete statusViewData;
 
-        StatusNotificationViewHolder(View itemView) {
+        private boolean useAbsoluteTime;
+        private SimpleDateFormat shortSdf;
+        private SimpleDateFormat longSdf;
+
+        StatusNotificationViewHolder(View itemView, boolean useAbsoluteTime) {
             super(itemView);
             message = itemView.findViewById(R.id.notification_top_text);
             statusNameBar = itemView.findViewById(R.id.status_name_bar);
@@ -341,6 +349,10 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             message.setOnClickListener(this);
             statusContent.setOnClickListener(this);
             contentWarningButton.setOnCheckedChangeListener(this);
+
+            this.useAbsoluteTime = useAbsoluteTime;
+            shortSdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+            longSdf = new SimpleDateFormat("MM/dd HH:mm:ss", Locale.getDefault());
         }
 
         private void showNotificationContent(boolean show) {
@@ -365,20 +377,19 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             username.setText(usernameText);
         }
 
-        private void setCreatedAt(@Nullable Date createdAt) {
-            SharedPreferences defPrefs = PreferenceManager.getDefaultSharedPreferences(timestampInfo.getContext());
-            if (defPrefs.getBoolean("absoluteTimeView", true)) {
-                String time = "ERROR!";
+        protected void setCreatedAt(@Nullable Date createdAt) {
+            if (useAbsoluteTime) {
+                String time;
                 if (createdAt != null) {
-                    SimpleDateFormat sdf;
-                    if (new Date().getTime() - createdAt.getTime() > 86400000L) {
-                        sdf = new SimpleDateFormat("MM/dd HH:mm:ss", Locale.getDefault());
+                    if (System.currentTimeMillis() - createdAt.getTime() > 86400000L) {
+                        time = longSdf.format(createdAt);
                     } else {
-                        sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+                        time = shortSdf.format(createdAt);
                     }
-                    time = sdf.format(createdAt);
-                    timestampInfo.setText(time);
+                } else {
+                    time = "??:??:??";
                 }
+                timestampInfo.setText(time);
             } else {
                 // This is the visible timestampInfo.
                 String readout;
@@ -425,7 +436,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
                 }
                 case REBLOG: {
                     icon = ContextCompat.getDrawable(context, R.drawable.ic_repeat_24dp);
-                    if(icon != null) {
+                    if (icon != null) {
                         icon.setColorFilter(ContextCompat.getColor(context,
                                 R.color.color_accent_dark), PorterDuff.Mode.SRC_ATOP);
                     }
@@ -486,10 +497,12 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             switch (v.getId()) {
                 case R.id.notification_container:
                 case R.id.notification_content:
-                    if (notificationActionListener != null) notificationActionListener.onViewStatusForNotificationId(notificationId);
+                    if (notificationActionListener != null)
+                        notificationActionListener.onViewStatusForNotificationId(notificationId);
                     break;
                 case R.id.notification_top_text:
-                    if (notificationActionListener != null) notificationActionListener.onViewAccount(accountId);
+                    if (notificationActionListener != null)
+                        notificationActionListener.onViewAccount(accountId);
                     break;
             }
         }

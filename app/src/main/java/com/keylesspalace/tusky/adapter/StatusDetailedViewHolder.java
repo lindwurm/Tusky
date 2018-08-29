@@ -45,7 +45,7 @@ class StatusDetailedViewHolder extends StatusBaseViewHolder {
     private TextView cardUrl;
 
     StatusDetailedViewHolder(View view) {
-        super(view);
+        super(view, false);
         reblogs = view.findViewById(R.id.status_reblogs);
         favourites = view.findViewById(R.id.status_favourites);
         cardView = view.findViewById(R.id.card_view);
