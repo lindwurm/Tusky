@@ -1,11 +1,9 @@
 package com.keylesspalace.tusky.adapter;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.preference.PreferenceManager;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -38,12 +36,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-<<<<<<< HEAD
-
-import at.connyduck.sparkbutton.SparkButton;
-import at.connyduck.sparkbutton.SparkEventListener;
-=======
->>>>>>> AbsoluteTime
 
 import at.connyduck.sparkbutton.SparkButton;
 import at.connyduck.sparkbutton.SparkEventListener;

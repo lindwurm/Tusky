@@ -358,6 +358,4 @@
     <string name="toast_notification_confirm">You need to allow Tusky to get notifications.</string>
     <string name="toot_area_hint">Quick Toot Area</string>
 
-    <string name="pref_title_absolute_time">Use absolute time</string>
-
 </resources>
