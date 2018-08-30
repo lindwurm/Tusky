@@ -48,8 +48,6 @@ import com.keylesspalace.tusky.viewdata.AttachmentViewData;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
@@ -143,19 +141,13 @@ public abstract class SFragment extends BaseFragment {
     }
 
     protected void quote(Status status) {
-        final String id = status.getActionableId();
         String url = status.getUrl();
         if (status.getReblog() != null) {
             url = status.getReblog().getUrl();
         }
         if (url != null) {
-            String regBfr = "(.*)/@(.*)/([0-9]*)";
-            String regAft = "$1/users/$2/statuses/$3";
-            Pattern p = Pattern.compile(regBfr);
-            Matcher m = p.matcher(url);
-            url = m.replaceAll(regAft);
             Intent intent = new ComposeActivity.IntentBuilder()
-                    .savedTootText("\n~~~~~~~~~~\n[" + id + "][" + url + "]")
+                    .savedTootText("\n~~~~~~~~~~\n[" + url + "]")
                     .moveCursorToTop(true)
                     .build(getContext());
             startActivity(intent);
