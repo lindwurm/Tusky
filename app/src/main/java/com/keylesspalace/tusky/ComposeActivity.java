@@ -514,7 +514,7 @@ public final class ComposeActivity
             }
 
             if (intent.getBooleanExtra(TOOT_RIGHT_NOW, false)) {
-                sendStatus(startingText, Status.Visibility.PUBLIC,false,"");
+                sendStatus(startingText, Status.Visibility.byNum(savedTootVisibility),false,"");
             }
         }
 

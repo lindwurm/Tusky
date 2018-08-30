@@ -17,10 +17,12 @@ package com.keylesspalace.tusky;
 
 import android.arch.lifecycle.Lifecycle;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -43,6 +45,7 @@ import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.ProfileEditedEvent;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.entity.Account;
+import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.interfaces.ActionButtonActivity;
 import com.keylesspalace.tusky.pager.TimelinePagerAdapter;
 import com.keylesspalace.tusky.util.CustomEmojiHelper;
@@ -107,8 +110,11 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
     private Drawer drawer;
     private ViewPager viewPager;
 
+    private ImageView visibilityButton;
     private EditText tootEditText;
     private Button quickTootButton;
+
+    private SharedPreferences defPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,8 +144,11 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         viewPager = findViewById(R.id.pager);
 
+        visibilityButton = findViewById(R.id.visibility_button);
         tootEditText = findViewById(R.id.toot_edit_text);
         quickTootButton = findViewById(R.id.toot_button);
+
+        defPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         composeButton.setOnClickListener(v -> {
             if (tootEditText.getText().length() == 0) {
@@ -148,12 +157,15 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
             } else {
                 Intent composeIntent = new ComposeActivity.IntentBuilder()
                         .savedTootText(tootEditText.getText().toString())
+                        .savedVisibility(getCurrentVisibility())
                         .build(getApplicationContext());
                 tootEditText.getText().clear();
                 startActivity(composeIntent);
             }
         });
 
+        updateVisibilityButton();
+        visibilityButton.setOnClickListener(v -> setNextVisibility());
         quickTootButton.setOnClickListener(this::quickToot);
         tabLayout.requestFocus();
 
@@ -571,10 +583,59 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
     private void quickToot(View v) {
         Intent composeIntent = new ComposeActivity.IntentBuilder()
                 .savedTootText(tootEditText.getText().toString())
+                .savedVisibility(getCurrentVisibility())
                 .tootRightNow(true)
                 .build(v.getContext());
         tootEditText.getText().clear();
         v.getContext().startActivity(composeIntent);
+    }
+
+    private Status.Visibility getCurrentVisibility() {
+        //defPrefs = PreferenceManager.getDefaultSharedPreferences(this); //ここ要確認
+        int visibilityInt = defPrefs.getInt("current_visibility", 1);
+        return Status.Visibility.byNum(visibilityInt);
+    }
+
+    private void updateVisibilityButton() {
+        Status.Visibility visibility = getCurrentVisibility();
+        switch (visibility) {
+            case PUBLIC:
+                visibilityButton.setImageResource(R.drawable.ic_public_24dp);
+                break;
+            case UNLISTED:
+                visibilityButton.setImageResource(R.drawable.ic_lock_open_24dp);
+                break;
+            case PRIVATE:
+                visibilityButton.setImageResource(R.drawable.ic_lock_outline_24dp);
+                break;
+            case DIRECT:
+                visibilityButton.setImageResource(R.drawable.reblog_direct_light);
+                break;
+        }
+    }
+
+    private void setNextVisibility() {
+        Status.Visibility visibility = getCurrentVisibility();
+        switch (visibility) {
+            case PUBLIC:
+                visibility = Status.Visibility.UNLISTED;
+                break;
+            case UNLISTED:
+                visibility = Status.Visibility.PRIVATE;
+                break;
+            case PRIVATE:
+                visibility = Status.Visibility.DIRECT;
+                break;
+            case DIRECT:
+                visibility = Status.Visibility.PUBLIC;
+                break;
+            case UNKNOWN:
+                visibility = Status.Visibility.PUBLIC;
+        }
+        defPrefs.edit()
+                .putInt("current_visibility", visibility.getNum())
+                .apply();
+        updateVisibilityButton();
     }
 
     @Nullable
