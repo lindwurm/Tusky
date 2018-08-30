@@ -591,7 +591,6 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
     }
 
     private Status.Visibility getCurrentVisibility() {
-        //defPrefs = PreferenceManager.getDefaultSharedPreferences(this); //ここ要確認
         int visibilityInt = defPrefs.getInt("current_visibility", 1);
         return Status.Visibility.byNum(visibilityInt);
     }
