@@ -38,6 +38,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -53,7 +54,6 @@ import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.di.Injectable;
 import com.keylesspalace.tusky.entity.Notification;
 import com.keylesspalace.tusky.entity.Status;
-import com.keylesspalace.tusky.interfaces.ActionButtonActivity;
 import com.keylesspalace.tusky.interfaces.StatusActionListener;
 import com.keylesspalace.tusky.network.TimelineCases;
 import com.keylesspalace.tusky.util.CollectionUtil;
@@ -211,6 +211,11 @@ public class NotificationsFragment extends SFragment implements
 
         sendFetchNotificationsRequest(null, topId, FetchEnd.BOTTOM, -1);
 
+        LinearLayout layoutRoot=rootView.findViewById(R.id.quick_compose_root);
+        layoutRoot.setVisibility(View.GONE);
+        FloatingActionButton composeButton=rootView.findViewById(R.id.floating_btn);
+        composeButton.setVisibility(View.GONE);
+
         return rootView;
     }
 
@@ -277,7 +282,7 @@ public class NotificationsFragment extends SFragment implements
             public void onScrolled(RecyclerView view, int dx, int dy) {
                 super.onScrolled(view, dx, dy);
 
-                ActionButtonActivity activity = (ActionButtonActivity) getActivity();
+                /*ActionButtonActivity activity = (ActionButtonActivity) getActivity();
                 FloatingActionButton composeButton = activity.getActionButton();
 
                 if (composeButton != null) {
@@ -290,7 +295,7 @@ public class NotificationsFragment extends SFragment implements
                     } else if (!composeButton.isShown()) {
                         composeButton.show();
                     }
-                }
+                }*/
             }
 
             @Override

@@ -18,6 +18,7 @@ package com.keylesspalace.tusky.fragment;
 import android.arch.core.util.Function;
 import android.arch.lifecycle.Lifecycle;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -41,9 +42,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.keylesspalace.tusky.ComposeActivity;
 import com.keylesspalace.tusky.R;
 import com.keylesspalace.tusky.adapter.TimelineAdapter;
 import com.keylesspalace.tusky.appstore.BlockEvent;
@@ -147,6 +153,13 @@ public class TimelineFragment extends SFragment implements
 
     private boolean alwaysShowSensitiveMedia;
 
+    private FloatingActionButton composeButton;
+    private ImageView visibilityButton;
+    private EditText tootEditText;
+    private Button quickTootButton;
+
+    private SharedPreferences defPrefs;
+
     @Override
     protected TimelineCases timelineCases() {
         return timelineCases;
@@ -233,6 +246,39 @@ public class TimelineFragment extends SFragment implements
             sendFetchTimelineRequest(null, null, FetchEnd.BOTTOM, -1);
         } else {
             progressBar.setVisibility(View.GONE);
+        }
+
+        composeButton = rootView.findViewById(R.id.floating_btn);
+
+        if(kind==Kind.USER||kind==Kind.USER_WITH_REPLIES){
+            LinearLayout layoutRoot=rootView.findViewById(R.id.quick_compose_root);
+            layoutRoot.setVisibility(View.GONE);
+            composeButton.setVisibility(View.GONE);
+        }else {
+            visibilityButton = rootView.findViewById(R.id.visibility_button);
+            tootEditText = rootView.findViewById(R.id.toot_edit_text);
+            quickTootButton = rootView.findViewById(R.id.toot_button);
+
+            defPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+
+            updateVisibilityButton();
+            visibilityButton.setOnClickListener(v -> setNextVisibility());
+            quickTootButton.setOnClickListener(this::quickToot);
+            recyclerView.requestFocus();
+
+            composeButton.setOnClickListener(v -> {
+                if (tootEditText.getText().length() == 0) {
+                    Intent composeIntent = new Intent(getContext(), ComposeActivity.class);
+                    startActivity(composeIntent);
+                } else {
+                    Intent composeIntent = new ComposeActivity.IntentBuilder()
+                            .savedTootText(tootEditText.getText().toString())
+                            .savedVisibility(getCurrentVisibility())
+                            .build(getContext());
+                    tootEditText.getText().clear();
+                    startActivity(composeIntent);
+                }
+            });
         }
 
         return rootView;
@@ -1109,4 +1155,61 @@ public class TimelineFragment extends SFragment implements
             return oldItem.deepEquals(newItem);
         }
     };
+
+    private void quickToot(View v) {
+        Intent composeIntent = new ComposeActivity.IntentBuilder()
+                .savedTootText(tootEditText.getText().toString())
+                .savedVisibility(getCurrentVisibility())
+                .tootRightNow(true)
+                .build(v.getContext());
+        tootEditText.getText().clear();
+        v.getContext().startActivity(composeIntent);
+    }
+
+    private Status.Visibility getCurrentVisibility() {
+        int visibilityInt = defPrefs.getInt("current_visibility", 1);
+        return Status.Visibility.byNum(visibilityInt);
+    }
+
+    private void updateVisibilityButton() {
+        Status.Visibility visibility = getCurrentVisibility();
+        switch (visibility) {
+            case PUBLIC:
+                visibilityButton.setImageResource(R.drawable.ic_public_24dp);
+                break;
+            case UNLISTED:
+                visibilityButton.setImageResource(R.drawable.ic_lock_open_24dp);
+                break;
+            case PRIVATE:
+                visibilityButton.setImageResource(R.drawable.ic_lock_outline_24dp);
+                break;
+            case DIRECT:
+                visibilityButton.setImageResource(R.drawable.reblog_direct_light);
+                break;
+        }
+    }
+
+    private void setNextVisibility() {
+        Status.Visibility visibility = getCurrentVisibility();
+        switch (visibility) {
+            case PUBLIC:
+                visibility = Status.Visibility.UNLISTED;
+                break;
+            case UNLISTED:
+                visibility = Status.Visibility.PRIVATE;
+                break;
+            case PRIVATE:
+                visibility = Status.Visibility.DIRECT;
+                break;
+            case DIRECT:
+                visibility = Status.Visibility.PUBLIC;
+                break;
+            case UNKNOWN:
+                visibility = Status.Visibility.PUBLIC;
+        }
+        defPrefs.edit()
+                .putInt("current_visibility", visibility.getNum())
+                .apply();
+        updateVisibilityButton();
+    }
 }

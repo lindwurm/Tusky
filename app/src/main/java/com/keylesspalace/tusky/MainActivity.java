@@ -17,15 +17,11 @@ package com.keylesspalace.tusky;
 
 import android.arch.lifecycle.Lifecycle;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.text.emoji.EmojiCompat;
@@ -35,9 +31,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
@@ -45,8 +38,6 @@ import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.ProfileEditedEvent;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.entity.Account;
-import com.keylesspalace.tusky.entity.Status;
-import com.keylesspalace.tusky.interfaces.ActionButtonActivity;
 import com.keylesspalace.tusky.pager.TimelinePagerAdapter;
 import com.keylesspalace.tusky.util.CustomEmojiHelper;
 import com.keylesspalace.tusky.util.NotificationHelper;
@@ -83,8 +74,7 @@ import retrofit2.Response;
 import static com.uber.autodispose.AutoDispose.autoDisposable;
 import static com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from;
 
-public final class MainActivity extends BottomSheetActivity implements ActionButtonActivity,
-        HasSupportFragmentInjector {
+public final class MainActivity extends BottomSheetActivity implements HasSupportFragmentInjector {
 
     private static final String TAG = "MainActivity"; // logging tag
     private static final long DRAWER_ITEM_ADD_ACCOUNT = -13;
@@ -105,16 +95,9 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
     @Inject
     public EventHub eventHub;
 
-    private FloatingActionButton composeButton;
     private AccountHeader headerResult;
     private Drawer drawer;
     private ViewPager viewPager;
-
-    private ImageView visibilityButton;
-    private EditText tootEditText;
-    private Button quickTootButton;
-
-    private SharedPreferences defPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,35 +122,9 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
 
         setContentView(R.layout.activity_main);
 
-        composeButton = findViewById(R.id.floating_btn);
         ImageButton drawerToggle = findViewById(R.id.drawer_toggle);
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         viewPager = findViewById(R.id.pager);
-
-        visibilityButton = findViewById(R.id.visibility_button);
-        tootEditText = findViewById(R.id.toot_edit_text);
-        quickTootButton = findViewById(R.id.toot_button);
-
-        defPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        composeButton.setOnClickListener(v -> {
-            if (tootEditText.getText().length() == 0) {
-                Intent composeIntent = new Intent(getApplicationContext(), ComposeActivity.class);
-                startActivity(composeIntent);
-            } else {
-                Intent composeIntent = new ComposeActivity.IntentBuilder()
-                        .savedTootText(tootEditText.getText().toString())
-                        .savedVisibility(getCurrentVisibility())
-                        .build(getApplicationContext());
-                tootEditText.getText().clear();
-                startActivity(composeIntent);
-            }
-        });
-
-        updateVisibilityButton();
-        visibilityButton.setOnClickListener(v -> setNextVisibility());
-        quickTootButton.setOnClickListener(this::quickToot);
-        tabLayout.requestFocus();
 
         setupDrawer();
 
@@ -578,69 +535,6 @@ public final class MainActivity extends BottomSheetActivity implements ActionBut
 
     private void onFetchUserInfoFailure(Exception exception) {
         Log.e(TAG, "Failed to fetch user info. " + exception.getMessage());
-    }
-
-    private void quickToot(View v) {
-        Intent composeIntent = new ComposeActivity.IntentBuilder()
-                .savedTootText(tootEditText.getText().toString())
-                .savedVisibility(getCurrentVisibility())
-                .tootRightNow(true)
-                .build(v.getContext());
-        tootEditText.getText().clear();
-        v.getContext().startActivity(composeIntent);
-    }
-
-    private Status.Visibility getCurrentVisibility() {
-        int visibilityInt = defPrefs.getInt("current_visibility", 1);
-        return Status.Visibility.byNum(visibilityInt);
-    }
-
-    private void updateVisibilityButton() {
-        Status.Visibility visibility = getCurrentVisibility();
-        switch (visibility) {
-            case PUBLIC:
-                visibilityButton.setImageResource(R.drawable.ic_public_24dp);
-                break;
-            case UNLISTED:
-                visibilityButton.setImageResource(R.drawable.ic_lock_open_24dp);
-                break;
-            case PRIVATE:
-                visibilityButton.setImageResource(R.drawable.ic_lock_outline_24dp);
-                break;
-            case DIRECT:
-                visibilityButton.setImageResource(R.drawable.reblog_direct_light);
-                break;
-        }
-    }
-
-    private void setNextVisibility() {
-        Status.Visibility visibility = getCurrentVisibility();
-        switch (visibility) {
-            case PUBLIC:
-                visibility = Status.Visibility.UNLISTED;
-                break;
-            case UNLISTED:
-                visibility = Status.Visibility.PRIVATE;
-                break;
-            case PRIVATE:
-                visibility = Status.Visibility.DIRECT;
-                break;
-            case DIRECT:
-                visibility = Status.Visibility.PUBLIC;
-                break;
-            case UNKNOWN:
-                visibility = Status.Visibility.PUBLIC;
-        }
-        defPrefs.edit()
-                .putInt("current_visibility", visibility.getNum())
-                .apply();
-        updateVisibilityButton();
-    }
-
-    @Nullable
-    @Override
-    public FloatingActionButton getActionButton() {
-        return composeButton;
     }
 
     @Override
