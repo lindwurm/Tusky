@@ -65,38 +65,63 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/visibility_button"
-            android:layout_width="24dp"
-            android:layout_height="match_parent"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp"
-            android:layout_marginStart="6dp"
-            android:layout_marginEnd="6dp"
-            android:scaleType="center"
-            android:contentDescription="@null"
-            android:clickable="true"
-            android:focusable="true"
-            app:srcCompat="@drawable/ic_public_24dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
+            <CheckBox
+                android:id="@+id/checkbox_use_default_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
-        <EditText
-            android:id="@+id/toot_edit_text"
-            android:layout_width="0dp"
+            <EditText
+                android:id="@+id/edittext_default_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/hint_default_text"
+                android:inputType="text"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:layout_weight="1"
-            android:inputType="textMultiLine"
-            android:hint="@string/toot_area_hint"
-            tools:ignore="NestedWeights" />
+            android:orientation="horizontal" >
 
-        <Button
-            android:id="@+id/toot_button"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="@string/action_send_public" />
+            <ImageView
+                android:id="@+id/visibility_button"
+                android:layout_width="24dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp"
+                android:scaleType="center"
+                android:contentDescription="@null"
+                android:clickable="true"
+                android:focusable="true"
+                app:srcCompat="@drawable/ic_public_24dp" />
+
+
+            <EditText
+                android:id="@+id/toot_edit_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:layout_weight="1"
+                android:inputType="textMultiLine"
+                android:hint="@string/toot_area_hint"
+                tools:ignore="NestedWeights" />
+
+            <Button
+                android:id="@+id/toot_button"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/action_send_public" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

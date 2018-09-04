@@ -357,5 +357,6 @@
     <string name="action_now_playing">Now Playing</string>
     <string name="toast_notification_confirm">You need to allow Tusky to get notifications.</string>
     <string name="toot_area_hint">Quick Toot Area</string>
+    <string name="hint_default_text">Default Hashtag</string>
 
 </resources>

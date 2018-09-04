@@ -281,5 +281,6 @@
     <string name="visibility_limited">限定公開　: フォローしたユーザーに公開</string>
     <string name="pref_title_absolute_time">絶対時間で表示</string>
     <string name="toast_notification_confirm">この機能を利用するためには、Tuskyに通知へのアクセスを許可する必要があります。</string>
+    <string name="hint_default_text">実況モード</string>
 
 </resources>

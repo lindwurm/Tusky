@@ -43,6 +43,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -154,6 +155,8 @@ public class TimelineFragment extends SFragment implements
     private boolean alwaysShowSensitiveMedia;
 
     private FloatingActionButton composeButton;
+    private CheckBox useDefaultTag;
+    private EditText defaultTagEditText;
     private ImageView visibilityButton;
     private EditText tootEditText;
     private Button quickTootButton;
@@ -250,17 +253,23 @@ public class TimelineFragment extends SFragment implements
 
         composeButton = rootView.findViewById(R.id.floating_btn);
 
-        if(kind==Kind.USER||kind==Kind.USER_WITH_REPLIES){
-            LinearLayout layoutRoot=rootView.findViewById(R.id.quick_compose_root);
+        if (kind == Kind.USER || kind == Kind.USER_WITH_REPLIES) {
+            LinearLayout layoutRoot = rootView.findViewById(R.id.quick_compose_root);
             layoutRoot.setVisibility(View.GONE);
             composeButton.setVisibility(View.GONE);
-        }else {
+        } else {
+            useDefaultTag = rootView.findViewById(R.id.checkbox_use_default_text);
+            defaultTagEditText = rootView.findViewById(R.id.edittext_default_text);
             visibilityButton = rootView.findViewById(R.id.visibility_button);
             tootEditText = rootView.findViewById(R.id.toot_edit_text);
             quickTootButton = rootView.findViewById(R.id.toot_button);
 
             defPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
+            restoreDefaultTagStatus();
+            useDefaultTag.setOnCheckedChangeListener((compoundButton, b) -> {
+                saveDefaultTagStatus();
+            });
             updateVisibilityButton();
             visibilityButton.setOnClickListener(v -> setNextVisibility());
             quickTootButton.setOnClickListener(this::quickToot);
@@ -271,6 +280,7 @@ public class TimelineFragment extends SFragment implements
                     Intent composeIntent = new Intent(getContext(), ComposeActivity.class);
                     startActivity(composeIntent);
                 } else {
+                    saveDefaultTagStatus();
                     Intent composeIntent = new ComposeActivity.IntentBuilder()
                             .savedTootText(tootEditText.getText().toString())
                             .savedVisibility(getCurrentVisibility())
@@ -698,6 +708,10 @@ public class TimelineFragment extends SFragment implements
             case "alwaysShowSensitiveMedia": {
                 //it is ok if only newly loaded statuses are affected, no need to fully refresh
                 alwaysShowSensitiveMedia = sharedPreferences.getBoolean("alwaysShowSensitiveMedia", false);
+            }
+            case "use_default_text":
+            case "default_text": {
+                restoreDefaultTagStatus();
             }
         }
     }
@@ -1156,9 +1170,23 @@ public class TimelineFragment extends SFragment implements
         }
     };
 
+    private void restoreDefaultTagStatus() {
+        useDefaultTag.setChecked(defPrefs.getBoolean("use_default_text", false));
+        defaultTagEditText.setText(defPrefs.getString("default_text", ""));
+    }
+
+    private void saveDefaultTagStatus() {
+        defPrefs.edit()
+                .putBoolean("use_default_text", useDefaultTag.isChecked())
+                .putString("default_text", defaultTagEditText.getText().toString())
+                .apply();
+    }
+
     private void quickToot(View v) {
+        saveDefaultTagStatus();
         Intent composeIntent = new ComposeActivity.IntentBuilder()
-                .savedTootText(tootEditText.getText().toString())
+                .savedTootText(useDefaultTag.isChecked() ?
+                        (tootEditText.getText().toString() + " " + defaultTagEditText.getText().toString()) : tootEditText.getText().toString())
                 .savedVisibility(getCurrentVisibility())
                 .tootRightNow(true)
                 .build(v.getContext());

@@ -83,6 +83,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -200,6 +201,8 @@ public final class ComposeActivity
     private LinearLayout mediaPreviewBar;
     private View contentWarningBar;
     private EditText contentWarningEditor;
+    private CheckBox useDefaultTag;
+    private EditText defaultTagEditText;
     private TextView charactersLeft;
     private TootButton tootButton;
     private ImageButton pickButton;
@@ -237,6 +240,7 @@ public final class ComposeActivity
     private SaveTootHelper saveTootHelper;
 
     private boolean buttonExecFlag = true;
+    private SharedPreferences defPrefs;
 
     @SuppressLint("HandlerLeak")
     Handler handler = new Handler() {
@@ -264,6 +268,8 @@ public final class ComposeActivity
         mediaPreviewBar = findViewById(R.id.compose_media_preview_bar);
         contentWarningBar = findViewById(R.id.composeContentWarningBar);
         contentWarningEditor = findViewById(R.id.composeContentWarningField);
+        useDefaultTag = findViewById(R.id.checkbox_use_default_text);
+        defaultTagEditText = findViewById(R.id.edittext_default_text);
         charactersLeft = findViewById(R.id.composeCharactersLeftView);
         tootButton = findViewById(R.id.composeTootButton);
         pickButton = findViewById(R.id.composeAddMediaButton);
@@ -369,6 +375,12 @@ public final class ComposeActivity
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
             nowPlayingButton.setVisibility(View.GONE);
         }
+
+        defPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        restoreDefaultTagStatus();
+        useDefaultTag.setOnCheckedChangeListener((compoundButton, b) -> {
+            saveDefaultTagStatus();
+        });
 
         // Setup the interface buttons.
         tootButton.setOnClickListener(v -> onSendClicked());
@@ -820,6 +832,18 @@ public final class ComposeActivity
 
     }
 
+    private void restoreDefaultTagStatus() {
+        useDefaultTag.setChecked(defPrefs.getBoolean("use_default_text", false));
+        defaultTagEditText.setText(defPrefs.getString("default_text", ""));
+    }
+
+    private void saveDefaultTagStatus() {
+        defPrefs.edit()
+                .putBoolean("use_default_text", useDefaultTag.isChecked())
+                .putString("default_text", defaultTagEditText.getText().toString())
+                .apply();
+    }
+
     private void startNowPlayingExec() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             if (canAccessNotification() && buttonExecFlag) {
@@ -1080,7 +1104,9 @@ public final class ComposeActivity
 
     private void onReadySuccess(Status.Visibility visibility, boolean sensitive) {
         /* Validate the status meets the character limit. */
-        String contentText = textEditor.getText().toString();
+        saveDefaultTagStatus();
+        String contentText = useDefaultTag.isChecked() ?
+                (textEditor.getText().toString() + " " + defaultTagEditText.getText().toString()) : textEditor.getText().toString();
         String spoilerText = "";
         if (statusHideText) {
             spoilerText = contentWarningEditor.getText().toString();
