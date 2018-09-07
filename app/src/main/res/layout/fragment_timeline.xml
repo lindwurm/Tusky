@@ -119,6 +119,7 @@
                 android:id="@+id/toot_button"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:textColor="@android:color/white"
                 android:text="@string/action_send_public" />
 
         </LinearLayout>
