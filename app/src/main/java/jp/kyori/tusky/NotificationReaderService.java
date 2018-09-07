@@ -19,7 +19,9 @@ import java.util.Arrays;
 public class NotificationReaderService extends NotificationListenerService {
     private final String[] EXCLUDE_PACKAGE_NAMES = {"android", "com.android.systemui",
             "com.joaomgcd.autoinput", "net.dinglisch.android.taskerm",
-            "com.mxtech.videoplayer.ad", "com.mxtech.videoplayer"};
+            "com.mxtech.videoplayer.ad", "com.mxtech.videoplayer",
+            "ch.pbos.android.SleepTimer", "com.sonymobile.smartcharger",
+            "com.joaomgcd.autonotification"};
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
