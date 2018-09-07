@@ -257,7 +257,7 @@ public class TimelineFragment extends SFragment implements
 
         composeButton = rootView.findViewById(R.id.floating_btn);
 
-        if (kind == Kind.USER || kind == Kind.USER_WITH_REPLIES) {
+        if (kind == Kind.USER || kind == Kind.USER_PINNED || kind == Kind.USER_WITH_REPLIES) {
             LinearLayout layoutRoot = rootView.findViewById(R.id.quick_compose_root);
             layoutRoot.setVisibility(View.GONE);
             composeButton.setVisibility(View.GONE);
@@ -896,7 +896,7 @@ public class TimelineFragment extends SFragment implements
             if (this.statuses.size() == 0) {
                 sendFetchTimelineRequest(null, null, FetchEnd.BOTTOM, -1);
             }
-        }else {
+        } else {
             if (this.statuses.size() == 0) {
                 nothingMessageView.setVisibility(View.VISIBLE);
             }
