@@ -111,6 +111,7 @@ public class TimelineFragment extends SFragment implements
         PUBLIC_FEDERATED,
         TAG,
         USER,
+        USER_PINNED,
         USER_WITH_REPLIES,
         FAVOURITES,
         LIST
@@ -246,6 +247,9 @@ public class TimelineFragment extends SFragment implements
         if (statuses.isEmpty()) {
             progressBar.setVisibility(View.VISIBLE);
             bottomLoading = true;
+            if (kind == Kind.USER) {
+                kind = Kind.USER_PINNED;
+            }
             sendFetchTimelineRequest(null, null, FetchEnd.BOTTOM, -1);
         } else {
             progressBar.setVisibility(View.GONE);
@@ -792,9 +796,11 @@ public class TimelineFragment extends SFragment implements
             case TAG:
                 return api.hashtagTimeline(tagOrId, null, fromId, uptoId, LOAD_AT_ONCE);
             case USER:
-                return api.accountStatuses(tagOrId, fromId, uptoId, LOAD_AT_ONCE, true, null);
+                return api.accountStatuses(tagOrId, fromId, uptoId, LOAD_AT_ONCE, true, null, null);
+            case USER_PINNED:
+                return api.accountStatuses(tagOrId, fromId, uptoId, LOAD_AT_ONCE, true, null, true);
             case USER_WITH_REPLIES:
-                return api.accountStatuses(tagOrId, fromId, uptoId, LOAD_AT_ONCE, null, null);
+                return api.accountStatuses(tagOrId, fromId, uptoId, LOAD_AT_ONCE, null, null, null);
             case FAVOURITES:
                 return api.favourites(fromId, uptoId, LOAD_AT_ONCE);
             case LIST:
@@ -885,8 +891,15 @@ public class TimelineFragment extends SFragment implements
         fulfillAnyQueuedFetches(fetchEnd);
         progressBar.setVisibility(View.GONE);
         swipeRefreshLayout.setRefreshing(false);
-        if (this.statuses.size() == 0) {
-            nothingMessageView.setVisibility(View.VISIBLE);
+        if (kind == Kind.USER_PINNED) {
+            kind = Kind.USER;
+            if (this.statuses.size() == 0) {
+                sendFetchTimelineRequest(null, null, FetchEnd.BOTTOM, -1);
+            }
+        }else {
+            if (this.statuses.size() == 0) {
+                nothingMessageView.setVisibility(View.VISIBLE);
+            }
         }
     }
 
