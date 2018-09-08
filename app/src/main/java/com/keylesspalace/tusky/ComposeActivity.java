@@ -381,6 +381,7 @@ public final class ComposeActivity
         useDefaultTag.setOnCheckedChangeListener((compoundButton, b) -> {
             saveDefaultTagStatus();
         });
+        defaultTagEditText.setOnFocusChangeListener((view, b) -> saveDefaultTagStatus());
 
         // Setup the interface buttons.
         tootButton.setOnClickListener(v -> onSendClicked());
@@ -1630,6 +1631,7 @@ public final class ComposeActivity
 
     @Override
     public void onBackPressed() {
+        saveDefaultTagStatus();
         // Acting like a teen: deliberately ignoring parent.
         handleCloseButton();
     }

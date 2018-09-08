@@ -274,6 +274,7 @@ public class TimelineFragment extends SFragment implements
             useDefaultTag.setOnCheckedChangeListener((compoundButton, b) -> {
                 saveDefaultTagStatus();
             });
+            defaultTagEditText.setOnFocusChangeListener((view, b) -> saveDefaultTagStatus());
             updateVisibilityButton();
             visibilityButton.setOnClickListener(v -> setNextVisibility());
             quickTootButton.setOnClickListener(this::quickToot);
