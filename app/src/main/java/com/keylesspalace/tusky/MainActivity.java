@@ -259,7 +259,9 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
 
     private void tintTab(TabLayout.Tab tab, boolean tinted) {
         int color = (tinted) ? R.attr.tab_icon_selected_tint : R.attr.toolbar_icon_tint;
-        ThemeUtils.setDrawableTint(this, tab.getIcon(), color);
+        Drawable drawable = tab.getIcon();
+        ThemeUtils.setDrawableTint(this, drawable, color);
+        tab.setIcon(drawable);
     }
 
     private void setupDrawer() {
