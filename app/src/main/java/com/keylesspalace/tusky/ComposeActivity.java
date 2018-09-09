@@ -32,6 +32,7 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -147,6 +148,7 @@ import java.util.Locale;
 import javax.inject.Inject;
 
 import at.connyduck.sparkbutton.helpers.Utils;
+import jp.kyori.tusky.EditTextDialogFragment;
 import jp.kyori.tusky.NotificationPickDialogFragment;
 import jp.kyori.tusky.NotifyListBroadcastReceiver;
 import okhttp3.MediaType;
@@ -210,6 +212,7 @@ public final class ComposeActivity
     private Button contentWarningButton;
     private ImageButton emojiButton;
     private ImageButton nowPlayingButton;
+    private ImageButton makerButton;
     private ImageButton hideMediaToggle;
 
     private ComposeOptionsView composeOptionsView;
@@ -241,6 +244,17 @@ public final class ComposeActivity
 
     private boolean buttonExecFlag = true;
     private SharedPreferences defPrefs;
+
+    private Paint counter;
+    private String TOP_LEFT_STRING = "＿";
+    private String TOP_LOOP_STRING = "人";
+    private String TOP_RIGHT_STRING = "＿\n";
+    private String LEFT_LOOP_STRING = "＞";
+    private String TEXT_LOOP_STRING = " ";
+    private String RIGHT_LOOP_STRING = "＜\n";
+    private String BOTTOM_LEFT_STRING = "￣Y";
+    private String BOTTOM_LOOP_STRING = "^Y";
+    private String BOTTOM_RIGHT_STRING = "￣";
 
     @SuppressLint("HandlerLeak")
     Handler handler = new Handler() {
@@ -277,6 +291,7 @@ public final class ComposeActivity
         contentWarningButton = findViewById(R.id.composeContentWarningButton);
         emojiButton = findViewById(R.id.composeEmojiButton);
         nowPlayingButton = findViewById(R.id.composeNowPlayingButton);
+        makerButton = findViewById(R.id.composeMakerButton);
         hideMediaToggle = findViewById(R.id.composeHideMediaButton);
         emojiView = findViewById(R.id.emojiView);
         emojiList = Collections.emptyList();
@@ -390,6 +405,7 @@ public final class ComposeActivity
         contentWarningButton.setOnClickListener(v -> onContentWarningChanged());
         emojiButton.setOnClickListener(v -> showEmojis());
         nowPlayingButton.setOnClickListener(v -> startNowPlayingExec());
+        makerButton.setOnClickListener(v -> openEditTextDialog());
         hideMediaToggle.setOnClickListener(v -> toggleHideMedia());
 
         TextView actionPhotoTake = findViewById(R.id.action_photo_take);
@@ -527,7 +543,7 @@ public final class ComposeActivity
             }
 
             if (intent.getBooleanExtra(TOOT_RIGHT_NOW, false)) {
-                sendStatus(startingText, Status.Visibility.byNum(savedTootVisibility),false,"");
+                sendStatus(startingText, Status.Visibility.byNum(savedTootVisibility), false, "");
             }
         }
 
@@ -665,6 +681,9 @@ public final class ComposeActivity
             }
         }
 
+        counter = new Paint();
+        counter.setTextSize(16);
+
         textEditor.requestFocus();
     }
 
@@ -752,6 +771,7 @@ public final class ComposeActivity
         emojiButton.setClickable(true);
         hideMediaToggle.setClickable(true);
         nowPlayingButton.setClickable(true);
+        makerButton.setClickable(true);
         tootButton.setEnabled(true);
     }
 
@@ -889,6 +909,62 @@ public final class ComposeActivity
         dialogFragment.setArguments(args);
         dialogFragment.show(getSupportFragmentManager(), "musicDialog");
         buttonExecFlag = true;
+    }
+
+    public void openEditTextDialog() {
+        EditTextDialogFragment dialogFragment = new EditTextDialogFragment();
+        dialogFragment.show(getSupportFragmentManager(), "editTextDialog");
+    }
+
+    public void returnEditTextValue(String str) {
+        if (!str.equals("")) {
+            String[] strs = str.split("\n");
+            float textLength = 0f;
+            for (String string : strs) {
+                float compareLength = counter.measureText(string);
+                if (compareLength > textLength) {
+                    textLength = compareLength;
+                }
+            }
+
+            String output = TOP_LEFT_STRING;
+            output += doLoopString(textLength, TOP_LOOP_STRING);
+            output += TOP_RIGHT_STRING;
+            for (String string : strs) {
+                output += LEFT_LOOP_STRING;
+                output += addLoopString(textLength, string);
+                output += RIGHT_LOOP_STRING;
+            }
+            output += BOTTOM_LEFT_STRING;
+            output += doLoopString(textLength, BOTTOM_LOOP_STRING);
+            output += BOTTOM_RIGHT_STRING;
+            addStringAfter(output);
+        }
+    }
+
+    public String doLoopString(float targetLength, String loopStr) {
+        boolean execute = true;
+        String text = "";
+        while (execute) {
+            text += loopStr;
+            if (counter.measureText(text) >= targetLength) {
+                execute = false;
+            }
+        }
+        return text;
+    }
+
+    public String addLoopString(float targetLength, String startStr) {
+        boolean execute = true;
+        String text = startStr;
+        while (execute) {
+            if (counter.measureText(text) >= targetLength) {
+                execute = false;
+            } else {
+                text += TEXT_LOOP_STRING;
+            }
+        }
+        return text;
     }
 
     public void addStringAfter(String str) {
