@@ -177,6 +177,8 @@ public final class ComposeActivity
     private static final String SAVED_JSON_URLS_EXTRA = "saved_json_urls";
     private static final String SAVED_TOOT_VISIBILITY_EXTRA = "saved_toot_visibility";
     private static final String IN_REPLY_TO_ID_EXTRA = "in_reply_to_id";
+    private static final String QUOTE_ID_EXTRA = "quote_id";
+    private static final String QUOTE_URL_EXTRA = "quote_url";
     private static final String REPLY_VISIBILITY_EXTRA = "reply_visibility";
     private static final String CONTENT_WARNING_EXTRA = "content_warning";
     private static final String MENTIONED_USERNAMES_EXTRA = "mentioned_usernames";
@@ -191,6 +193,7 @@ public final class ComposeActivity
     //Used for 1024 chars
     private static final String ITABASHI_DOMAIN = "itabashi.0j0.jp";
     private static final int ITABASHI_CHARS_LIMIT = 1024;
+    private static final String[] CAN_USE_QUOTE_ID = {"odakyu.app", "seichi.work", "biwakodon.com", "dtp-mstdn.jp"};
 
     @Inject
     public MastodonApi mastodonApi;
@@ -199,6 +202,7 @@ public final class ComposeActivity
 
     private TextView replyTextView;
     private TextView replyContentTextView;
+    private TextView quoteTextView;
     private EditTextTyped textEditor;
     private LinearLayout mediaPreviewBar;
     private View contentWarningBar;
@@ -224,6 +228,8 @@ public final class ComposeActivity
     // this only exists when a status is trying to be sent, but uploads are still occurring
     private ProgressDialog finishingUploadDialog;
     private String inReplyToId;
+    private String quoteId;
+    private String quoteUrl;
     private List<QueuedMedia> mediaQueued = new ArrayList<>();
     private CountUpDownLatch waitForMediaLatch;
     private Status.Visibility statusVisibility;     // The current values of the options that will be applied
@@ -278,6 +284,7 @@ public final class ComposeActivity
 
         replyTextView = findViewById(R.id.composeReplyView);
         replyContentTextView = findViewById(R.id.composeReplyContentView);
+        quoteTextView = findViewById(R.id.composeQuoteView);
         textEditor = findViewById(R.id.composeEditField);
         mediaPreviewBar = findViewById(R.id.compose_media_preview_bar);
         contentWarningBar = findViewById(R.id.composeContentWarningBar);
@@ -459,6 +466,8 @@ public final class ComposeActivity
         String[] mentionedUsernames = null;
         ArrayList<String> loadedDraftMediaUris = null;
         inReplyToId = null;
+        quoteId = null;
+        quoteUrl = null;
         if (intent != null) {
 
             if (startingVisibility == Status.Visibility.UNKNOWN) {
@@ -472,6 +481,14 @@ public final class ComposeActivity
             }
 
             inReplyToId = intent.getStringExtra(IN_REPLY_TO_ID_EXTRA);
+
+            quoteId = intent.getStringExtra(QUOTE_ID_EXTRA);
+
+            if (intent.hasExtra(QUOTE_URL_EXTRA)) {
+                quoteTextView.setVisibility(View.VISIBLE);
+                quoteUrl = intent.getStringExtra(QUOTE_URL_EXTRA);
+                quoteTextView.setText(String.format(getString(R.string.quote_to), quoteUrl));
+            }
 
             mentionedUsernames = intent.getStringArrayExtra(MENTIONED_USERNAMES_EXTRA);
 
@@ -543,7 +560,7 @@ public final class ComposeActivity
             }
 
             if (intent.getBooleanExtra(TOOT_RIGHT_NOW, false)) {
-                sendStatus(startingText, Status.Visibility.byNum(savedTootVisibility), false, "");
+                sendStatus(startingText, Status.Visibility.byNum(savedTootVisibility), false, "", null, null);
             }
         }
 
@@ -1114,7 +1131,7 @@ public final class ComposeActivity
     }
 
     private void sendStatus(String content, Status.Visibility visibility, boolean sensitive,
-                            String spoilerText) {
+                            String spoilerText, @Nullable String quoteId, @Nullable String quoteUrl) {
         ArrayList<String> mediaIds = new ArrayList<>();
         ArrayList<Uri> mediaUris = new ArrayList<>();
         for (QueuedMedia item : mediaQueued) {
@@ -1122,12 +1139,26 @@ public final class ComposeActivity
             mediaUris.add(item.uri);
         }
 
-        Intent sendIntent = SendTootService.sendTootIntent(this, content, spoilerText,
-                visibility, sensitive, mediaIds, mediaUris, inReplyToId,
-                getIntent().getStringExtra(REPLYING_STATUS_CONTENT_EXTRA),
-                getIntent().getStringExtra(REPLYING_STATUS_AUTHOR_USERNAME_EXTRA),
-                getIntent().getStringExtra(SAVED_JSON_URLS_EXTRA),
-                accountManager.getActiveAccount(), savedTootUid);
+        Intent sendIntent;
+
+        if (Arrays.asList(CAN_USE_QUOTE_ID).contains(accountManager.getActiveAccount().getDomain())) {
+            sendIntent = SendTootService.sendTootIntent(this, content, spoilerText,
+                    visibility, sensitive, mediaIds, mediaUris, inReplyToId,
+                    getIntent().getStringExtra(REPLYING_STATUS_CONTENT_EXTRA),
+                    getIntent().getStringExtra(REPLYING_STATUS_AUTHOR_USERNAME_EXTRA),
+                    getIntent().getStringExtra(SAVED_JSON_URLS_EXTRA),
+                    quoteId, accountManager.getActiveAccount(), savedTootUid);
+        } else {
+            if (quoteUrl != null) {
+                content += "\n~~~~~~~~~~\n[" + quoteUrl + "]";
+            }
+            sendIntent = SendTootService.sendTootIntent(this, content, spoilerText,
+                    visibility, sensitive, mediaIds, mediaUris, inReplyToId,
+                    getIntent().getStringExtra(REPLYING_STATUS_CONTENT_EXTRA),
+                    getIntent().getStringExtra(REPLYING_STATUS_AUTHOR_USERNAME_EXTRA),
+                    getIntent().getStringExtra(SAVED_JSON_URLS_EXTRA),
+                    null, accountManager.getActiveAccount(), savedTootUid);
+        }
 
         startService(sendIntent);
 
@@ -1193,7 +1224,7 @@ public final class ComposeActivity
             textEditor.setError(getString(R.string.error_empty));
             enableButtons();
         } else if (characterCount <= maximumTootCharacters) {
-            sendStatus(contentText, visibility, sensitive, spoilerText);
+            sendStatus(contentText, visibility, sensitive, spoilerText, quoteId, quoteUrl);
 
         } else {
             textEditor.setError(getString(R.string.error_compose_character_limit));
@@ -1914,6 +1945,10 @@ public final class ComposeActivity
         @Nullable
         private String inReplyToId;
         @Nullable
+        private String quoteId;
+        @Nullable
+        private String quoteUrl;
+        @Nullable
         private Status.Visibility replyVisibility;
         @Nullable
         private Status.Visibility savedVisibility;
@@ -1953,6 +1988,16 @@ public final class ComposeActivity
 
         public IntentBuilder inReplyToId(String inReplyToId) {
             this.inReplyToId = inReplyToId;
+            return this;
+        }
+
+        public IntentBuilder quoteId(String quoteId) {
+            this.quoteId = quoteId;
+            return this;
+        }
+
+        public IntentBuilder quoteUrl(String quoteUrl) {
+            this.quoteUrl = quoteUrl;
             return this;
         }
 
@@ -2004,6 +2049,12 @@ public final class ComposeActivity
             }
             if (inReplyToId != null) {
                 intent.putExtra(IN_REPLY_TO_ID_EXTRA, inReplyToId);
+            }
+            if (quoteId != null) {
+                intent.putExtra(QUOTE_ID_EXTRA, quoteId);
+            }
+            if (quoteUrl != null) {
+                intent.putExtra(QUOTE_URL_EXTRA, quoteUrl);
             }
             if (replyVisibility != null) {
                 intent.putExtra(REPLY_VISIBILITY_EXTRA, replyVisibility.getNum());

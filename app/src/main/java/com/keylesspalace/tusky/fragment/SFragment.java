@@ -27,7 +27,6 @@ import android.support.v7.widget.PopupMenu;
 import android.text.Spanned;
 import android.view.Menu;
 import android.view.View;
-import android.widget.Toast;
 
 import com.keylesspalace.tusky.BottomSheetActivity;
 import com.keylesspalace.tusky.ComposeActivity;
@@ -141,19 +140,18 @@ public abstract class SFragment extends BaseFragment {
     }
 
     protected void quote(Status status) {
+        String id = status.getActionableId();
         String url = status.getUrl();
+        Status.Visibility visibility = status.getVisibility();
         if (status.getReblog() != null) {
             url = status.getReblog().getUrl();
         }
-        if (url != null) {
-            Intent intent = new ComposeActivity.IntentBuilder()
-                    .savedTootText("\n~~~~~~~~~~\n[" + url + "]")
-                    .moveCursorToTop(true)
-                    .build(getContext());
-            startActivity(intent);
-        } else {
-            Toast.makeText(getContext(), "An error occurred.\nURL is null!", Toast.LENGTH_LONG).show();
-        }
+        Intent intent = new ComposeActivity.IntentBuilder()
+                .quoteId(id)
+                .quoteUrl(url)
+                .replyVisibility(visibility)
+                .build(getContext());
+        startActivity(intent);
     }
 
     protected void more(final Status status, View view, final int position) {

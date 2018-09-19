@@ -140,6 +140,7 @@ class SendTootService : Service(), Injectable {
                 tootToSend.visibility,
                 tootToSend.sensitive,
                 tootToSend.mediaIds,
+                tootToSend.quoteId,
                 tootToSend.idempotencyKey
         )
 
@@ -278,6 +279,7 @@ class SendTootService : Service(), Injectable {
                            replyingStatusContent: String?,
                            replyingStatusAuthorUsername: String?,
                            savedJsonUrls: String?,
+                           quoteId: String?,
                            account: AccountEntity,
                            savedTootUid: Int
         ): Intent {
@@ -295,6 +297,7 @@ class SendTootService : Service(), Injectable {
                     replyingStatusContent,
                     replyingStatusAuthorUsername,
                     savedJsonUrls,
+                    quoteId,
                     account.id,
                     savedTootUid,
                     idempotencyKey,
@@ -336,6 +339,7 @@ data class TootToSend(val text: String,
                       val replyingStatusContent: String?,
                       val replyingStatusAuthorUsername: String?,
                       val savedJsonUrls: String?,
+                      val quoteId: String?,
                       val accountId: Long,
                       val savedTootUid: Int,
                       val idempotencyKey: String,
