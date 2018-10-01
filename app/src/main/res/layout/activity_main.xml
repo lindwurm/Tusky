@@ -10,7 +10,8 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:clipChildren="false">
 
         <ImageButton
             android:id="@+id/drawer_toggle"
@@ -21,6 +22,7 @@
             android:layout_alignParentTop="true"
             android:background="?android:colorBackground"
             android:contentDescription="@string/action_open_drawer"
+            android:elevation="@dimen/actionbar_elevation"
             app:layout_anchor="@id/pager"
             app:layout_anchorGravity="top|left"
             app:srcCompat="@drawable/ic_menu_24dp" />
@@ -33,6 +35,7 @@
             android:layout_alignParentTop="true"
             android:layout_toEndOf="@id/drawer_toggle"
             android:background="?android:colorBackground"
+            android:elevation="@dimen/actionbar_elevation"
             app:tabGravity="fill"
             app:tabIndicatorHeight="3dp"
             app:tabMaxWidth="0dp"

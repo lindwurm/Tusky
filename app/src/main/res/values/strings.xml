@@ -9,7 +9,8 @@
     <string name="error_authorization_denied">Authorization was denied.</string>
     <string name="error_retrieving_oauth_token">Failed getting a login token.</string>
     <string name="error_compose_character_limit">The status is too long!</string>
-    <string name="error_media_upload_size">The file must be less than 8MB.</string>
+    <string name="error_image_upload_size">The file must be less than 8MB.</string>
+    <string name="error_video_upload_size">Video files must be less than 40MB.</string>
     <string name="error_media_upload_type">That type of file cannot be uploaded.</string>
     <string name="error_media_upload_opening">That file could not be opened.</string>
     <string name="error_media_upload_permission">Permission to read media is required.</string>
@@ -46,6 +47,8 @@
     <string name="status_sensitive_media_directions">Click to view</string>
     <string name="status_content_warning_show_more">Show More</string>
     <string name="status_content_warning_show_less">Show Less</string>
+    <string name="status_content_show_more">Expand</string>
+    <string name="status_content_show_less">Collapse</string>
 
     <string name="footer_empty">Nothing here. Pull down to refresh!</string>
 
@@ -285,7 +288,7 @@
     <string name="abbreviated_seconds_ago">%ds</string>
 
     <string name="follows_you">Follows you</string>
-    <string name="pref_title_alway_show_sensitive_media">Always show all nsfw content</string>
+    <string name="pref_title_alway_show_sensitive_media">Always show sensitive content</string>
     <string name="title_media">Media</string>
     <string name="replying_to">Replying to @%s</string>
     <string name="load_more_placeholder_text">load more</string>

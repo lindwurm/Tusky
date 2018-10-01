@@ -22,6 +22,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
+import android.arch.lifecycle.Lifecycle;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -112,7 +113,6 @@ import com.keylesspalace.tusky.network.ProgressRequestBody;
 import com.keylesspalace.tusky.service.SendTootService;
 import com.keylesspalace.tusky.util.CountUpDownLatch;
 import com.keylesspalace.tusky.util.DownsizeImageTask;
-import com.keylesspalace.tusky.util.IOUtils;
 import com.keylesspalace.tusky.util.ListUtils;
 import com.keylesspalace.tusky.util.MediaUtils;
 import com.keylesspalace.tusky.util.MentionTokenizer;
@@ -135,11 +135,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -151,11 +151,19 @@ import at.connyduck.sparkbutton.helpers.Utils;
 import jp.kyori.tusky.EditTextDialogFragment;
 import jp.kyori.tusky.NotificationPickDialogFragment;
 import jp.kyori.tusky.NotifyListBroadcastReceiver;
+import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import static com.uber.autodispose.AutoDispose.autoDisposable;
+import static com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from;
 
 public final class ComposeActivity
         extends BaseActivity
@@ -166,8 +174,9 @@ public final class ComposeActivity
 
     private static final String TAG = "ComposeActivity"; // logging tag
     static final int STATUS_CHARACTER_LIMIT = 500;
-    private static final int STATUS_MEDIA_SIZE_LIMIT = 8388608; // 8MiB
-    private static final int STATUS_MEDIA_PIXEL_SIZE_LIMIT = 16777216; // 4096^2 Pixels
+    private static final int STATUS_IMAGE_SIZE_LIMIT = 8388608; // 8MiB
+    private static final int STATUS_VIDEO_SIZE_LIMIT = 41943040; // 40MiB
+    private static final int STATUS_IMAGE_PIXEL_SIZE_LIMIT = 16777216; // 4096^2 Pixels
     private static final int MEDIA_PICK_RESULT = 1;
     private static final int MEDIA_TAKE_PHOTO_RESULT = 2;
     private static final int PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
@@ -355,6 +364,7 @@ public final class ComposeActivity
                 @Override
                 public void onResponse(@NonNull Call<List<Emoji>> call, @NonNull Response<List<Emoji>> response) {
                     emojiList = response.body();
+                    Collections.sort(emojiList, (a, b) -> a.getShortcode().toLowerCase().compareTo(b.getShortcode().toLowerCase()));
                     setEmojiList(emojiList);
                     cacheInstanceMetadata(activeAccount);
                 }
@@ -646,7 +656,7 @@ public final class ComposeActivity
              * instance state will be re-queued. */
             String type = intent.getType();
             if (type != null) {
-                if (type.startsWith("image/")) {
+                if (type.startsWith("image/") || type.startsWith("video/")) {
                     List<Uri> uriList = new ArrayList<>();
                     if (intent.getAction() != null) {
                         switch (intent.getAction()) {
@@ -1251,8 +1261,8 @@ public final class ComposeActivity
     @NonNull
     private File createNewImageFile() throws IOException {
         // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        String imageFileName = "Tusky_" + timeStamp + "_";
+        String randomId = StringUtils.randomAlphanumericString(12);
+        String imageFileName = "Tusky_" + randomId + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         return File.createTempFile(
                 imageFileName,  /* prefix */
@@ -1344,12 +1354,12 @@ public final class ComposeActivity
 
             try {
                 if (type == QueuedMedia.Type.IMAGE &&
-                        (mediaSize > STATUS_MEDIA_SIZE_LIMIT || MediaUtils.getImageSquarePixels(getContentResolver(), item.uri) > STATUS_MEDIA_PIXEL_SIZE_LIMIT)) {
+                        (mediaSize > STATUS_IMAGE_SIZE_LIMIT || MediaUtils.getImageSquarePixels(getContentResolver(), item.uri) > STATUS_IMAGE_PIXEL_SIZE_LIMIT)) {
                     downsizeMedia(item);
                 } else {
                     uploadMedia(item);
                 }
-            } catch (FileNotFoundException e) {
+            } catch (IOException e) {
                 onUploadFailure(item, false);
             }
         }
@@ -1429,11 +1439,24 @@ public final class ComposeActivity
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
-        Picasso.with(this)
-                .load(item.uri)
-                .resize(displayMetrics.widthPixels, displayMetrics.heightPixels)
-                .onlyScaleDown()
-                .into(imageView);
+        Single.fromCallable(() ->
+                MediaUtils.getSampledBitmap(getContentResolver(), item.uri, displayMetrics.widthPixels, displayMetrics.heightPixels))
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
+                .subscribe(new SingleObserver<Bitmap>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {}
+
+                    @Override
+                    public void onSuccess(Bitmap bitmap) {
+                        imageView.setImageBitmap(bitmap);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) { }
+                });
+
 
         int margin = Utils.dpToPx(this, 4);
         dialogLayout.addView(imageView);
@@ -1509,14 +1532,17 @@ public final class ComposeActivity
         }
     }
 
-    private void downsizeMedia(final QueuedMedia item) {
+    private void downsizeMedia(final QueuedMedia item) throws IOException {
         item.readyStage = QueuedMedia.ReadyStage.DOWNSIZING;
 
-        new DownsizeImageTask(STATUS_MEDIA_SIZE_LIMIT, getContentResolver(),
+        new DownsizeImageTask(STATUS_IMAGE_SIZE_LIMIT, getContentResolver(), createNewImageFile(),
                 new DownsizeImageTask.Listener() {
                     @Override
-                    public void onSuccess(List<byte[]> contentList) {
-                        item.content = contentList.get(0);
+                    public void onSuccess(File tempFile) {
+                        item.uri = FileProvider.getUriForFile(
+                                ComposeActivity.this,
+                                BuildConfig.APPLICATION_ID+".fileprovider",
+                                tempFile);
                         uploadMedia(item);
                     }
 
@@ -1528,7 +1554,7 @@ public final class ComposeActivity
     }
 
     private void onMediaDownsizeFailure(QueuedMedia item) {
-        displayTransientError(R.string.error_media_upload_size);
+        displayTransientError(R.string.error_image_upload_size);
         removeMediaFromQueue(item);
     }
 
@@ -1547,32 +1573,20 @@ public final class ComposeActivity
                 StringUtils.randomAlphanumericString(10),
                 fileExtension);
 
-        byte[] content = item.content;
+        InputStream stream;
 
-        if (content == null) {
-            InputStream stream;
-
-            try {
-                stream = getContentResolver().openInputStream(item.uri);
-            } catch (FileNotFoundException e) {
-                Log.d(TAG, Log.getStackTraceString(e));
-                return;
-            }
-
-            content = MediaUtils.inputStreamGetBytes(stream);
-            IOUtils.closeQuietly(stream);
-
-            if (content == null) {
-                return;
-            }
+        try {
+            stream = getContentResolver().openInputStream(item.uri);
+        } catch (FileNotFoundException e) {
+            Log.w(TAG, e);
+            return;
         }
 
         if (mimeType == null) mimeType = "multipart/form-data";
 
         item.preview.setProgress(0);
 
-        ProgressRequestBody fileBody = new ProgressRequestBody(content, MediaType.parse(mimeType),
-                false, // If request body logging is enabled, pass true
+        ProgressRequestBody fileBody = new ProgressRequestBody(stream, MediaUtils.getMediaSize(getContentResolver(), item.uri), MediaType.parse(mimeType),
                 new ProgressRequestBody.UploadCallback() { // may reference activity longer than I would like to
                     int lastProgress = -1;
 
@@ -1667,8 +1681,8 @@ public final class ComposeActivity
             String topLevelType = mimeType.substring(0, mimeType.indexOf('/'));
             switch (topLevelType) {
                 case "video": {
-                    if (mediaSize > STATUS_MEDIA_SIZE_LIMIT) {
-                        displayTransientError(R.string.error_media_upload_size);
+                    if (mediaSize > STATUS_VIDEO_SIZE_LIMIT) {
+                        displayTransientError(R.string.error_image_upload_size);
                         return;
                     }
                     if (mediaQueued.size() > 0
@@ -1864,7 +1878,7 @@ public final class ComposeActivity
             VIDEO
         }
 
-        public enum ReadyStage {
+        enum ReadyStage {
             DOWNSIZING,
             UPLOADING,
             UPLOADED
