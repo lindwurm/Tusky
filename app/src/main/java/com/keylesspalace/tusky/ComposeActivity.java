@@ -139,7 +139,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -148,14 +147,14 @@ import java.util.Locale;
 import javax.inject.Inject;
 
 import at.connyduck.sparkbutton.helpers.Utils;
-import jp.kyori.tusky.EditTextDialogFragment;
-import jp.kyori.tusky.NotificationPickDialogFragment;
-import jp.kyori.tusky.NotifyListBroadcastReceiver;
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import jp.kyori.tusky.EditTextDialogFragment;
+import jp.kyori.tusky.NotificationPickDialogFragment;
+import jp.kyori.tusky.NotifyListBroadcastReceiver;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
@@ -199,7 +198,7 @@ public final class ComposeActivity
     static final int MAXIMUM_URL_LENGTH = 23;
 
     private static final String[] CAN_USE_LIMITED = {"itabashi.0j0.jp", "odakyu.app", "seichi.work"};
-    private static final String[] CAN_USE_QUOTE_ID = {"odakyu.app", "seichi.work", "biwakodon.com", "dtp-mstdn.jp"};
+    private static final String[] CAN_USE_QUOTE_ID = {"odakyu.app", "seichi.work", "biwakodon.com", "dtp-mstdn.jp", "nitiasa.com"};
 
     @Inject
     public MastodonApi mastodonApi;
