@@ -114,7 +114,6 @@ import com.keylesspalace.tusky.service.SendTootService;
 import com.keylesspalace.tusky.util.CountUpDownLatch;
 import com.keylesspalace.tusky.util.DownsizeImageTask;
 import com.keylesspalace.tusky.util.ListUtils;
-import com.keylesspalace.tusky.util.MediaUtils;
 import com.keylesspalace.tusky.util.MentionTokenizer;
 import com.keylesspalace.tusky.util.SaveTootHelper;
 import com.keylesspalace.tusky.util.SpanUtilsKt;
@@ -161,6 +160,12 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static com.keylesspalace.tusky.util.MediaUtilsKt.MEDIA_SIZE_UNKNOWN;
+import static com.keylesspalace.tusky.util.MediaUtilsKt.getImageSquarePixels;
+import static com.keylesspalace.tusky.util.MediaUtilsKt.getImageThumbnail;
+import static com.keylesspalace.tusky.util.MediaUtilsKt.getMediaSize;
+import static com.keylesspalace.tusky.util.MediaUtilsKt.getSampledBitmap;
+import static com.keylesspalace.tusky.util.MediaUtilsKt.getVideoThumbnail;
 import static com.uber.autodispose.AutoDispose.autoDisposable;
 import static com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from;
 
@@ -641,12 +646,12 @@ public final class ComposeActivity
         if (!ListUtils.isEmpty(loadedDraftMediaUris)) {
             for (String uriString : loadedDraftMediaUris) {
                 Uri uri = Uri.parse(uriString);
-                long mediaSize = MediaUtils.getMediaSize(getContentResolver(), uri);
+                long mediaSize = getMediaSize(getContentResolver(), uri);
                 pickMedia(uri, mediaSize);
             }
         } else if (savedMediaQueued != null) {
             for (SavedQueuedMedia item : savedMediaQueued) {
-                Bitmap preview = MediaUtils.getImageThumbnail(getContentResolver(), item.uri, thumbnailViewSize);
+                Bitmap preview = getImageThumbnail(getContentResolver(), item.uri, thumbnailViewSize);
                 addMediaToQueue(item.id, item.type, preview, item.uri, item.mediaSize, item.readyStage, item.description);
             }
         } else if (intent != null && savedInstanceState == null) {
@@ -681,7 +686,7 @@ public final class ComposeActivity
                         }
                     }
                     for (Uri uri : uriList) {
-                        long mediaSize = MediaUtils.getMediaSize(getContentResolver(), uri);
+                        long mediaSize = getMediaSize(getContentResolver(), uri);
                         pickMedia(uri, mediaSize);
                     }
                 } else if (type.equals("text/plain")) {
@@ -1122,7 +1127,7 @@ public final class ComposeActivity
                 // Just eat this exception.
             }
         } else {
-            mediaSize = MediaUtils.MEDIA_SIZE_UNKNOWN;
+            mediaSize = MEDIA_SIZE_UNKNOWN;
         }
         pickMedia(uri, mediaSize);
 
@@ -1353,7 +1358,7 @@ public final class ComposeActivity
 
             try {
                 if (type == QueuedMedia.Type.IMAGE &&
-                        (mediaSize > STATUS_IMAGE_SIZE_LIMIT || MediaUtils.getImageSquarePixels(getContentResolver(), item.uri) > STATUS_IMAGE_PIXEL_SIZE_LIMIT)) {
+                        (mediaSize > STATUS_IMAGE_SIZE_LIMIT || getImageSquarePixels(getContentResolver(), item.uri) > STATUS_IMAGE_PIXEL_SIZE_LIMIT)) {
                     downsizeMedia(item);
                 } else {
                     uploadMedia(item);
@@ -1439,7 +1444,7 @@ public final class ComposeActivity
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
         Single.fromCallable(() ->
-                MediaUtils.getSampledBitmap(getContentResolver(), item.uri, displayMetrics.widthPixels, displayMetrics.heightPixels))
+                getSampledBitmap(getContentResolver(), item.uri, displayMetrics.widthPixels, displayMetrics.heightPixels))
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
@@ -1585,7 +1590,7 @@ public final class ComposeActivity
 
         item.preview.setProgress(0);
 
-        ProgressRequestBody fileBody = new ProgressRequestBody(stream, MediaUtils.getMediaSize(getContentResolver(), item.uri), MediaType.parse(mimeType),
+        ProgressRequestBody fileBody = new ProgressRequestBody(stream, getMediaSize(getContentResolver(), item.uri), MediaType.parse(mimeType),
                 new ProgressRequestBody.UploadCallback() { // may reference activity longer than I would like to
                     int lastProgress = -1;
 
@@ -1660,17 +1665,17 @@ public final class ComposeActivity
         super.onActivityResult(requestCode, resultCode, intent);
         if (resultCode == RESULT_OK && requestCode == MEDIA_PICK_RESULT && intent != null) {
             Uri uri = intent.getData();
-            long mediaSize = MediaUtils.getMediaSize(getContentResolver(), uri);
+            long mediaSize = getMediaSize(getContentResolver(), uri);
             pickMedia(uri, mediaSize);
         } else if (resultCode == RESULT_OK && requestCode == MEDIA_TAKE_PHOTO_RESULT) {
-            long mediaSize = MediaUtils.getMediaSize(getContentResolver(), photoUploadUri);
+            long mediaSize = getMediaSize(getContentResolver(), photoUploadUri);
             pickMedia(photoUploadUri, mediaSize);
         }
     }
 
 
     private void pickMedia(Uri uri, long mediaSize) {
-        if (mediaSize == MediaUtils.MEDIA_SIZE_UNKNOWN) {
+        if (mediaSize == MEDIA_SIZE_UNKNOWN) {
             displayTransientError(R.string.error_media_upload_opening);
             return;
         }
@@ -1689,7 +1694,7 @@ public final class ComposeActivity
                         displayTransientError(R.string.error_media_upload_image_or_video);
                         return;
                     }
-                    Bitmap bitmap = MediaUtils.getVideoThumbnail(this, uri, thumbnailViewSize);
+                    Bitmap bitmap = getVideoThumbnail(this, uri, thumbnailViewSize);
                     if (bitmap != null) {
                         addMediaToQueue(QueuedMedia.Type.VIDEO, bitmap, uri, mediaSize);
                     } else {
@@ -1698,7 +1703,7 @@ public final class ComposeActivity
                     break;
                 }
                 case "image": {
-                    Bitmap bitmap = MediaUtils.getImageThumbnail(contentResolver, uri, thumbnailViewSize);
+                    Bitmap bitmap = getImageThumbnail(contentResolver, uri, thumbnailViewSize);
                     if (bitmap != null) {
                         addMediaToQueue(QueuedMedia.Type.IMAGE, bitmap, uri, mediaSize);
                     } else {

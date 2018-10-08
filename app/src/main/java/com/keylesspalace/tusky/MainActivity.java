@@ -71,6 +71,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static com.keylesspalace.tusky.util.MediaUtilsKt.deleteStaleCachedMedia;
 import static com.uber.autodispose.AutoDispose.autoDisposable;
 import static com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from;
 
@@ -217,6 +218,8 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
                     }
                 });
 
+        // Flush old media that was cached for sharing
+        deleteStaleCachedMedia(getApplicationContext().getExternalFilesDir("Tusky"));
     }
 
     @Override

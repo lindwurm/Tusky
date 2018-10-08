@@ -114,6 +114,7 @@
 
     <string name="send_status_link_to">Share toot URL to…</string>
     <string name="send_status_content_to">Share toot to…</string>
+    <string name="send_media_to">Share media to…</string>
 
     <string name="confirmation_reported">Sent!</string>
     <string name="confirmation_unblocked">User unblocked</string>
@@ -153,6 +154,7 @@
     <string name="dialog_download_image">Download</string>
     <string name="dialog_message_cancel_follow_request">Revoke the follow request?</string>
     <string name="dialog_unfollow_warning">Unfollow this account?</string>
+    <string name="dialog_delete_toot_warning">Delete this toot?</string>
 
     <string name="visibility_public">Public: Post to public timelines</string>
     <string name="visibility_unlisted">Unlisted: Do not show in public timelines</string>
@@ -366,5 +368,10 @@
     <string name="dialog_button_go">Go!</string>
     <string name="action_totsuzen_no_shi">突然の死メーカー</string>
     <string name="quote_to">Quote : %s</string>
+
+    <string name="label_remote_account">Information below may reflect the user\'s profile incompletely. Press to open full profile in browser.</string>
+
+    <string name="unpin_action">Unpin</string>
+    <string name="pin_action">Pin</string>
 
 </resources>

@@ -20,9 +20,11 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
 import android.text.Spanned;
 import android.view.Menu;
@@ -161,7 +163,7 @@ public abstract class SFragment extends BaseFragment {
         startActivity(intent);
     }
 
-    protected void more(final Status status, View view, final int position) {
+    protected void more(@NonNull final Status status, View view, final int position) {
         final String id = status.getActionableId();
         final String accountId = status.getActionableStatus().getAccount().getId();
         final String accountUsename = status.getActionableStatus().getAccount().getUsername();
@@ -179,6 +181,10 @@ public abstract class SFragment extends BaseFragment {
                 if (status.getReblog() != null) reblogged = status.getReblog().getReblogged();
                 menu.findItem(R.id.status_reblog_private).setVisible(!reblogged);
                 menu.findItem(R.id.status_unreblog_private).setVisible(reblogged);
+            } else {
+                final String textId =
+                        getString(status.getPinned() ? R.string.unpin_action : R.string.pin_action);
+                menu.add(0, R.id.pin, 1, textId);
             }
         }
         popup.setOnMenuItemClickListener(item -> {
@@ -232,8 +238,11 @@ public abstract class SFragment extends BaseFragment {
                     return true;
                 }
                 case R.id.status_delete: {
-                    timelineCases().delete(id);
-                    removeItem(position);
+                    showConfirmDeleteDialog(id, position);
+                    return true;
+                }
+                case R.id.pin: {
+                    timelineCases().pin(status, !status.getPinned());
                     return true;
                 }
                 case R.id.status_edit: {
@@ -275,7 +284,9 @@ public abstract class SFragment extends BaseFragment {
             case GIFV:
             case VIDEO: {
                 Intent intent = new Intent(getContext(), ViewVideoActivity.class);
-                intent.putExtra("url", active.getUrl());
+                intent.putExtra(ViewVideoActivity.URL_EXTRA, active.getUrl());
+                intent.putExtra(ViewVideoActivity.STATUS_ID_EXTRA, actionable.getId());
+                intent.putExtra(ViewVideoActivity.STATUS_URL_EXTRA, actionable.getUrl());
                 startActivity(intent);
                 break;
             }
@@ -302,5 +313,16 @@ public abstract class SFragment extends BaseFragment {
         intent.putExtra("status_id", statusId);
         intent.putExtra("status_content", HtmlUtils.toHtml(statusContent));
         startActivity(intent);
+    }
+
+    protected void showConfirmDeleteDialog(final String id, final int position) {
+        new AlertDialog.Builder(getActivity())
+                .setMessage(R.string.dialog_delete_toot_warning)
+                .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
+                    timelineCases().delete(id);
+                    removeItem(position);
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 }
