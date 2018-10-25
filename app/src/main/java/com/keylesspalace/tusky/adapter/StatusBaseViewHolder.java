@@ -204,7 +204,7 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
     // This should only be called after setReblogged, in order to override the tint correctly.
     private void setRebloggingEnabled(boolean enabled, Status.Visibility visibility) {
-        reblogButton.setEnabled(enabled && visibility != Status.Visibility.PRIVATE && visibility != Status.Visibility.LIMITED);
+        reblogButton.setEnabled(enabled && visibility != Status.Visibility.PRIVATE && visibility != Status.Visibility.UNLEAKABLE);
 
         if (enabled) {
             int inactiveId;
@@ -213,10 +213,10 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 inactiveId = ThemeUtils.getDrawableId(reblogButton.getContext(),
                         R.attr.status_reblog_disabled_private_drawable, R.drawable.reblog_private_dark);
                 activeId = R.drawable.reblog_private_active;
-            } else if (visibility == Status.Visibility.LIMITED) {
+            } else if (visibility == Status.Visibility.UNLEAKABLE) {
                 inactiveId = ThemeUtils.getDrawableId(reblogButton.getContext(),
-                        R.attr.status_reblog_disabled_limited_drawable, R.drawable.reblog_limited_dark);
-                activeId = R.drawable.reblog_limited_active;
+                        R.attr.status_reblog_disabled_unleakable_drawable, R.drawable.reblog_unleakable_dark);
+                activeId = R.drawable.reblog_unleakable_active;
             } else {
                 inactiveId = ThemeUtils.getDrawableId(reblogButton.getContext(),
                         R.attr.status_reblog_inactive_drawable, R.drawable.reblog_inactive_dark);
@@ -239,9 +239,9 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     }
 
     private void setQuoteEnabled(boolean enabled, Status.Visibility visibility) {
-        quoteButton.setEnabled(enabled && visibility != Status.Visibility.PRIVATE && visibility != Status.Visibility.LIMITED);
+        quoteButton.setEnabled(enabled && visibility != Status.Visibility.PRIVATE && visibility != Status.Visibility.UNLEAKABLE);
 
-        if (enabled && visibility != Status.Visibility.PRIVATE && visibility != Status.Visibility.LIMITED) {
+        if (enabled && visibility != Status.Visibility.PRIVATE && visibility != Status.Visibility.UNLEAKABLE) {
             int activeId;
             activeId = ThemeUtils.getDrawableId(quoteButton.getContext(),
                     R.attr.status_quote_drawable, R.drawable.ic_quote_24dp);

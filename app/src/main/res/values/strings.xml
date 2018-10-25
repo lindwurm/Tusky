@@ -358,7 +358,7 @@
     <string name="tuskyex_build_github">Github Project Page:\nhttps://github.com/kyori19/Tusky</string>
     <string name="tuskyex_build_dev_acc">Developer Mastodon Account:\nhttps://odakyu.app/@ars42525</string>
     <string name="action_edit">Delete and Edit</string>
-    <string name="visibility_limited">Limited: Post to followed user by you only.</string>
+    <string name="visibility_unleakable">Unleakable: Post to followed user by you only.</string>
     <string name="pref_title_absolute_time">Use absolute time</string>
     <string name="action_now_playing">Now Playing</string>
     <string name="toast_notification_confirm">You need to allow Tusky to get notifications.</string>

@@ -202,7 +202,7 @@ public final class ComposeActivity
     // Mastodon only counts URLs as this long in terms of status character limits
     static final int MAXIMUM_URL_LENGTH = 23;
 
-    private static final String[] CAN_USE_LIMITED = {"itabashi.0j0.jp", "odakyu.app", "seichi.work"};
+    private static final String[] CAN_USE_UNLEAKABLE = {"itabashi.0j0.jp", "odakyu.app", "seichi.work"};
     private static final String[] CAN_USE_QUOTE_ID = {"odakyu.app", "seichi.work", "biwakodon.com", "dtp-mstdn.jp", "nitiasa.com"};
 
     @Inject
@@ -385,8 +385,8 @@ public final class ComposeActivity
         }
 
         composeOptionsView = findViewById(R.id.composeOptionsBottomSheet);
-        if (Arrays.asList(CAN_USE_LIMITED).contains(activeAccount.getDomain())) {
-            composeOptionsView.allowLimited(true);
+        if (Arrays.asList(CAN_USE_UNLEAKABLE).contains(activeAccount.getDomain())) {
+            composeOptionsView.allowUnleakable(true);
         }
         composeOptionsView.setListener(this);
 
@@ -827,8 +827,8 @@ public final class ComposeActivity
                 }
                 break;
             }
-            case LIMITED: {
-                Drawable dontLook = AppCompatResources.getDrawable(this, R.drawable.ic_limited_24dp);
+            case UNLEAKABLE: {
+                Drawable dontLook = AppCompatResources.getDrawable(this, R.drawable.ic_unleakable_24dp);
                 if (dontLook != null) {
                     visibilityButton.setImageDrawable(dontLook);
                 }
