@@ -79,7 +79,7 @@ data class Status(
             @JvmStatic
             fun byNum(num: Int): Visibility {
                 return when (num) {
-                    9 -> UNLEAKABLE
+                    5 -> UNLEAKABLE
 
                     4 -> DIRECT
                     3 -> PRIVATE
