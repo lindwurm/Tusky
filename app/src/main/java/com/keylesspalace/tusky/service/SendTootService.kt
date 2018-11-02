@@ -267,6 +267,16 @@ class SendTootService : Service(), Injectable {
         private var sendingNotificationId = -1 // use negative ids to not clash with other notis
         private var errorNotificationId = Int.MIN_VALUE // use even more negative ids to not clash with other notis
 
+        private var FORCE_LIMITED = arrayOf("itabashi.0j0.jp", "seichi.work")
+
+        private fun limitedCompatServerString(visibility: Status.Visibility, domain: String): String {
+            return if (FORCE_LIMITED.contains(domain) && visibility == Status.Visibility.UNLEAKABLE) {
+                "limited"
+            } else {
+                visibility.serverString()
+            }
+        }
+
         @JvmStatic
         fun sendTootIntent(context: Context,
                            text: String,
@@ -289,7 +299,7 @@ class SendTootService : Service(), Injectable {
 
             val tootToSend = TootToSend(text,
                     warningText,
-                    visibility.serverString(),
+                    limitedCompatServerString(visibility, account.domain),
                     sensitive,
                     mediaIds,
                     mediaUris.map { it.toString() },
@@ -305,7 +315,7 @@ class SendTootService : Service(), Injectable {
 
             intent.putExtra(KEY_TOOT, tootToSend)
 
-            if(mediaUris.isNotEmpty()) {
+            if (mediaUris.isNotEmpty()) {
                 // forward uri permissions
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 val uriClip = ClipData(

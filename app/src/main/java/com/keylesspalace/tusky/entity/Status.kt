@@ -59,7 +59,7 @@ data class Status(
         PRIVATE(3),
         @SerializedName("direct")
         DIRECT(4),
-        @SerializedName("unleakable")
+        @SerializedName("unleakable", alternate = ["limited"])
         UNLEAKABLE(5);
 
         fun serverString(): String {
