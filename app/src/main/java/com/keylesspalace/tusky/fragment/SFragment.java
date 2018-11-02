@@ -39,7 +39,6 @@ import com.keylesspalace.tusky.ViewTagActivity;
 import com.keylesspalace.tusky.ViewVideoActivity;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AccountManager;
-import com.keylesspalace.tusky.entity.Account;
 import com.keylesspalace.tusky.entity.Attachment;
 import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.network.MastodonApi;
@@ -145,11 +144,14 @@ public abstract class SFragment extends BaseFragment {
     protected void quote(Status status) {
         String id = status.getActionableId();
         String url = status.getUrl();
-        Account account = status.getAccount();
-        Set<String> mentionedUsernames=new LinkedHashSet<>();
-        if(!account.getUsername().equals(loggedInUsername)){
-            mentionedUsernames.add(account.getUsername());
+        Status actionableStatus = status.getActionableStatus();
+        Status.Mention[] mentions = actionableStatus.getMentions();
+        Set<String> mentionedUsernames = new LinkedHashSet<>();
+        mentionedUsernames.add(actionableStatus.getAccount().getUsername());
+        for (Status.Mention mention : mentions) {
+            mentionedUsernames.add(mention.getUsername());
         }
+        mentionedUsernames.remove(loggedInUsername);
         Status.Visibility visibility = status.getVisibility();
         if (status.getReblog() != null) {
             url = status.getReblog().getUrl();
