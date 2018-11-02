@@ -1262,9 +1262,6 @@ public class TimelineFragment extends SFragment implements
             case PRIVATE:
                 visibilityButton.setImageResource(R.drawable.ic_lock_outline_24dp);
                 break;
-            case DIRECT:
-                visibilityButton.setImageResource(R.drawable.reblog_direct_light);
-                break;
         }
     }
 
@@ -1278,12 +1275,10 @@ public class TimelineFragment extends SFragment implements
                 visibility = Status.Visibility.PRIVATE;
                 break;
             case PRIVATE:
-                visibility = Status.Visibility.DIRECT;
-                break;
-            case DIRECT:
                 visibility = Status.Visibility.PUBLIC;
                 break;
             case UNKNOWN:
+            default:
                 visibility = Status.Visibility.PUBLIC;
         }
         defPrefs.edit()
