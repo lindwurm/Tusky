@@ -538,7 +538,9 @@ public final class ComposeActivity
             }
 
             if (intent.getBooleanExtra(TOOT_RIGHT_NOW, false)) {
-                sendStatus(startingText, Status.Visibility.byNum(savedTootVisibility), false, "", null, null);
+                if (startingText.length() > 0) {
+                    sendStatus(startingText, Status.Visibility.byNum(savedTootVisibility), false, "", null, null);
+                }
             }
         }
 
@@ -1307,7 +1309,8 @@ public final class ComposeActivity
                 .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
                 .subscribe(new SingleObserver<Bitmap>() {
                     @Override
-                    public void onSubscribe(Disposable d) {}
+                    public void onSubscribe(Disposable d) {
+                    }
 
                     @Override
                     public void onSuccess(Bitmap bitmap) {
@@ -1315,7 +1318,8 @@ public final class ComposeActivity
                     }
 
                     @Override
-                    public void onError(Throwable e) { }
+                    public void onError(Throwable e) {
+                    }
                 });
 
 
@@ -1402,7 +1406,7 @@ public final class ComposeActivity
                     public void onSuccess(File tempFile) {
                         item.uri = FileProvider.getUriForFile(
                                 ComposeActivity.this,
-                                BuildConfig.APPLICATION_ID+".fileprovider",
+                                BuildConfig.APPLICATION_ID + ".fileprovider",
                                 tempFile);
                         uploadMedia(item);
                     }

@@ -1235,14 +1235,16 @@ public class TimelineFragment extends SFragment implements
 
     private void quickToot(View v) {
         saveDefaultTagStatus();
-        Intent composeIntent = new ComposeActivity.IntentBuilder()
-                .savedTootText(useDefaultTag.isChecked() ?
-                        (tootEditText.getText().toString() + " " + defaultTagEditText.getText().toString()) : tootEditText.getText().toString())
-                .savedVisibility(getCurrentVisibility())
-                .tootRightNow(true)
-                .build(v.getContext());
-        tootEditText.getText().clear();
-        v.getContext().startActivity(composeIntent);
+        if(tootEditText.getText().toString().length()>0) {
+            Intent composeIntent = new ComposeActivity.IntentBuilder()
+                    .savedTootText(useDefaultTag.isChecked() ?
+                            (tootEditText.getText().toString() + " " + defaultTagEditText.getText().toString()) : tootEditText.getText().toString())
+                    .savedVisibility(getCurrentVisibility())
+                    .tootRightNow(true)
+                    .build(v.getContext());
+            tootEditText.getText().clear();
+            v.getContext().startActivity(composeIntent);
+        }
     }
 
     private Status.Visibility getCurrentVisibility() {
