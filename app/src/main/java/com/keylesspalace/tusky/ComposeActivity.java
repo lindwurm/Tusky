@@ -17,17 +17,12 @@ package com.keylesspalace.tusky;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.arch.lifecycle.Lifecycle;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
@@ -41,13 +36,10 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -59,8 +51,6 @@ import android.support.transition.TransitionManager;
 import android.support.v13.view.inputmethod.InputConnectionCompat;
 import android.support.v13.view.inputmethod.InputContentInfoCompat;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewCompat;
@@ -152,8 +142,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import jp.kyori.tusky.EditTextDialogFragment;
-import jp.kyori.tusky.NotificationPickDialogFragment;
-import jp.kyori.tusky.NotifyListBroadcastReceiver;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
@@ -225,7 +213,6 @@ public final class ComposeActivity
     private ImageButton visibilityButton;
     private Button contentWarningButton;
     private ImageButton emojiButton;
-    private ImageButton nowPlayingButton;
     private ImageButton makerButton;
     private ImageButton hideMediaToggle;
 
@@ -258,7 +245,6 @@ public final class ComposeActivity
 
     private SaveTootHelper saveTootHelper;
 
-    private boolean buttonExecFlag = true;
     private SharedPreferences defPrefs;
 
     private Paint counter;
@@ -271,16 +257,6 @@ public final class ComposeActivity
     private String BOTTOM_LEFT_STRING = "￣Y";
     private String BOTTOM_LOOP_STRING = "^Y";
     private String BOTTOM_RIGHT_STRING = "￣";
-
-    @SuppressLint("HandlerLeak")
-    Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            Bundle bundle = msg.getData();
-            ArrayList<String[]> list = (ArrayList<String[]>) bundle.getSerializable("list");
-            selectNotification(list);
-        }
-    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -307,7 +283,6 @@ public final class ComposeActivity
         visibilityButton = findViewById(R.id.composeToggleVisibilityButton);
         contentWarningButton = findViewById(R.id.composeContentWarningButton);
         emojiButton = findViewById(R.id.composeEmojiButton);
-        nowPlayingButton = findViewById(R.id.composeNowPlayingButton);
         makerButton = findViewById(R.id.composeMakerButton);
         hideMediaToggle = findViewById(R.id.composeHideMediaButton);
         emojiView = findViewById(R.id.emojiView);
@@ -401,10 +376,6 @@ public final class ComposeActivity
 
         enableButton(emojiButton, false, false);
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
-            nowPlayingButton.setVisibility(View.GONE);
-        }
-
         defPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         restoreDefaultTagStatus();
         useDefaultTag.setOnCheckedChangeListener((compoundButton, b) -> {
@@ -418,7 +389,6 @@ public final class ComposeActivity
         visibilityButton.setOnClickListener(v -> showComposeOptions());
         contentWarningButton.setOnClickListener(v -> onContentWarningChanged());
         emojiButton.setOnClickListener(v -> showEmojis());
-        nowPlayingButton.setOnClickListener(v -> startNowPlayingExec());
         makerButton.setOnClickListener(v -> openEditTextDialog());
         hideMediaToggle.setOnClickListener(v -> toggleHideMedia());
 
@@ -515,7 +485,8 @@ public final class ComposeActivity
             }
 
             if (intent.getBooleanExtra(MOVE_CURSOR_TO_TOP, false)) {
-                moveCursorToTop();
+                textEditor.setSelection(0, textEditor.length());
+                textEditor.setSelection(0);
             }
 
             String savedJsonUrls = intent.getStringExtra(SAVED_JSON_URLS_EXTRA);
@@ -794,7 +765,6 @@ public final class ComposeActivity
         visibilityButton.setClickable(true);
         emojiButton.setClickable(true);
         hideMediaToggle.setClickable(true);
-        nowPlayingButton.setClickable(true);
         makerButton.setClickable(true);
         tootButton.setEnabled(true);
     }
@@ -889,52 +859,6 @@ public final class ComposeActivity
                 .apply();
     }
 
-    private void startNowPlayingExec() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            if (canAccessNotification() && buttonExecFlag) {
-                buttonExecFlag = false;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    NotificationChannel channel = new NotificationChannel("GetMediaNotification", "Get Notifications!", NotificationManager.IMPORTANCE_MIN);
-                    channel.setDescription("Do not disable this notification!!");
-                    channel.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
-                    channel.enableVibration(false);
-                    channel.enableLights(false);
-                    channel.setShowBadge(false);
-                    NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                    if (notificationManager != null) {
-                        notificationManager.createNotificationChannel(channel);
-                    }
-                }
-                NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "GetMediaNotification");
-                builder.setContentText("reload");
-                builder.setContentTitle("reload");
-                builder.setSmallIcon(R.drawable.ic_trans_notification);
-                builder.setPriority(Notification.PRIORITY_MIN);
-                notificationManagerCompat.notify("notificationListHook", 219, builder.build());
-
-                NotifyListBroadcastReceiver receiver = new NotifyListBroadcastReceiver(handler);
-                IntentFilter intentFilter = new IntentFilter();
-                intentFilter.addAction("NOTIFICATION_LIST");
-                registerReceiver(receiver, intentFilter);
-            } else {
-                Toast.makeText(this, R.string.toast_notification_confirm, Toast.LENGTH_LONG).show();
-                showNotificationAccessSettingMenu();
-            }
-        } else {
-            Toast.makeText(this, "Sorry, this feature cannot be used on your device.", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void selectNotification(ArrayList<String[]> arrayList) {
-        Bundle args = new Bundle();
-        args.putSerializable("list", arrayList);
-        NotificationPickDialogFragment dialogFragment = new NotificationPickDialogFragment();
-        dialogFragment.setArguments(args);
-        dialogFragment.show(getSupportFragmentManager(), "musicDialog");
-        buttonExecFlag = true;
-    }
-
     public void openEditTextDialog() {
         EditTextDialogFragment dialogFragment = new EditTextDialogFragment();
         dialogFragment.show(getSupportFragmentManager(), "editTextDialog");
@@ -994,30 +918,6 @@ public final class ComposeActivity
     public void addStringAfter(String str) {
         textEditor.setText(String.format("%s\n%s", textEditor.getText(), str));
         moveCursorToTop();
-    }
-
-    @TargetApi(22)
-    private void showNotificationAccessSettingMenu() {
-        Intent intent = new Intent();
-        intent.setAction(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS);
-        startActivity(intent);
-    }
-
-    private boolean canAccessNotification() {
-        ContentResolver contentResolver = getContentResolver();
-        String rawListeners = Settings.Secure.getString(contentResolver,
-                "enabled_notification_listeners");
-        if (rawListeners == null || "".equals(rawListeners)) {
-            return false;
-        } else {
-            String[] listeners = rawListeners.split(":");
-            for (String listener : listeners) {
-                if (listener.startsWith(getPackageName())) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     private void openPickDialog() {
@@ -1369,49 +1269,6 @@ public final class ComposeActivity
         }
     }
 
-    public void addCoverToQueue(QueuedMedia.Type type, Bitmap preview,
-                                byte[] imageBytes, long mediaSize) {
-        addCoverToQueue(null, type, preview, imageBytes, mediaSize, null, null);
-    }
-
-    private void addCoverToQueue(@Nullable String id, ComposeActivity.QueuedMedia.Type type, Bitmap preview, byte[] imageBytes,
-                                 long mediaSize, ComposeActivity.QueuedMedia.ReadyStage readyStage, @Nullable String description) {
-        final QueuedMedia item = new QueuedMedia(type, imageBytes, new ProgressImageView(this),
-                mediaSize, description);
-        item.id = id;
-        item.readyStage = readyStage;
-        item.uri = Uri.parse("");
-        ImageView view = item.preview;
-        Resources resources = getResources();
-        int margin = resources.getDimensionPixelSize(R.dimen.compose_media_preview_margin);
-        int marginBottom = resources.getDimensionPixelSize(
-                R.dimen.compose_media_preview_margin_bottom);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(thumbnailViewSize, thumbnailViewSize);
-        layoutParams.setMargins(margin, 0, margin, marginBottom);
-        view.setLayoutParams(layoutParams);
-        view.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        view.setImageBitmap(preview);
-        view.setOnClickListener(v -> onMediaClick(item, v));
-        view.setContentDescription(getString(R.string.action_delete));
-        mediaPreviewBar.addView(view);
-        mediaQueued.add(item);
-        int queuedCount = mediaQueued.size();
-        if (queuedCount == 1) {
-            if (item.type == QueuedMedia.Type.VIDEO) {
-                enableButton(pickButton, false, false);
-            }
-        } else if (queuedCount >= Status.MAX_MEDIA_ATTACHMENTS) {
-            enableButton(pickButton, false, false);
-        }
-
-        updateHideMediaToggle();
-
-        if (item.readyStage != QueuedMedia.ReadyStage.UPLOADED) {
-            waitForMediaLatch.countUp();
-            uploadMedia(item);
-        }
-    }
-
     private void onMediaClick(QueuedMedia item, View view) {
         PopupMenu popup = new PopupMenu(this, view);
         final int addCaptionId = 1;
@@ -1565,10 +1422,7 @@ public final class ComposeActivity
     private void uploadMedia(final QueuedMedia item) {
         item.readyStage = QueuedMedia.ReadyStage.UPLOADING;
 
-        String mimeType = "image/jpeg";
-        if (!item.uri.toString().equals("")) {
-            mimeType = getContentResolver().getType(item.uri);
-        }
+        String mimeType = getContentResolver().getType(item.uri);
         MimeTypeMap map = MimeTypeMap.getSingleton();
         String fileExtension = map.getExtensionFromMimeType(mimeType);
         final String filename = String.format("%s_%s_%s.%s",
@@ -1863,15 +1717,6 @@ public final class ComposeActivity
                     String description) {
             this.type = type;
             this.uri = uri;
-            this.preview = preview;
-            this.mediaSize = mediaSize;
-            this.description = description;
-        }
-
-        QueuedMedia(Type type, byte[] content, ProgressImageView preview, long mediaSize,
-                    String description) {
-            this.type = type;
-            this.content = content;
             this.preview = preview;
             this.mediaSize = mediaSize;
             this.description = description;

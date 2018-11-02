@@ -354,14 +354,12 @@
 	
     <string name="action_quote">Quote</string>
     <string name="tuskyex_build_name">TuskyEx Kyori Build</string>
-    <string name="tuskyex_build_about">自分のためにいろいろとアレンジしてるTuskyのオリジナル版</string>
+    <string name="tuskyex_build_about">板橋丼のためにいろいろとアレンジしてるTuskyのオリジナル版</string>
     <string name="tuskyex_build_github">Github Project Page:\nhttps://github.com/kyori19/Tusky</string>
-    <string name="tuskyex_build_dev_acc">Developer Mastodon Account:\nhttps://odakyu.app/@ars42525</string>
+    <string name="tuskyex_build_dev_acc">Developer Mastodon Account:\nhttps://itabashi.0j0.jp/@ars42525</string>
     <string name="action_edit">Delete and Edit</string>
     <string name="visibility_unleakable">Unleakable: Post to followed user by you only.</string>
     <string name="pref_title_absolute_time">Use absolute time</string>
-    <string name="action_now_playing">Now Playing</string>
-    <string name="toast_notification_confirm">You need to allow Tusky to get notifications.</string>
     <string name="toot_area_hint">Quick Toot Area</string>
     <string name="hint_default_text">Default Hashtag</string>
     <string name="hint_input_text">Input text...</string>

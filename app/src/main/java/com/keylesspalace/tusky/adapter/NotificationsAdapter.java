@@ -64,7 +64,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
     private static final int VIEW_TYPE_FOLLOW = 2;
     private static final int VIEW_TYPE_PLACEHOLDER = 3;
 
-    private static final InputFilter[] COLLAPSE_INPUT_FILTER = new InputFilter[] { SmartLengthInputFilter.INSTANCE };
+    private static final InputFilter[] COLLAPSE_INPUT_FILTER = new InputFilter[]{SmartLengthInputFilter.INSTANCE};
     private static final InputFilter[] NO_INPUT_FILTER = new InputFilter[0];
 
     private List<NotificationViewData> notifications;
@@ -412,7 +412,8 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             }
         }
 
-        void setMessage(NotificationViewData.Concrete notificationViewData, LinkListener listener, BidiFormatter bidiFormatter) {
+        void setMessage(NotificationViewData.Concrete notificationViewData, LinkListener
+                listener, BidiFormatter bidiFormatter) {
             this.statusViewData = notificationViewData.getStatusViewData();
 
             String displayName = bidiFormatter.unicodeWrap(notificationViewData.getAccount().getName());
@@ -468,7 +469,8 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             this.notificationId = notificationId;
         }
 
-        void setAvatars(@Nullable String statusAvatarUrl, @Nullable String notificationAvatarUrl) {
+        void setAvatars(@Nullable String statusAvatarUrl, @Nullable String
+                notificationAvatarUrl) {
             Context context = statusAvatar.getContext();
 
             if (TextUtils.isEmpty(statusAvatarUrl)) {
@@ -506,7 +508,8 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             }
         }
 
-        private void setupContentAndSpoiler(NotificationViewData.Concrete notificationViewData, final LinkListener listener) {
+        private void setupContentAndSpoiler(NotificationViewData.Concrete notificationViewData,
+                                            final LinkListener listener) {
 
             boolean shouldShowContentIfSpoiler = notificationViewData.isExpanded();
             boolean hasSpoiler = !TextUtils.isEmpty(statusViewData.getSpoilerText());
