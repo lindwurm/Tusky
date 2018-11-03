@@ -20,6 +20,7 @@ import android.arch.lifecycle.Lifecycle;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -157,8 +158,7 @@ public class TimelineFragment extends SFragment implements
     private boolean alwaysShowSensitiveMedia;
 
     private FloatingActionButton composeButton;
-    private CheckBox useDefaultTag;
-    private EditText defaultTagEditText;
+    private TextView defaultTagInfo;
     private ImageView visibilityButton;
     private EditText tootEditText;
     private Button quickTootButton;
@@ -266,19 +266,14 @@ public class TimelineFragment extends SFragment implements
             layoutRoot.setVisibility(View.GONE);
             composeButton.setVisibility(View.GONE);
         } else {
-            useDefaultTag = rootView.findViewById(R.id.checkbox_use_default_text);
-            defaultTagEditText = rootView.findViewById(R.id.edittext_default_text);
+            defaultTagInfo = rootView.findViewById(R.id.default_tag_info);
             visibilityButton = rootView.findViewById(R.id.visibility_button);
             tootEditText = rootView.findViewById(R.id.toot_edit_text);
             quickTootButton = rootView.findViewById(R.id.toot_button);
 
             defPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-            restoreDefaultTagStatus();
-            useDefaultTag.setOnCheckedChangeListener((compoundButton, b) -> {
-                saveDefaultTagStatus();
-            });
-            defaultTagEditText.setOnFocusChangeListener((view, b) -> saveDefaultTagStatus());
+            updateDefaultTagInfo();
             updateVisibilityButton();
             visibilityButton.setOnClickListener(v -> setNextVisibility());
             quickTootButton.setOnClickListener(this::quickToot);
@@ -289,7 +284,6 @@ public class TimelineFragment extends SFragment implements
                     Intent composeIntent = new Intent(getContext(), ComposeActivity.class);
                     startActivity(composeIntent);
                 } else {
-                    saveDefaultTagStatus();
                     Intent composeIntent = new ComposeActivity.IntentBuilder()
                             .savedTootText(tootEditText.getText().toString())
                             .savedVisibility(getCurrentVisibility())
@@ -752,8 +746,9 @@ public class TimelineFragment extends SFragment implements
                 break;
             }
             case "use_default_text":
-            case "default_text": {
-                restoreDefaultTagStatus();
+            case "default_text":{
+                updateDefaultTagInfo();
+                break;
             }
         }
     }
@@ -1221,24 +1216,23 @@ public class TimelineFragment extends SFragment implements
         }
     };
 
-    private void restoreDefaultTagStatus() {
-        useDefaultTag.setChecked(defPrefs.getBoolean("use_default_text", false));
-        defaultTagEditText.setText(defPrefs.getString("default_text", ""));
-    }
-
-    private void saveDefaultTagStatus() {
-        defPrefs.edit()
-                .putBoolean("use_default_text", useDefaultTag.isChecked())
-                .putString("default_text", defaultTagEditText.getText().toString())
-                .apply();
+    private void updateDefaultTagInfo() {
+        boolean useDefaultTag = defPrefs.getBoolean("use_default_text", false);
+        String defaultText = defPrefs.getString("default_text", "");
+        if (useDefaultTag) {
+            defaultTagInfo.setText(String.format("%s : %s", getString(R.string.hint_default_text), defaultText));
+            defaultTagInfo.setTextColor(Color.YELLOW);
+        } else {
+            defaultTagInfo.setText(String.format("%s inactive", getString(R.string.hint_default_text)));
+            defaultTagInfo.setTextColor(Color.GRAY);
+        }
     }
 
     private void quickToot(View v) {
-        saveDefaultTagStatus();
-        if(tootEditText.getText().toString().length()>0) {
+        if (tootEditText.getText().toString().length() > 0) {
             Intent composeIntent = new ComposeActivity.IntentBuilder()
-                    .savedTootText(useDefaultTag.isChecked() ?
-                            (tootEditText.getText().toString() + " " + defaultTagEditText.getText().toString()) : tootEditText.getText().toString())
+                    .savedTootText(defPrefs.getBoolean("use_default_text", false) ?
+                            (tootEditText.getText().toString() + " " + defPrefs.getString("default_text", "")) : tootEditText.getText().toString())
                     .savedVisibility(getCurrentVisibility())
                     .tootRightNow(true)
                     .build(v.getContext());

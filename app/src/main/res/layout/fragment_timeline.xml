@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical">
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
@@ -21,7 +21,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:focusable="true"
-                android:focusableInTouchMode="true"/>
+                android:focusableInTouchMode="true" />
 
         </android.support.v4.widget.SwipeRefreshLayout>
 
@@ -54,8 +54,8 @@
             android:layout_margin="16dp"
             android:contentDescription="@string/action_compose"
             android:foregroundGravity="right|bottom"
-            app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
             app:srcCompat="@drawable/ic_create_24dp" />
 
     </android.support.constraint.ConstraintLayout>
@@ -64,63 +64,48 @@
         android:id="@+id/quick_compose_root"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0"
         android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/default_tag_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="viewEnd"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <CheckBox
-                android:id="@+id/checkbox_use_default_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <EditText
-                android:id="@+id/edittext_default_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/hint_default_text"
-                android:inputType="text"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" >
-
             <ImageView
                 android:id="@+id/visibility_button"
                 android:layout_width="24dp"
                 android:layout_height="match_parent"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="12dp"
                 android:layout_marginStart="6dp"
+                android:layout_marginTop="12dp"
                 android:layout_marginEnd="6dp"
-                android:scaleType="center"
-                android:contentDescription="@null"
+                android:layout_marginBottom="12dp"
                 android:clickable="true"
+                android:contentDescription="@null"
                 android:focusable="true"
+                android:scaleType="center"
                 app:srcCompat="@drawable/ic_public_24dp" />
-
 
             <EditText
                 android:id="@+id/toot_edit_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:minHeight="48dp"
                 android:layout_weight="1"
-                android:inputType="textMultiLine"
                 android:hint="@string/toot_area_hint"
+                android:inputType="textMultiLine"
+                android:minHeight="48dp"
                 tools:ignore="NestedWeights" />
 
             <Button
                 android:id="@+id/toot_button"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:textColor="@android:color/white"
-                android:text="@string/action_send_public" />
+                android:text="@string/action_send_public"
+                android:textColor="@android:color/white" />
 
         </LinearLayout>
 
