@@ -267,7 +267,7 @@ class SendTootService : Service(), Injectable {
         private var sendingNotificationId = -1 // use negative ids to not clash with other notis
         private var errorNotificationId = Int.MIN_VALUE // use even more negative ids to not clash with other notis
 
-        private var FORCE_LIMITED = arrayOf("itabashi.0j0.jp", "seichi.work")
+        private var FORCE_LIMITED = arrayOf("seichi.work")
 
         private fun limitedCompatServerString(visibility: Status.Visibility, domain: String): String {
             return if (FORCE_LIMITED.contains(domain) && visibility == Status.Visibility.UNLEAKABLE) {
