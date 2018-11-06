@@ -245,7 +245,7 @@ public final class ComposeActivity
 
     private SaveTootHelper saveTootHelper;
 
-    private SharedPreferences defPrefs;
+    private SharedPreferences preferences;
 
     private Paint counter;
     private String TOP_LEFT_STRING = "＿";
@@ -261,7 +261,7 @@ public final class ComposeActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String theme = preferences.getString("appTheme", ThemeUtils.APP_THEME_DEFAULT);
         if (theme.equals("black")) {
             setTheme(R.style.TuskyDialogActivityBlackTheme);
@@ -376,7 +376,6 @@ public final class ComposeActivity
 
         enableButton(emojiButton, false, false);
 
-        defPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         restoreDefaultTagStatus();
         useDefaultTag.setOnCheckedChangeListener((compoundButton, b) -> {
             saveDefaultTagStatus();
@@ -852,12 +851,12 @@ public final class ComposeActivity
     }
 
     private void restoreDefaultTagStatus() {
-        useDefaultTag.setChecked(defPrefs.getBoolean("use_default_text", false));
-        defaultTagEditText.setText(defPrefs.getString("default_text", ""));
+        useDefaultTag.setChecked(preferences.getBoolean("use_default_text", false));
+        defaultTagEditText.setText(preferences.getString("default_text", ""));
     }
 
     private void saveDefaultTagStatus() {
-        defPrefs.edit()
+        preferences.edit()
                 .putBoolean("use_default_text", useDefaultTag.isChecked())
                 .putString("default_text", defaultTagEditText.getText().toString())
                 .apply();
