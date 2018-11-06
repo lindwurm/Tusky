@@ -371,5 +371,8 @@
 
     <string name="unpin_action">Unpin</string>
     <string name="pin_action">Pin</string>
+    <string name="pref_limited_bandwidth_title">Limited Bandwidth Mode</string>
+    <string name="pref_limited_bandwidth_active">Use Limited Bandwidth Mode</string>
+    <string name="pref_limited_bandwidth_mobile">Active during using mobile network.</string>
 
 </resources>
