@@ -346,12 +346,12 @@
     <string name="license_apache_2">Licensed under the Apache License (copy below)</string>
     <string name="license_cc_by_4">CC-BY 4.0</string>
     <string name="license_cc_by_sa_4">CC-BY-SA 4.0</string>
-	
+
     <string name="profile_metadata_label">Profile metadata</string>
     <string name="profile_metadata_add">add data</string>
     <string name="profile_metadata_label_label">Label</string>
     <string name="profile_metadata_content_label">Content</string>
-	
+
     <string name="action_quote">Quote</string>
     <string name="tuskyex_build_name">TuskyEx Kyori Build</string>
     <string name="tuskyex_build_about">ただただ自分のための快適さを追い求めるオリジナル版のTusky</string>
@@ -375,5 +375,9 @@
     <string name="pref_limited_bandwidth_active">Use Limited Bandwidth Mode</string>
     <string name="pref_limited_bandwidth_mobile">Active during using mobile network.</string>
     <string name="tuskyex_build_dev_acc_button">\@ars42525@odakyu.app</string>
+    <string name="license_mit">Licensed under the MIT License (copy below)</string>
+    <string name="tuskyex_build_accelforce">Powered by Team AccelForce.</string>
+    <string name="hint_access_token">Access Token</string>
+    <string name="button_authorize">Authorize Now!</string>
 
 </resources>

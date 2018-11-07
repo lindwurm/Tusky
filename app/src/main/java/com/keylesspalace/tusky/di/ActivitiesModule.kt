@@ -18,6 +18,7 @@ package com.keylesspalace.tusky.di
 import com.keylesspalace.tusky.*
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
+import jp.kyori.tusky.AccessTokenLoginActivity
 
 /**
  * Created by charlag on 3/24/18.
@@ -85,5 +86,8 @@ abstract class ActivitiesModule {
 
     @ContributesAndroidInjector
     abstract fun contributesLicenseActivity(): LicenseActivity
+
+    @ContributesAndroidInjector
+    abstract fun contributesAccessTokenLoginActivity(): AccessTokenLoginActivity
 
 }

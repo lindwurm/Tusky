@@ -7,30 +7,31 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" /> <!-- For notifications -->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="22"/> <!-- for day/night mode -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> <!-- For sending toots with foreground service -->
+    <uses-permission
+        android:name="android.permission.ACCESS_COARSE_LOCATION"
+        android:maxSdkVersion="22" /> <!-- for day/night mode -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
-
+    <!-- For sending toots with foreground service -->
     <application
+        android:name=".TuskyApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:name=".TuskyApplication"
         android:supportsRtl="true"
         android:theme="@style/TuskyTheme">
-
         <activity
             android:name=".SplashActivity"
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".SavedTootActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden">
-        </activity>
+            android:configChanges="orientation|screenSize|keyboardHidden" />
         <activity
             android:name=".LoginActivity"
             android:windowSoftInputMode="adjustResize">
@@ -47,35 +48,44 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden">
-        </activity>
+            android:configChanges="orientation|screenSize|keyboardHidden" />
         <activity
             android:name=".ComposeActivity"
             android:theme="@style/TuskyDialogActivityTheme"
             android:windowSoftInputMode="stateVisible|adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="text/plain" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="image/*" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="video/*" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND_MULTIPLE" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="image/*" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND_MULTIPLE" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="video/*" />
             </intent-filter>
         </activity>
@@ -83,11 +93,13 @@
             android:name=".ViewThreadActivity"
             android:configChanges="orientation|screenSize" />
         <activity android:name=".ViewTagActivity" />
-        <activity android:name=".ViewMediaActivity"
-            android:theme="@style/TuskyBaseTheme"
-            android:configChanges="orientation|screenSize|keyboardHidden"/>
-        <activity android:name=".AccountActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden"/>
+        <activity
+            android:name=".ViewMediaActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:theme="@style/TuskyBaseTheme" />
+        <activity
+            android:name=".AccountActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
         <activity android:name=".EditProfileActivity" />
         <activity android:name=".PreferencesActivity" />
         <activity android:name=".FavouritesActivity" />
@@ -105,25 +117,27 @@
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
-            <meta-data android:name="android.app.searchable" android:resource="@xml/searchable" />
+
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
         </activity>
         <activity android:name=".ListsActivity" />
         <activity android:name=".ModalTimelineActivity" />
         <activity android:name=".LicenseActivity" />
 
         <receiver android:name=".receiver.NotificationClearBroadcastReceiver" />
-
         <receiver
             android:name=".receiver.SendStatusBroadcastReceiver"
             android:enabled="true"
             android:exported="false" />
 
         <service
-            tools:targetApi="24"
-            android:name="com.keylesspalace.tusky.service.TuskyTileService"
+            android:name=".service.TuskyTileService"
             android:icon="@drawable/ic_tusky"
             android:label="Compose Toot"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            tools:targetApi="24">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
@@ -139,6 +153,8 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <activity android:name="jp.kyori.tusky.AccessTokenLoginActivity" />
     </application>
 
 </manifest>

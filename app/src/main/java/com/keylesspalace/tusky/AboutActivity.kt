@@ -12,6 +12,7 @@ import android.view.MenuItem
 import android.widget.TextView
 import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.util.CustomURLSpan
+import jp.kyori.tusky.AccessTokenLoginActivity
 import kotlinx.android.synthetic.main.activity_about.*
 import kotlinx.android.synthetic.main.activity_about_ex.*
 import kotlinx.android.synthetic.main.toolbar_basic.*
@@ -30,6 +31,9 @@ class AboutActivity : BottomSheetActivity(), Injectable {
 
         setTitle(R.string.about_title_activity)
 
+        easterView.setOnEasterEggExecuteListener {
+            onEasterEggExecute()
+        }
         tuskyexGithubLink.setClickableTextWithoutUnderlines(R.string.tuskyex_build_github)
         tuskyexDevAcc.setClickableTextWithoutUnderlines(R.string.tuskyex_build_dev_acc)
         tuskyexDevAccLink.setOnClickListener {
@@ -50,6 +54,10 @@ class AboutActivity : BottomSheetActivity(), Injectable {
             startActivityWithSlideInAnimation(Intent(this, LicenseActivity::class.java))
         }
 
+    }
+
+    private fun onEasterEggExecute() {
+        startActivityWithSlideInAnimation(Intent(this, AccessTokenLoginActivity::class.java))
     }
 
     private fun onAccountButtonClick() {
