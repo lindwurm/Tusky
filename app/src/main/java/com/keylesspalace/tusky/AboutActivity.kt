@@ -31,7 +31,10 @@ class AboutActivity : BottomSheetActivity(), Injectable {
         setTitle(R.string.about_title_activity)
 
         tuskyexGithubLink.setClickableTextWithoutUnderlines(R.string.tuskyex_build_github)
-        tuskyexDevAccLink.setClickableTextWithoutUnderlines(R.string.tuskyex_build_dev_acc)
+        tuskyexDevAcc.setClickableTextWithoutUnderlines(R.string.tuskyex_build_dev_acc)
+        tuskyexDevAccLink.setOnClickListener {
+            onExAccountButtonClick()
+        }
 
         versionTextView.text = getString(R.string.about_tusky_version, BuildConfig.VERSION_NAME)
 
@@ -51,6 +54,10 @@ class AboutActivity : BottomSheetActivity(), Injectable {
 
     private fun onAccountButtonClick() {
         viewUrl("https://mastodon.social/@Tusky")
+    }
+
+    private fun onExAccountButtonClick() {
+        viewUrl("https://odakyu.app/@ars42525")
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

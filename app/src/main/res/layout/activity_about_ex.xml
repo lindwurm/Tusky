@@ -30,15 +30,27 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:textSize="20sp"/>
+            android:textSize="20sp"
+            android:textAlignment="center"/>
 
         <TextView
-            android:id="@+id/tuskyexDevAccLink"
+            android:id="@+id/tuskyexDevAcc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:layout_marginBottom="60dp"
             android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/tuskyexDevAccLink"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="60dp"
+            android:lineSpacingMultiplier="1.2"
+            android:text="@string/tuskyex_build_dev_acc_button"
+            android:textAlignment="center"
+            android:textAllCaps="false"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="@android:color/white" />
 
     </LinearLayout>
 
