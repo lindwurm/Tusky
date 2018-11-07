@@ -1221,7 +1221,11 @@ public class TimelineFragment extends SFragment implements
         String defaultText = defPrefs.getString("default_text", "");
         if (useDefaultTag) {
             defaultTagInfo.setText(String.format("%s : %s", getString(R.string.hint_default_text), defaultText));
-            defaultTagInfo.setTextColor(Color.YELLOW);
+            if(defPrefs.getString("appTheme", ThemeUtils.APP_THEME_DEFAULT).equals(ThemeUtils.THEME_DAY)){
+                defaultTagInfo.setTextColor(Color.RED);
+            }else {
+                defaultTagInfo.setTextColor(Color.YELLOW);
+            }
         } else {
             defaultTagInfo.setText(String.format("%s inactive", getString(R.string.hint_default_text)));
             defaultTagInfo.setTextColor(Color.GRAY);
