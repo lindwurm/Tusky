@@ -27,7 +27,10 @@ import android.preference.PreferenceManager
 import android.support.annotation.AttrRes
 import android.support.annotation.ColorInt
 import android.support.annotation.Px
-import android.support.design.widget.*
+import android.support.design.widget.AppBarLayout
+import android.support.design.widget.CollapsingToolbarLayout
+import android.support.design.widget.FloatingActionButton
+import android.support.design.widget.Snackbar
 import android.support.text.emoji.EmojiCompat
 import android.support.v4.app.ActivityOptionsCompat
 import android.support.v4.app.Fragment
@@ -549,8 +552,8 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasSupportF
         startActivityWithSlideInAnimation(intent)
     }
 
-    override fun onViewUrl(url: String) {
-        viewUrl(url)
+    override fun onViewUrl(url: String, text: String) {
+        viewUrl(url, text)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

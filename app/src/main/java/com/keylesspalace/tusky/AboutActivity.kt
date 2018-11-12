@@ -61,11 +61,11 @@ class AboutActivity : BottomSheetActivity(), Injectable {
     }
 
     private fun onAccountButtonClick() {
-        viewUrl("https://mastodon.social/@Tusky")
+        viewUrl("https://mastodon.social/@Tusky", getString(R.string.about_tusky_account))
     }
 
     private fun onExAccountButtonClick() {
-        viewUrl("https://odakyu.app/@ars42525")
+        viewUrl("https://odakyu.app/@ars42525", getString(R.string.tuskyex_build_dev_acc_button))
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

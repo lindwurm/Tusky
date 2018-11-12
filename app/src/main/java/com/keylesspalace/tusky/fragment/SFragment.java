@@ -113,8 +113,8 @@ public abstract class SFragment extends BaseFragment {
         bottomSheetActivity.viewAccount(accountId);
     }
 
-    public void onViewUrl(String url) {
-        bottomSheetActivity.viewUrl(url);
+    public void onViewUrl(String url, String text) {
+        bottomSheetActivity.viewUrl(url, text);
     }
 
     protected void reply(Status status) {

@@ -45,6 +45,8 @@ abstract class BottomSheetActivity : BaseActivity() {
     @Inject
     lateinit var mastodonApi: MastodonApi
 
+    val FORCE_BROWSER = arrayOf("投票を見る")
+
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
 
@@ -63,7 +65,12 @@ abstract class BottomSheetActivity : BaseActivity() {
 
     }
 
-    open fun viewUrl(url: String) {
+    open fun viewUrl(url: String, text: String) {
+        if(FORCE_BROWSER.contains(text)) {
+            openLink(url)
+            return
+        }
+
         if (!looksLikeMastodonUrl(url)) {
             openLink(url)
             return
