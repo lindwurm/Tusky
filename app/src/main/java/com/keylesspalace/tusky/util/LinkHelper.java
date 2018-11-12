@@ -22,6 +22,7 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
+import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
@@ -113,13 +114,18 @@ public class LinkHelper {
             }
             builder.removeSpan(span);
             builder.setSpan(customSpan, start, end, flags);
+
+            /* Add zero-width space after links in end of line to fix its too large hitbox.
+             * See also : https://github.com/tuskyapp/Tusky/issues/846
+             *            https://github.com/tuskyapp/Tusky/pull/916 */
             if(end >= builder.length()){
-                builder.insert(end, " ");
+                builder.insert(end, Html.fromHtml("&#8203;"));
             } else {
                 if(builder.subSequence(end, end + 1).toString().equals("\n")){
-                    builder.insert(end, " ");
+                    builder.insert(end, Html.fromHtml("&#8203;"));
                 }
             }
+
         }
         view.setText(builder);
         view.setLinksClickable(true);
