@@ -144,6 +144,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import jp.kyori.tusky.EditTextDialogFragment;
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
@@ -693,6 +694,19 @@ public final class ComposeActivity
                             int right = Math.max(start, end);
                             textEditor.getText().replace(left, right, text, 0, text.length());
                         }
+                    }
+                }
+            } else {
+                String url = intent.getDataString();
+                if (url != null) {
+                    String text = HttpUrl.get(url).queryParameter("text");
+                    Log.d("ComposeActivity", "onCreate: " + text);
+                    if (text != null) {
+                        int start = Math.max(textEditor.getSelectionStart(), 0);
+                        int end = Math.max(textEditor.getSelectionEnd(), 0);
+                        int left = Math.min(start, end);
+                        int right = Math.max(start, end);
+                        textEditor.getText().replace(left, right, text, 0, text.length());
                     }
                 }
             }
