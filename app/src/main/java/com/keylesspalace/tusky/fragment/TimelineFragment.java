@@ -163,7 +163,7 @@ public class TimelineFragment extends SFragment implements
     private EditText tootEditText;
     private Button quickTootButton;
 
-    private SharedPreferences defPrefs;
+    private SharedPreferences preferences;
 
     @Override
     protected TimelineCases timelineCases() {
@@ -271,8 +271,6 @@ public class TimelineFragment extends SFragment implements
             tootEditText = rootView.findViewById(R.id.toot_edit_text);
             quickTootButton = rootView.findViewById(R.id.toot_button);
 
-            defPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-
             updateDefaultTagInfo();
             updateVisibilityButton();
             visibilityButton.setOnClickListener(v -> setNextVisibility());
@@ -298,7 +296,7 @@ public class TimelineFragment extends SFragment implements
     }
 
     private void setupTimelinePreferences() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         preferences.registerOnSharedPreferenceChangeListener(this);
         alwaysShowSensitiveMedia = preferences.getBoolean("alwaysShowSensitiveMedia", false);
         boolean mediaPreviewEnabled = preferences.getBoolean("mediaPreviewEnabled", true);
@@ -1217,11 +1215,11 @@ public class TimelineFragment extends SFragment implements
     };
 
     private void updateDefaultTagInfo() {
-        boolean useDefaultTag = defPrefs.getBoolean("use_default_text", false);
-        String defaultText = defPrefs.getString("default_text", "");
+        boolean useDefaultTag = preferences.getBoolean("use_default_text", false);
+        String defaultText = preferences.getString("default_text", "");
         if (useDefaultTag) {
             defaultTagInfo.setText(String.format("%s : %s", getString(R.string.hint_default_text), defaultText));
-            if(defPrefs.getString("appTheme", ThemeUtils.APP_THEME_DEFAULT).equals(ThemeUtils.THEME_DAY)){
+            if(preferences.getString("appTheme", ThemeUtils.APP_THEME_DEFAULT).equals(ThemeUtils.THEME_DAY)){
                 defaultTagInfo.setTextColor(Color.RED);
             }else {
                 defaultTagInfo.setTextColor(Color.YELLOW);
@@ -1235,8 +1233,8 @@ public class TimelineFragment extends SFragment implements
     private void quickToot(View v) {
         if (tootEditText.getText().toString().length() > 0) {
             Intent composeIntent = new ComposeActivity.IntentBuilder()
-                    .savedTootText(defPrefs.getBoolean("use_default_text", false) ?
-                            (tootEditText.getText().toString() + " " + defPrefs.getString("default_text", "")) : tootEditText.getText().toString())
+                    .savedTootText(preferences.getBoolean("use_default_text", false) ?
+                            (tootEditText.getText().toString() + " " + preferences.getString("default_text", "")) : tootEditText.getText().toString())
                     .savedVisibility(getCurrentVisibility())
                     .tootRightNow(true)
                     .build(v.getContext());
@@ -1246,7 +1244,7 @@ public class TimelineFragment extends SFragment implements
     }
 
     private Status.Visibility getCurrentVisibility() {
-        int visibilityInt = defPrefs.getInt("current_visibility", 1);
+        int visibilityInt = preferences.getInt("current_visibility", 1);
         return Status.Visibility.byNum(visibilityInt);
     }
 
@@ -1281,7 +1279,7 @@ public class TimelineFragment extends SFragment implements
             default:
                 visibility = Status.Visibility.PUBLIC;
         }
-        defPrefs.edit()
+        preferences.edit()
                 .putInt("current_visibility", visibility.getNum())
                 .apply();
         updateVisibilityButton();
