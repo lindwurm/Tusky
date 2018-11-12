@@ -379,5 +379,6 @@
     <string name="tuskyex_build_accelforce">Powered by Team AccelForce.</string>
     <string name="hint_access_token">Access Token</string>
     <string name="button_authorize">Authorize Now!</string>
+    <string name="pref_limited_bandwidth_timeline">Reduce timeline auto reload after toot</string>
 
 </resources>

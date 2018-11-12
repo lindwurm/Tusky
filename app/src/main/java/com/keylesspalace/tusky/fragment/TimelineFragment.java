@@ -15,6 +15,7 @@
 
 package com.keylesspalace.tusky.fragment;
 
+import android.app.Activity;
 import android.arch.core.util.Function;
 import android.arch.lifecycle.Lifecycle;
 import android.content.Context;
@@ -22,6 +23,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -44,7 +47,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -92,6 +94,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static android.content.Context.CONNECTIVITY_SERVICE;
 import static com.uber.autodispose.AutoDispose.autoDisposable;
 import static com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from;
 
@@ -156,6 +159,9 @@ public class TimelineFragment extends SFragment implements
     private boolean didLoadEverythingBottom;
 
     private boolean alwaysShowSensitiveMedia;
+
+    private boolean reduceTimelineRoading;
+    private boolean checkMobileNetwork;
 
     private FloatingActionButton composeButton;
     private TextView defaultTagInfo;
@@ -320,6 +326,8 @@ public class TimelineFragment extends SFragment implements
             filterRemoveRegexMatcher = Pattern.compile(regexFilter, Pattern.CASE_INSENSITIVE)
                     .matcher("");
         }
+
+        updateLimitedBandwidthStatus();
     }
 
     private void setupSwipeRefreshLayout() {
@@ -744,11 +752,22 @@ public class TimelineFragment extends SFragment implements
                 break;
             }
             case "use_default_text":
-            case "default_text":{
+            case "default_text": {
                 updateDefaultTagInfo();
                 break;
             }
+            case "limitedBandwidthActive":
+            case "limitedBandwidthOnlyMobileNetwork":
+            case "limitedBandwidthTimelineRoading": {
+                updateLimitedBandwidthStatus();
+                break;
+            }
         }
+    }
+
+    private void updateLimitedBandwidthStatus() {
+        reduceTimelineRoading = preferences.getBoolean("limitedBandwidthActive", false) && preferences.getBoolean("limitedBandwidthTimelineRoading", true);
+        checkMobileNetwork = preferences.getBoolean("limitedBandwidthOnlyMobileNetwork", true);
     }
 
     @Override
@@ -1137,7 +1156,24 @@ public class TimelineFragment extends SFragment implements
             case LIST:
                 return;
         }
-        onRefresh();
+
+        boolean reloadTimeline = true;
+
+        if (reduceTimelineRoading) {
+            reloadTimeline = false;
+            Activity activity = getActivity();
+            if (checkMobileNetwork && activity != null) {
+                ConnectivityManager connectivityManager = (ConnectivityManager) activity.getSystemService(CONNECTIVITY_SERVICE);
+                NetworkInfo info = connectivityManager.getActiveNetworkInfo();
+                if (info != null && info.getType() == ConnectivityManager.TYPE_WIFI) {
+                    reloadTimeline = true;
+                }
+            }
+        }
+
+        if (reloadTimeline) {
+            onRefresh();
+        }
     }
 
     private List<Either<Placeholder, Status>> liftStatusList(List<Status> list) {
@@ -1219,9 +1255,9 @@ public class TimelineFragment extends SFragment implements
         String defaultText = preferences.getString("default_text", "");
         if (useDefaultTag) {
             defaultTagInfo.setText(String.format("%s : %s", getString(R.string.hint_default_text), defaultText));
-            if(preferences.getString("appTheme", ThemeUtils.APP_THEME_DEFAULT).equals(ThemeUtils.THEME_DAY)){
+            if (preferences.getString("appTheme", ThemeUtils.APP_THEME_DEFAULT).equals(ThemeUtils.THEME_DAY)) {
                 defaultTagInfo.setTextColor(Color.RED);
-            }else {
+            } else {
                 defaultTagInfo.setTextColor(Color.YELLOW);
             }
         } else {
