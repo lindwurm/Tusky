@@ -64,6 +64,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -179,6 +180,7 @@ public final class ComposeActivity
     private static final String SAVED_TOOT_UID_EXTRA = "saved_toot_uid";
     private static final String SAVED_TOOT_TEXT_EXTRA = "saved_toot_text";
     private static final String SAVED_JSON_URLS_EXTRA = "saved_json_urls";
+    private static final String SAVED_JSON_DESCRIPTIONS_EXTRA = "saved_json_descriptions";
     private static final String SAVED_TOOT_VISIBILITY_EXTRA = "saved_toot_visibility";
     private static final String IN_REPLY_TO_ID_EXTRA = "in_reply_to_id";
     private static final String QUOTE_ID_EXTRA = "quote_id";
@@ -192,6 +194,8 @@ public final class ComposeActivity
     private static final String TOOT_RIGHT_NOW = "toot_right_now";
     // Mastodon only counts URLs as this long in terms of status character limits
     static final int MAXIMUM_URL_LENGTH = 23;
+    // https://github.com/tootsuite/mastodon/blob/1656663/app/models/media_attachment.rb#L94
+    private static final int MEDIA_DESCRIPTION_CHARACTER_LIMIT = 420;
 
     private static final String[] CAN_USE_UNLEAKABLE = {"itabashi.0j0.jp", "odakyu.app", "seichi.work"};
     private static final String[] CAN_USE_QUOTE_ID = {"odakyu.app", "seichi.work", "biwakodon.com", "dtp-mstdn.jp", "nitiasa.com"};
@@ -247,6 +251,7 @@ public final class ComposeActivity
     int thumbnailViewSize;
 
     private SaveTootHelper saveTootHelper;
+    private Gson gson = new Gson();
 
     private SharedPreferences preferences;
 
@@ -450,7 +455,7 @@ public final class ComposeActivity
             }
             photoUploadUri = savedInstanceState.getParcelable("photoUploadUri");
         } else {
-            statusMarkSensitive = false;
+            statusMarkSensitive = activeAccount.getDefaultMediaSensitivity();
             startingHideText = false;
             photoUploadUri = null;
         }
@@ -461,15 +466,14 @@ public final class ComposeActivity
 
         String[] mentionedUsernames = null;
         ArrayList<String> loadedDraftMediaUris = null;
+        ArrayList<String> loadedDraftMediaDescriptions = null;
         inReplyToId = null;
         quoteId = null;
         quoteUrl = null;
         if (intent != null) {
 
             if (startingVisibility == Status.Visibility.UNKNOWN) {
-                Status.Visibility preferredVisibility = Status.Visibility.byString(
-                        preferences.getString("defaultPostPrivacy",
-                                Status.Visibility.PUBLIC.serverString()));
+                Status.Visibility preferredVisibility = activeAccount.getDefaultPostPrivacy();
                 Status.Visibility replyVisibility = Status.Visibility.byNum(
                         intent.getIntExtra(REPLY_VISIBILITY_EXTRA, Status.Visibility.UNKNOWN.getNum()));
 
@@ -508,10 +512,16 @@ public final class ComposeActivity
                 textEditor.setSelection(0);
             }
 
+            // try to redo a list of media
             String savedJsonUrls = intent.getStringExtra(SAVED_JSON_URLS_EXTRA);
+            String savedJsonDescriptions = intent.getStringExtra(SAVED_JSON_DESCRIPTIONS_EXTRA);
             if (!TextUtils.isEmpty(savedJsonUrls)) {
-                // try to redo a list of media
-                loadedDraftMediaUris = new Gson().fromJson(savedJsonUrls,
+                loadedDraftMediaUris = gson.fromJson(savedJsonUrls,
+                        new TypeToken<ArrayList<String>>() {
+                        }.getType());
+            }
+            if (!TextUtils.isEmpty(savedJsonDescriptions)) {
+                loadedDraftMediaDescriptions = gson.fromJson(savedJsonDescriptions,
                         new TypeToken<ArrayList<String>>() {
                         }.getType());
             }
@@ -636,10 +646,14 @@ public final class ComposeActivity
 
         // These can only be added after everything affected by the media queue is initialized.
         if (!ListUtils.isEmpty(loadedDraftMediaUris)) {
-            for (String uriString : loadedDraftMediaUris) {
-                Uri uri = Uri.parse(uriString);
+            for (int mediaIndex = 0; mediaIndex < loadedDraftMediaUris.size(); ++mediaIndex) {
+                Uri uri = Uri.parse(loadedDraftMediaUris.get(mediaIndex));
                 long mediaSize = getMediaSize(getContentResolver(), uri);
-                pickMedia(uri, mediaSize);
+                String description = null;
+                if (loadedDraftMediaDescriptions != null && mediaIndex < loadedDraftMediaDescriptions.size()) {
+                    description = loadedDraftMediaDescriptions.get(mediaIndex);
+                }
+                pickMedia(uri, mediaSize, description);
             }
         } else if (savedMediaQueued != null) {
             for (SavedQueuedMedia item : savedMediaQueued) {
@@ -679,7 +693,7 @@ public final class ComposeActivity
                     }
                     for (Uri uri : uriList) {
                         long mediaSize = getMediaSize(getContentResolver(), uri);
-                        pickMedia(uri, mediaSize);
+                        pickMedia(uri, mediaSize, null);
                     }
                 } else if (type.equals("text/plain")) {
                     String action = intent.getAction();
@@ -710,6 +724,9 @@ public final class ComposeActivity
                     }
                 }
             }
+        }
+        for (QueuedMedia item : mediaQueued) {
+            item.preview.setChecked(!TextUtils.isEmpty(item.description));
         }
 
         counter = new Paint();
@@ -1065,7 +1082,7 @@ public final class ComposeActivity
         } else {
             mediaSize = MEDIA_SIZE_UNKNOWN;
         }
-        pickMedia(uri, mediaSize);
+        pickMedia(uri, mediaSize, null);
 
         currentInputContentInfo = inputContentInfo;
         currentFlags = flags;
@@ -1077,16 +1094,18 @@ public final class ComposeActivity
                             String spoilerText, @Nullable String quoteId, @Nullable String quoteUrl) {
         ArrayList<String> mediaIds = new ArrayList<>();
         ArrayList<Uri> mediaUris = new ArrayList<>();
+        ArrayList<String> mediaDescriptions = new ArrayList<>();
         for (QueuedMedia item : mediaQueued) {
             mediaIds.add(item.id);
             mediaUris.add(item.uri);
+            mediaDescriptions.add(item.description);
         }
 
         Intent sendIntent;
 
         if (Arrays.asList(CAN_USE_QUOTE_ID).contains(accountManager.getActiveAccount().getDomain())) {
             sendIntent = SendTootService.sendTootIntent(this, content, spoilerText,
-                    visibility, sensitive, mediaIds, mediaUris, inReplyToId,
+                    visibility, sensitive, mediaIds, mediaUris, mediaDescriptions, inReplyToId,
                     getIntent().getStringExtra(REPLYING_STATUS_CONTENT_EXTRA),
                     getIntent().getStringExtra(REPLYING_STATUS_AUTHOR_USERNAME_EXTRA),
                     getIntent().getStringExtra(SAVED_JSON_URLS_EXTRA),
@@ -1096,7 +1115,7 @@ public final class ComposeActivity
                 content += "\n~~~~~~~~~~\n[" + quoteUrl + "]";
             }
             sendIntent = SendTootService.sendTootIntent(this, content, spoilerText,
-                    visibility, sensitive, mediaIds, mediaUris, inReplyToId,
+                    visibility, sensitive, mediaIds, mediaUris, mediaDescriptions, inReplyToId,
                     getIntent().getStringExtra(REPLYING_STATUS_CONTENT_EXTRA),
                     getIntent().getStringExtra(REPLYING_STATUS_AUTHOR_USERNAME_EXTRA),
                     getIntent().getStringExtra(SAVED_JSON_URLS_EXTRA),
@@ -1252,8 +1271,8 @@ public final class ComposeActivity
                 colorActive ? android.R.attr.textColorTertiary : R.attr.compose_media_button_disabled_tint);
     }
 
-    private void addMediaToQueue(QueuedMedia.Type type, Bitmap preview, Uri uri, long mediaSize) {
-        addMediaToQueue(null, type, preview, uri, mediaSize, null, null);
+    private void addMediaToQueue(QueuedMedia.Type type, Bitmap preview, Uri uri, long mediaSize, @Nullable String description) {
+        addMediaToQueue(null, type, preview, uri, mediaSize, null, description);
     }
 
     private void addMediaToQueue(@Nullable String id, QueuedMedia.Type type, Bitmap preview, Uri uri,
@@ -1364,16 +1383,17 @@ public final class ComposeActivity
         ((LinearLayout.LayoutParams) imageView.getLayoutParams()).setMargins(0, margin, 0, 0);
 
         EditText input = new EditText(this);
-        input.setHint(R.string.hint_describe_for_visually_impaired);
+        input.setHint(getString(R.string.hint_describe_for_visually_impaired, MEDIA_DESCRIPTION_CHARACTER_LIMIT));
         dialogLayout.addView(input);
         ((LinearLayout.LayoutParams) input.getLayoutParams()).setMargins(margin, margin, margin, margin);
-        input.setLines(1);
+        input.setLines(2);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         input.setText(item.description);
+        input.setFilters(new InputFilter[] { new InputFilter.LengthFilter(MEDIA_DESCRIPTION_CHARACTER_LIMIT) });
 
         DialogInterface.OnClickListener okListener = (dialog, which) -> {
-            mastodonApi.updateMedia(item.id, input.getText().toString())
-                    .enqueue(new Callback<Attachment>() {
+                Runnable updateDescription = () -> {
+                    mastodonApi.updateMedia(item.id, input.getText().toString()).enqueue(new Callback<Attachment>() {
                         @Override
                         public void onResponse(@NonNull Call<Attachment> call, @NonNull Response<Attachment> response) {
                             Attachment attachment = response.body();
@@ -1384,13 +1404,23 @@ public final class ComposeActivity
                             } else {
                                 showFailedCaptionMessage();
                             }
+                            item.updateDescription = null;
                         }
 
                         @Override
                         public void onFailure(@NonNull Call<Attachment> call, @NonNull Throwable t) {
                             showFailedCaptionMessage();
+                            item.updateDescription = null;
                         }
                     });
+                };
+
+                if (item.readyStage == QueuedMedia.ReadyStage.UPLOADED) {
+                    updateDescription.run();
+                } else {
+                    // media is still uploading, queue description update for when it finishes
+                    item.updateDescription = updateDescription;
+                }
         };
 
         AlertDialog dialog = new AlertDialog.Builder(this)
@@ -1504,6 +1534,9 @@ public final class ComposeActivity
             public void onResponse(@NonNull Call<Attachment> call, @NonNull retrofit2.Response<Attachment> response) {
                 if (response.isSuccessful()) {
                     onUploadSuccess(item, response.body());
+                    if (item.updateDescription != null) {
+                        item.updateDescription.run();
+                    }
                 } else {
                     Log.d(TAG, "Upload request failed. " + response.message());
                     onUploadFailure(item, call.isCanceled());
@@ -1514,6 +1547,7 @@ public final class ComposeActivity
             public void onFailure(@NonNull Call<Attachment> call, @NonNull Throwable t) {
                 Log.d(TAG, "Upload request failed. " + t.getMessage());
                 onUploadFailure(item, call.isCanceled());
+                item.updateDescription = null;
             }
         });
     }
@@ -1558,15 +1592,15 @@ public final class ComposeActivity
         if (resultCode == RESULT_OK && requestCode == MEDIA_PICK_RESULT && intent != null) {
             Uri uri = intent.getData();
             long mediaSize = getMediaSize(getContentResolver(), uri);
-            pickMedia(uri, mediaSize);
+            pickMedia(uri, mediaSize, null);
         } else if (resultCode == RESULT_OK && requestCode == MEDIA_TAKE_PHOTO_RESULT) {
             long mediaSize = getMediaSize(getContentResolver(), photoUploadUri);
-            pickMedia(photoUploadUri, mediaSize);
+            pickMedia(photoUploadUri, mediaSize, null);
         }
     }
 
 
-    private void pickMedia(Uri uri, long mediaSize) {
+    private void pickMedia(Uri uri, long mediaSize, String description) {
         if (mediaSize == MEDIA_SIZE_UNKNOWN) {
             displayTransientError(R.string.error_media_upload_opening);
             return;
@@ -1588,7 +1622,7 @@ public final class ComposeActivity
                     }
                     Bitmap bitmap = getVideoThumbnail(this, uri, thumbnailViewSize);
                     if (bitmap != null) {
-                        addMediaToQueue(QueuedMedia.Type.VIDEO, bitmap, uri, mediaSize);
+                        addMediaToQueue(QueuedMedia.Type.VIDEO, bitmap, uri, mediaSize, description);
                     } else {
                         displayTransientError(R.string.error_media_upload_opening);
                     }
@@ -1597,7 +1631,7 @@ public final class ComposeActivity
                 case "image": {
                     Bitmap bitmap = getImageThumbnail(contentResolver, uri, thumbnailViewSize);
                     if (bitmap != null) {
-                        addMediaToQueue(QueuedMedia.Type.IMAGE, bitmap, uri, mediaSize);
+                        addMediaToQueue(QueuedMedia.Type.IMAGE, bitmap, uri, mediaSize, description);
                     } else {
                         displayTransientError(R.string.error_media_upload_opening);
                     }
@@ -1670,14 +1704,17 @@ public final class ComposeActivity
 
     private void saveDraftAndFinish() {
         ArrayList<String> mediaUris = new ArrayList<>();
+        ArrayList<String> mediaDescriptions = new ArrayList<>();
         for (QueuedMedia item : mediaQueued) {
             mediaUris.add(item.uri.toString());
+            mediaDescriptions.add(item.description);
         }
 
         saveTootHelper.saveToot(textEditor.getText().toString(),
                 contentWarningEditor.getText().toString(),
                 getIntent().getStringExtra("saved_json_urls"),
                 mediaUris,
+                mediaDescriptions,
                 savedTootUid,
                 inReplyToId,
                 getIntent().getStringExtra(REPLYING_STATUS_CONTENT_EXTRA),
@@ -1752,6 +1789,7 @@ public final class ComposeActivity
         byte[] content;
         long mediaSize;
         String description;
+        Runnable updateDescription;
 
         QueuedMedia(Type type, Uri uri, ProgressImageView preview, long mediaSize,
                     String description) {
@@ -1837,6 +1875,8 @@ public final class ComposeActivity
         @Nullable
         private String savedJsonUrls;
         @Nullable
+        private String savedJsonDescriptions;
+        @Nullable
         private Collection<String> mentionedUsernames;
         @Nullable
         private String inReplyToId;
@@ -1869,6 +1909,11 @@ public final class ComposeActivity
 
         public IntentBuilder savedJsonUrls(String jsonUrls) {
             this.savedJsonUrls = jsonUrls;
+            return this;
+        }
+
+        public IntentBuilder savedJsonDescriptions(String jsonDescriptions) {
+            this.savedJsonDescriptions = jsonDescriptions;
             return this;
         }
 
@@ -1938,6 +1983,9 @@ public final class ComposeActivity
             }
             if (savedJsonUrls != null) {
                 intent.putExtra(SAVED_JSON_URLS_EXTRA, savedJsonUrls);
+            }
+            if (savedJsonDescriptions != null) {
+                intent.putExtra(SAVED_JSON_DESCRIPTIONS_EXTRA, savedJsonDescriptions);
             }
             if (mentionedUsernames != null) {
                 String[] usernames = mentionedUsernames.toArray(new String[0]);

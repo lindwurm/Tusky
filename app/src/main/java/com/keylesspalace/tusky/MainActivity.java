@@ -23,7 +23,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
-import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.text.emoji.EmojiCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -81,15 +80,14 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
     private static final long DRAWER_ITEM_ADD_ACCOUNT = -13;
     private static final long DRAWER_ITEM_EDIT_PROFILE = 0;
     private static final long DRAWER_ITEM_FAVOURITES = 1;
-    private static final long DRAWER_ITEM_MUTED_USERS = 2;
-    private static final long DRAWER_ITEM_BLOCKED_USERS = 3;
-    private static final long DRAWER_ITEM_SEARCH = 4;
-    private static final long DRAWER_ITEM_PREFERENCES = 5;
-    private static final long DRAWER_ITEM_ABOUT = 6;
-    private static final long DRAWER_ITEM_LOG_OUT = 7;
-    private static final long DRAWER_ITEM_FOLLOW_REQUESTS = 8;
-    private static final long DRAWER_ITEM_SAVED_TOOT = 9;
-    private static final long DRAWER_ITEM_LISTS = 10;
+    private static final long DRAWER_ITEM_LISTS = 2;
+    private static final long DRAWER_ITEM_SEARCH = 3;
+    private static final long DRAWER_ITEM_SAVED_TOOT = 4;
+    private static final long DRAWER_ITEM_ACCOUNT_SETTINGS = 5;
+    private static final long DRAWER_ITEM_SETTINGS = 6;
+    private static final long DRAWER_ITEM_ABOUT = 7;
+    private static final long DRAWER_ITEM_LOG_OUT = 8;
+    private static final long DRAWER_ITEM_FOLLOW_REQUESTS = 9;
 
     @Inject
     public DispatchingAndroidInjector<Fragment> fragmentInjector;
@@ -204,9 +202,9 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
 
         // Setup push notifications
         if (NotificationHelper.areNotificationsEnabled(this, accountManager)) {
-            enablePushNotifications();
+            NotificationHelper.enablePullNotifications();
         } else {
-            disablePushNotifications();
+            NotificationHelper.disablePullNotifications();
         }
 
         eventHub.getEvents()
@@ -302,22 +300,17 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
             }
         });
 
-        VectorDrawableCompat muteDrawable = VectorDrawableCompat.create(getResources(),
-                R.drawable.ic_mute_24dp, getTheme());
-        ThemeUtils.setDrawableTint(this, muteDrawable, R.attr.toolbar_icon_tint);
-
-        List<IDrawerItem> listItems = new ArrayList<>(11);
+        List<IDrawerItem> listItems = new ArrayList<>(10);
         listItems.add(new PrimaryDrawerItem().withIdentifier(DRAWER_ITEM_EDIT_PROFILE).withName(R.string.action_edit_profile).withSelectable(false).withIcon(GoogleMaterial.Icon.gmd_person));
         listItems.add(new PrimaryDrawerItem().withIdentifier(DRAWER_ITEM_FAVOURITES).withName(R.string.action_view_favourites).withSelectable(false).withIcon(GoogleMaterial.Icon.gmd_star));
         listItems.add(new PrimaryDrawerItem().withIdentifier(DRAWER_ITEM_LISTS).withName(R.string.action_lists).withSelectable(false).withIcon(GoogleMaterial.Icon.gmd_list));
-        listItems.add(new PrimaryDrawerItem().withIdentifier(DRAWER_ITEM_MUTED_USERS).withName(R.string.action_view_mutes).withSelectable(false).withIcon(muteDrawable));
-        listItems.add(new PrimaryDrawerItem().withIdentifier(DRAWER_ITEM_BLOCKED_USERS).withName(R.string.action_view_blocks).withSelectable(false).withIcon(GoogleMaterial.Icon.gmd_block));
         listItems.add(new PrimaryDrawerItem().withIdentifier(DRAWER_ITEM_SEARCH).withName(R.string.action_search).withSelectable(false).withIcon(GoogleMaterial.Icon.gmd_search));
-        listItems.add(new PrimaryDrawerItem().withIdentifier(DRAWER_ITEM_SAVED_TOOT).withName(R.string.action_access_saved_toot).withSelectable(false).withIcon(GoogleMaterial.Icon.gmd_save));
+        listItems.add(new PrimaryDrawerItem().withIdentifier(DRAWER_ITEM_SAVED_TOOT).withName(R.string.action_access_saved_toot).withSelectable(false).withIcon(R.drawable.ic_notebook).withIconTintingEnabled(true));
         listItems.add(new DividerDrawerItem());
-        listItems.add(new SecondaryDrawerItem().withIdentifier(DRAWER_ITEM_PREFERENCES).withName(R.string.action_view_preferences).withSelectable(false).withIcon(GoogleMaterial.Icon.gmd_settings));
+        listItems.add(new SecondaryDrawerItem().withIdentifier(DRAWER_ITEM_ACCOUNT_SETTINGS).withName(R.string.action_view_account_preferences).withSelectable(false).withIcon(R.drawable.ic_account_settings).withIconTintingEnabled(true));
+        listItems.add(new SecondaryDrawerItem().withIdentifier(DRAWER_ITEM_SETTINGS).withName(R.string.action_view_preferences).withSelectable(false).withIcon(GoogleMaterial.Icon.gmd_settings));
         listItems.add(new SecondaryDrawerItem().withIdentifier(DRAWER_ITEM_ABOUT).withName(R.string.about_title_activity).withSelectable(false).withIcon(GoogleMaterial.Icon.gmd_info));
-        listItems.add(new SecondaryDrawerItem().withIdentifier(DRAWER_ITEM_LOG_OUT).withName(R.string.action_logout).withSelectable(false).withIcon(GoogleMaterial.Icon.gmd_exit_to_app));
+        listItems.add(new SecondaryDrawerItem().withIdentifier(DRAWER_ITEM_LOG_OUT).withName(R.string.action_logout).withSelectable(false).withIcon(R.drawable.ic_logout).withIconTintingEnabled(true));
 
         drawer = new DrawerBuilder()
                 .withActivity(this)
@@ -335,19 +328,14 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
                         } else if (drawerItemIdentifier == DRAWER_ITEM_FAVOURITES) {
                             Intent intent = new Intent(MainActivity.this, FavouritesActivity.class);
                             startActivityWithSlideInAnimation(intent);
-                        } else if (drawerItemIdentifier == DRAWER_ITEM_MUTED_USERS) {
-                            Intent intent = new Intent(MainActivity.this, AccountListActivity.class);
-                            intent.putExtra("type", AccountListActivity.Type.MUTES);
-                            startActivityWithSlideInAnimation(intent);
-                        } else if (drawerItemIdentifier == DRAWER_ITEM_BLOCKED_USERS) {
-                            Intent intent = new Intent(MainActivity.this, AccountListActivity.class);
-                            intent.putExtra("type", AccountListActivity.Type.BLOCKS);
-                            startActivityWithSlideInAnimation(intent);
                         } else if (drawerItemIdentifier == DRAWER_ITEM_SEARCH) {
                             Intent intent = new Intent(MainActivity.this, SearchActivity.class);
                             startActivityWithSlideInAnimation(intent);
-                        } else if (drawerItemIdentifier == DRAWER_ITEM_PREFERENCES) {
-                            Intent intent = new Intent(MainActivity.this, PreferencesActivity.class);
+                        } else if (drawerItemIdentifier == DRAWER_ITEM_ACCOUNT_SETTINGS) {
+                            Intent intent = PreferencesActivity.newIntent(MainActivity.this, PreferencesActivity.ACCOUNT_PREFERENCES);
+                            startActivityWithSlideInAnimation(intent);
+                        } else if (drawerItemIdentifier == DRAWER_ITEM_SETTINGS) {
+                            Intent intent = PreferencesActivity.newIntent(MainActivity.this, PreferencesActivity.GENERAL_PREFERENCES);
                             startActivityWithSlideInAnimation(intent);
                         } else if (drawerItemIdentifier == DRAWER_ITEM_ABOUT) {
                             Intent intent = new Intent(MainActivity.this, AboutActivity.class);
@@ -443,8 +431,9 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
 
                         AccountEntity newAccount = accountManager.logActiveAccountOut();
 
-                        if (!NotificationHelper.areNotificationsEnabled(MainActivity.this, accountManager))
-                            disablePushNotifications();
+                        if (!NotificationHelper.areNotificationsEnabled(MainActivity.this, accountManager)) {
+                            NotificationHelper.disablePullNotifications();
+                        }
 
                         Intent intent;
                         if (newAccount == null) {

@@ -60,10 +60,12 @@ import com.keylesspalace.tusky.appstore.BlockEvent;
 import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.FavoriteEvent;
 import com.keylesspalace.tusky.appstore.MuteEvent;
+import com.keylesspalace.tusky.appstore.PreferenceChangedEvent;
 import com.keylesspalace.tusky.appstore.ReblogEvent;
 import com.keylesspalace.tusky.appstore.StatusComposedEvent;
 import com.keylesspalace.tusky.appstore.StatusDeletedEvent;
 import com.keylesspalace.tusky.appstore.UnfollowEvent;
+import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.di.Injectable;
 import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.interfaces.ActionButtonActivity;
@@ -101,7 +103,6 @@ import static com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvid
 public class TimelineFragment extends SFragment implements
         SwipeRefreshLayout.OnRefreshListener,
         StatusActionListener,
-        SharedPreferences.OnSharedPreferenceChangeListener,
         Injectable {
     private static final String TAG = "TimelineF"; // logging tag
     private static final String KIND_ARG = "kind";
@@ -131,6 +132,9 @@ public class TimelineFragment extends SFragment implements
     public TimelineCases timelineCases;
     @Inject
     public EventHub eventHub;
+    @Inject
+    public AccountManager accountManager;
+
     private boolean eventRegistered = false;
 
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -303,9 +307,8 @@ public class TimelineFragment extends SFragment implements
 
     private void setupTimelinePreferences() {
         preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        preferences.registerOnSharedPreferenceChangeListener(this);
-        alwaysShowSensitiveMedia = preferences.getBoolean("alwaysShowSensitiveMedia", false);
-        boolean mediaPreviewEnabled = preferences.getBoolean("mediaPreviewEnabled", true);
+        alwaysShowSensitiveMedia = accountManager.getActiveAccount().getAlwaysShowSensitiveMedia();
+        boolean mediaPreviewEnabled = accountManager.getActiveAccount().getMediaPreviewEnabled();
         adapter.setMediaPreviewEnabled(mediaPreviewEnabled);
         boolean useAbsoluteTime = preferences.getBoolean("absoluteTimeView", false);
         adapter.setUseAbsoluteTime(useAbsoluteTime);
@@ -474,6 +477,8 @@ public class TimelineFragment extends SFragment implements
                         } else if (event instanceof StatusComposedEvent) {
                             Status status = ((StatusComposedEvent) event).getStatus();
                             handleStatusComposeEvent(status);
+                        } else if (event instanceof PreferenceChangedEvent) {
+                            onPreferenceChanged(((PreferenceChangedEvent) event).getPreferenceKey());
                         }
                     });
             eventRegistered = true;
@@ -696,15 +701,14 @@ public class TimelineFragment extends SFragment implements
         super.viewAccount(id);
     }
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+    private void onPreferenceChanged(String key) {
         switch (key) {
             case "fabHide": {
-                hideFab = sharedPreferences.getBoolean("fabHide", false);
+                hideFab = preferences.getBoolean("fabHide", false);
                 break;
             }
             case "mediaPreviewEnabled": {
-                boolean enabled = sharedPreferences.getBoolean("mediaPreviewEnabled", true);
+                boolean enabled = accountManager.getActiveAccount().getMediaPreviewEnabled();
                 boolean oldMediaPreviewEnabled = adapter.getMediaPreviewEnabled();
                 if (enabled != oldMediaPreviewEnabled) {
                     adapter.setMediaPreviewEnabled(enabled);
@@ -713,7 +717,7 @@ public class TimelineFragment extends SFragment implements
                 break;
             }
             case "tabFilterHomeReplies": {
-                boolean filter = sharedPreferences.getBoolean("tabFilterHomeReplies", true);
+                boolean filter = preferences.getBoolean("tabFilterHomeReplies", true);
                 boolean oldRemoveReplies = filterRemoveReplies;
                 filterRemoveReplies = kind == Kind.HOME && !filter;
                 if (adapter.getItemCount() > 1 && oldRemoveReplies != filterRemoveReplies) {
@@ -722,7 +726,7 @@ public class TimelineFragment extends SFragment implements
                 break;
             }
             case "tabFilterHomeBoosts": {
-                boolean filter = sharedPreferences.getBoolean("tabFilterHomeBoosts", true);
+                boolean filter = preferences.getBoolean("tabFilterHomeBoosts", true);
                 boolean oldRemoveReblogs = filterRemoveReblogs;
                 filterRemoveReblogs = kind == Kind.HOME && !filter;
                 if (adapter.getItemCount() > 1 && oldRemoveReblogs != filterRemoveReblogs) {
@@ -732,7 +736,7 @@ public class TimelineFragment extends SFragment implements
             }
             case "tabFilterRegex": {
                 boolean oldFilterRemoveRegex = filterRemoveRegex;
-                String newFilterRemoveRegexPattern = sharedPreferences.getString("tabFilterRegex", "");
+                String newFilterRemoveRegexPattern = preferences.getString("tabFilterRegex", "");
                 boolean patternChanged;
                 if (filterRemoveRegexMatcher != null) {
                     patternChanged = !newFilterRemoveRegexPattern.equalsIgnoreCase(filterRemoveRegexMatcher.pattern().pattern());
@@ -748,7 +752,7 @@ public class TimelineFragment extends SFragment implements
             }
             case "alwaysShowSensitiveMedia": {
                 //it is ok if only newly loaded statuses are affected, no need to fully refresh
-                alwaysShowSensitiveMedia = sharedPreferences.getBoolean("alwaysShowSensitiveMedia", false);
+                alwaysShowSensitiveMedia = accountManager.getActiveAccount().getAlwaysShowSensitiveMedia();
                 break;
             }
             case "use_default_text":
