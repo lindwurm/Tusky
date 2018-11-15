@@ -381,4 +381,6 @@
     <string name="button_authorize">Authorize Now!</string>
     <string name="pref_limited_bandwidth_timeline">Reduce timeline auto reload after toot</string>
 
+    <string name="quote_status_media_notice">This toot has %d media(s).</string>
+
 </resources>

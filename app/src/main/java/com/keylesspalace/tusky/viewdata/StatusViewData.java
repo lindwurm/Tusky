@@ -88,6 +88,8 @@ public abstract class StatusViewData {
         private final boolean isCollapsible; /** Whether the status meets the requirement to be collapse */
         private final boolean isCollapsed; /** Whether the status is shown partially or fully */
 
+        private final Status quote;
+
         public Concrete(String id, Spanned content, boolean reblogged, boolean favourited,
                         @Nullable String spoilerText, Status.Visibility visibility, List<Attachment> attachments,
                         @Nullable String rebloggedByUsername, @Nullable String rebloggedAvatar, boolean sensitive, boolean isExpanded,
@@ -95,7 +97,7 @@ public abstract class StatusViewData {
                         Date createdAt, int reblogsCount, int favouritesCount, @Nullable String inReplyToId,
                         @Nullable Status.Mention[] mentions, String senderId, boolean rebloggingEnabled,
                         Status.Application application, List<Emoji> statusEmojis, List<Emoji> accountEmojis, @Nullable Card card,
-                        boolean isCollapsible, boolean isCollapsed) {
+                        boolean isCollapsible, boolean isCollapsed, Status quote) {
             this.id = id;
             if (Build.VERSION.SDK_INT == 23) {
                 // https://github.com/tuskyapp/Tusky/issues/563
@@ -131,6 +133,7 @@ public abstract class StatusViewData {
             this.card = card;
             this.isCollapsible = isCollapsible;
             this.isCollapsed = isCollapsed;
+            this.quote = quote;
         }
 
         public String getId() {
@@ -263,6 +266,10 @@ public abstract class StatusViewData {
             return isCollapsed;
         }
 
+        public Status getQuote() {
+            return quote;
+        }
+
         @Override public long getViewDataId() {
             // Chance of collision is super low and impact of mistake is low as well
             return getId().hashCode();
@@ -297,8 +304,9 @@ public abstract class StatusViewData {
                     Objects.equals(application, concrete.application) &&
                     Objects.equals(statusEmojis, concrete.statusEmojis) &&
                     Objects.equals(accountEmojis, concrete.accountEmojis) &&
-                    Objects.equals(card, concrete.card)
-                    && isCollapsed == concrete.isCollapsed;
+                    Objects.equals(card, concrete.card) &&
+                    isCollapsed == concrete.isCollapsed &&
+                    Objects.equals(quote, concrete.quote);
         }
 
         static Spanned replaceCrashingCharacters(Spanned content) {
@@ -401,6 +409,7 @@ public abstract class StatusViewData {
         private Card card;
         private boolean isCollapsible; /** Whether the status meets the requirement to be collapsed */
         private boolean isCollapsed; /** Whether the status is shown partially or fully */
+        private Status quote;
 
         public Builder() {
         }
@@ -434,6 +443,7 @@ public abstract class StatusViewData {
             card = viewData.getCard();
             isCollapsible = viewData.isCollapsible();
             isCollapsed = viewData.isCollapsed();
+            quote = viewData.getQuote();
         }
 
         public Builder setId(String id) {
@@ -590,6 +600,11 @@ public abstract class StatusViewData {
             return this;
         }
 
+        public Builder setQuote(Status quote){
+            this.quote = quote;
+            return this;
+        }
+
         public StatusViewData.Concrete createStatusViewData() {
             if (this.statusEmojis == null) statusEmojis = Collections.emptyList();
             if (this.accountEmojis == null) accountEmojis = Collections.emptyList();
@@ -599,7 +614,7 @@ public abstract class StatusViewData {
                     attachments, rebloggedByUsername, rebloggedAvatar, isSensitive, isExpanded,
                     isShowingContent, userFullName, nickname, avatar, createdAt, reblogsCount,
                     favouritesCount, inReplyToId, mentions, senderId, rebloggingEnabled, application,
-                    statusEmojis, accountEmojis, card, isCollapsible, isCollapsed);
+                    statusEmojis, accountEmojis, card, isCollapsible, isCollapsed, quote);
         }
     }
 }

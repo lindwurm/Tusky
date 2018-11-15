@@ -156,11 +156,20 @@
             android:textSize="?attr/status_text_medium"
             android:visibility="gone" />
 
+    <include
+        android:id="@+id/status_quote_inline_container"
+        layout="@layout/view_quote_inline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/button_toggle_content"
+        android:layout_toEndOf="@id/status_avatar"
+        android:layout_marginTop="16dp"/>
+
     <android.support.constraint.ConstraintLayout
         android:id="@+id/status_media_preview_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/button_toggle_content"
+        android:layout_below="@+id/status_quote_inline_container"
         android:layout_marginTop="@dimen/status_media_preview_margin_top"
         android:layout_toEndOf="@+id/status_avatar">
 

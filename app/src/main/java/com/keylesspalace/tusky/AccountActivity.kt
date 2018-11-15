@@ -302,7 +302,8 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasSupportF
                 supportActionBar?.subtitle = subtitle
             }
             val emojifiedNote = CustomEmojiHelper.emojifyText(account.note, account.emojis, accountNoteTextView)
-            LinkHelper.setClickableText(accountNoteTextView, emojifiedNote, null, this)
+            LinkHelper.setClickableText(accountNoteTextView, emojifiedNote, null, this,
+                    false)
 
             accountLockedImageView.visible(account.locked)
             accountBadgeTextView.visible(account.bot)

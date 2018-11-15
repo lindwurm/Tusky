@@ -17,8 +17,8 @@ package com.keylesspalace.tusky.adapter
 
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
-import android.view.ViewGroup
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.entity.Emoji
@@ -45,7 +45,8 @@ class AccountFieldAdapter(private val linkListener: LinkListener) : RecyclerView
     override fun onBindViewHolder(viewHolder: AccountFieldAdapter.ViewHolder, position: Int) {
         viewHolder.nameTextView.text = fields[position].name
         val emojifiedValue = CustomEmojiHelper.emojifyText(fields[position].value, emojis, viewHolder.valueTextView)
-        LinkHelper.setClickableText(viewHolder.valueTextView, emojifiedValue, null, linkListener)
+        LinkHelper.setClickableText(viewHolder.valueTextView, emojifiedValue, null, linkListener,
+                false)
     }
 
     class ViewHolder(rootView: View) : RecyclerView.ViewHolder(rootView) {

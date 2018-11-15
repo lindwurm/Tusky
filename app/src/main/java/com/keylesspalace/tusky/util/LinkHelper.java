@@ -57,13 +57,14 @@ public class LinkHelper {
      * Finds links, mentions, and hashtags in a piece of text and makes them clickable, associating
      * them with callbacks to notify when they're clicked.
      *
-     * @param view the returned text will be put in
-     * @param content containing text with mentions, links, or hashtags
+     * @param view     the returned text will be put in
+     * @param content  containing text with mentions, links, or hashtags
      * @param mentions any '@' mentions which are known to be in the content
      * @param listener to notify about particular spans that are clicked
      */
     public static void setClickableText(TextView view, Spanned content,
-            @Nullable Status.Mention[] mentions, final LinkListener listener) {
+                                        @Nullable Status.Mention[] mentions, final LinkListener listener,
+                                        boolean removeQuote) {
 
         SpannableStringBuilder builder = new SpannableStringBuilder(content);
         URLSpan[] urlSpans = content.getSpans(0, content.length(), URLSpan.class);
@@ -78,7 +79,9 @@ public class LinkHelper {
                 final String tag = text.subSequence(1, text.length()).toString();
                 customSpan = new ClickableSpanNoUnderline() {
                     @Override
-                    public void onClick(View widget) { listener.onViewTag(tag); }
+                    public void onClick(View widget) {
+                        listener.onViewTag(tag);
+                    }
                 };
             } else if (text.charAt(0) == '@' && mentions != null && mentions.length > 0) {
                 String accountUsername = text.subSequence(1, text.length()).toString();
@@ -98,7 +101,9 @@ public class LinkHelper {
                     final String accountId = id;
                     customSpan = new ClickableSpanNoUnderline() {
                         @Override
-                        public void onClick(View widget) { listener.onViewAccount(accountId); }
+                        public void onClick(View widget) {
+                            listener.onViewAccount(accountId);
+                        }
                     };
                 }
             }
@@ -117,14 +122,20 @@ public class LinkHelper {
             /* Add zero-width space after links in end of line to fix its too large hitbox.
              * See also : https://github.com/tuskyapp/Tusky/issues/846
              *            https://github.com/tuskyapp/Tusky/pull/916 */
-            if(end >= builder.length()){
+            if (end >= builder.length()) {
                 builder.insert(end, "\u200B");
             } else {
-                if(builder.subSequence(end, end + 1).toString().equals("\n")){
+                if (builder.subSequence(end, end + 1).toString().equals("\n")) {
                     builder.insert(end, "\u200B");
                 }
             }
 
+            if (start >= 13 && end < builder.length() && removeQuote) {
+                if (builder.subSequence(start - 13, start).toString().equals("\n~~~~~~~~~~\n[")
+                        && builder.subSequence(end, end + 1).toString().equals("]")) {
+                    builder.delete(start - 13, end + 1);
+                }
+            }
         }
         view.setText(builder);
         view.setLinksClickable(true);
@@ -134,7 +145,7 @@ public class LinkHelper {
     /**
      * Opens a link, depending on the settings, either in the browser or in a custom tab
      *
-     * @param url a string containing the url to open
+     * @param url     a string containing the url to open
      * @param context context
      */
     public static void openLink(String url, Context context) {
@@ -152,7 +163,7 @@ public class LinkHelper {
     /**
      * opens a link in the browser via Intent.ACTION_VIEW
      *
-     * @param uri the uri to open
+     * @param uri     the uri to open
      * @param context context
      */
     public static void openLinkInBrowser(Uri uri, Context context) {
@@ -168,7 +179,7 @@ public class LinkHelper {
      * tries to open a link in a custom tab
      * falls back to browser if not possible
      *
-     * @param uri the uri to open
+     * @param uri     the uri to open
      * @param context context
      */
     public static void openLinkInCustomTab(Uri uri, Context context) {

@@ -39,7 +39,8 @@ data class Status(
         @SerializedName("media_attachments") var attachments: List<Attachment>,
         val mentions: Array<Mention>,
         val application: Application?,
-        var pinned: Boolean?
+        var pinned: Boolean?,
+        val quote: Status?
 ) {
 
     val actionableId: String?

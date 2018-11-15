@@ -16,13 +16,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.keylesspalace.tusky.R;
+import com.keylesspalace.tusky.entity.Account;
 import com.keylesspalace.tusky.entity.Attachment;
 import com.keylesspalace.tusky.entity.Emoji;
 import com.keylesspalace.tusky.entity.Status;
+import com.keylesspalace.tusky.interfaces.LinkListener;
 import com.keylesspalace.tusky.interfaces.StatusActionListener;
 import com.keylesspalace.tusky.util.CustomEmojiHelper;
 import com.keylesspalace.tusky.util.DateUtils;
@@ -43,7 +46,7 @@ import at.connyduck.sparkbutton.SparkButton;
 import at.connyduck.sparkbutton.SparkEventListener;
 
 abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
-    private static final InputFilter[] COLLAPSE_INPUT_FILTER = new InputFilter[] { SmartLengthInputFilter.INSTANCE };
+    private static final InputFilter[] COLLAPSE_INPUT_FILTER = new InputFilter[]{SmartLengthInputFilter.INSTANCE};
     private static final InputFilter[] NO_INPUT_FILTER = new InputFilter[0];
 
     private TextView displayName;
@@ -62,6 +65,7 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private TextView mediaLabel;
     private ToggleButton contentWarningButton;
     private ToggleButton contentCollapseButton;
+    private RelativeLayout quoteContainer;
 
     ImageView avatar;
     TextView timestampInfo;
@@ -79,6 +83,7 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         timestampInfo = itemView.findViewById(R.id.status_timestamp_info);
         content = itemView.findViewById(R.id.status_content);
         avatar = itemView.findViewById(R.id.status_avatar);
+
         replyButton = itemView.findViewById(R.id.status_reply);
         reblogButton = itemView.findViewById(R.id.status_reblog);
         favouriteButton = itemView.findViewById(R.id.status_favourite);
@@ -86,13 +91,13 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         moreButton = itemView.findViewById(R.id.status_more);
         reblogged = false;
         favourited = false;
-        mediaPreviews = new ImageView[] {
+        mediaPreviews = new ImageView[]{
                 itemView.findViewById(R.id.status_media_preview_0),
                 itemView.findViewById(R.id.status_media_preview_1),
                 itemView.findViewById(R.id.status_media_preview_2),
                 itemView.findViewById(R.id.status_media_preview_3)
         };
-        mediaOverlays =new ImageView[] {
+        mediaOverlays = new ImageView[]{
                 itemView.findViewById(R.id.status_media_overlay_0),
                 itemView.findViewById(R.id.status_media_overlay_1),
                 itemView.findViewById(R.id.status_media_overlay_2),
@@ -104,6 +109,8 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         contentWarningDescription = itemView.findViewById(R.id.status_content_warning_description);
         contentWarningButton = itemView.findViewById(R.id.status_content_warning_button);
         contentCollapseButton = itemView.findViewById(R.id.button_toggle_content);
+
+        quoteContainer = itemView.findViewById(R.id.status_quote_inline_container);
 
         this.useAbsoluteTime = useAbsoluteTime;
         shortSdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
@@ -125,10 +132,10 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     }
 
     private void setContent(Spanned content, Status.Mention[] mentions, List<Emoji> emojis,
-                            StatusActionListener listener) {
+                            StatusActionListener listener, boolean removeQuote) {
         Spanned emojifiedText = CustomEmojiHelper.emojifyText(content, emojis, this.content);
 
-        LinkHelper.setClickableText(this.content, emojifiedText, mentions, listener);
+        LinkHelper.setClickableText(this.content, emojifiedText, mentions, listener, removeQuote);
     }
 
     void setAvatar(String url, @Nullable String rebloggedUrl) {
@@ -264,6 +271,15 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private void setFavourited(boolean favourited) {
         this.favourited = favourited;
         favouriteButton.setChecked(favourited);
+    }
+
+    private void setQuoteContainer(Status status, final StatusActionListener listener) {
+        if (status != null) {
+            quoteContainer.setVisibility(View.VISIBLE);
+            new QuoteInlineHelper(status, quoteContainer, listener).setupQuoteContainer();
+        } else {
+            quoteContainer.setVisibility(View.GONE);
+        }
     }
 
     private void setMediaPreviews(final List<Attachment> attachments, boolean sensitive,
@@ -524,6 +540,7 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         setAvatar(status.getAvatar(), status.getRebloggedAvatar());
         setReblogged(status.isReblogged());
         setFavourited(status.isFavourited());
+        setQuoteContainer(status.getQuote(), listener);
         List<Attachment> attachments = status.getAttachments();
         boolean sensitive = status.isSensitive();
         if (mediaPreviewEnabled) {
@@ -577,6 +594,117 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             }
         }
 
-        setContent(status.getContent(), status.getMentions(), status.getStatusEmojis(), listener);
+        setContent(status.getContent(), status.getMentions(), status.getStatusEmojis(), listener,
+                status.getQuote() != null);
+    }
+
+    static class QuoteInlineHelper {
+        Status quoteStatus;
+
+        private View quoteContainer;
+        private ImageView quoteAvatar;
+        private TextView quoteDisplayName;
+        private TextView quoteUsername;
+        private TextView quoteContentWarningDescription;
+        private ToggleButton quoteContentWarningButton;
+        private TextView quoteContent;
+        private TextView quoteMedia;
+
+        private LinkListener listener;
+
+        QuoteInlineHelper(Status status, View container, LinkListener listener) {
+            quoteStatus = status;
+            quoteContainer = container;
+            quoteAvatar = container.findViewById(R.id.status_quote_inline_avatar);
+            quoteDisplayName = container.findViewById(R.id.status_quote_inline_display_name);
+            quoteUsername = container.findViewById(R.id.status_quote_inline_username);
+            quoteContentWarningDescription = container.findViewById(R.id.status_quote_inline_content_warning_description);
+            quoteContentWarningButton = container.findViewById(R.id.status_quote_inline_content_warning_button);
+            quoteContent = container.findViewById(R.id.status_quote_inline_content);
+            quoteMedia = container.findViewById(R.id.status_quote_inline_media);
+            this.listener = listener;
+        }
+
+        private void setDisplayName(String name, List<Emoji> customEmojis) {
+            CharSequence emojifiedName = CustomEmojiHelper.emojifyString(name, customEmojis, quoteDisplayName);
+            quoteDisplayName.setText(emojifiedName);
+        }
+
+        private void setUsername(String name) {
+            Context context = quoteUsername.getContext();
+            String format = context.getString(R.string.status_username_format);
+            String usernameText = String.format(format, name);
+            quoteUsername.setText(usernameText);
+        }
+
+        private void setContent(Spanned content, Status.Mention[] mentions, List<Emoji> emojis,
+                                LinkListener listener) {
+            Spanned emojifiedText = CustomEmojiHelper.emojifyText(content, emojis, quoteContent);
+
+            LinkHelper.setClickableText(quoteContent, emojifiedText, mentions, listener, false);
+        }
+
+        private void setAvatar(String url) {
+            if (TextUtils.isEmpty(url)) {
+                quoteAvatar.setImageResource(R.drawable.avatar_default);
+            } else {
+                Picasso.with(quoteAvatar.getContext())
+                        .load(url)
+                        .placeholder(R.drawable.avatar_default)
+                        .into(quoteAvatar);
+            }
+        }
+
+        private void setSpoilerText(String spoilerText, List<Emoji> emojis, final boolean expanded) {
+            CharSequence emojiSpoiler =
+                    CustomEmojiHelper.emojifyString(spoilerText, emojis, quoteContentWarningDescription);
+            quoteContentWarningDescription.setText(emojiSpoiler);
+            quoteContentWarningDescription.setVisibility(View.VISIBLE);
+            quoteContentWarningButton.setVisibility(View.VISIBLE);
+            quoteContentWarningButton.setChecked(expanded);
+            quoteContentWarningButton.setOnCheckedChangeListener((buttonView, isChecked)
+                    -> quoteContent.setVisibility(isChecked ? View.VISIBLE : View.GONE));
+            quoteContent.setVisibility(expanded ? View.VISIBLE : View.GONE);
+
+        }
+
+        private void hideSpoilerText() {
+            quoteContentWarningDescription.setVisibility(View.GONE);
+            quoteContentWarningButton.setVisibility(View.GONE);
+            quoteContent.setVisibility(View.VISIBLE);
+        }
+
+        private void setOnClickListener(String accountId, String statusUrl) {
+            quoteAvatar.setOnClickListener(view -> listener.onViewAccount(accountId));
+            quoteDisplayName.setOnClickListener(view -> listener.onViewAccount(accountId));
+            quoteUsername.setOnClickListener(view -> listener.onViewAccount(accountId));
+            quoteContent.setOnClickListener(view -> listener.onViewUrl(statusUrl, "quote_inline"));
+            quoteMedia.setOnClickListener(view -> listener.onViewUrl(statusUrl, "quote_inline"));
+            quoteContainer.setOnClickListener(view -> listener.onViewUrl(statusUrl, "quote_inline"));
+        }
+
+        void setupQuoteContainer() {
+            Account account = quoteStatus.getAccount();
+            setDisplayName(account.getDisplayName().equals("") ? account.getLocalUsername() : account.getDisplayName(), account.getEmojis());
+            setUsername(account.getUsername());
+            setContent(quoteStatus.getContent(), quoteStatus.getMentions(),
+                    quoteStatus.getEmojis(), listener);
+            setAvatar(account.getAvatar());
+            setOnClickListener(account.getId(), quoteStatus.getUrl());
+
+            if (quoteStatus.getSpoilerText().isEmpty()) {
+                hideSpoilerText();
+            } else {
+                setSpoilerText(quoteStatus.getSpoilerText(), quoteStatus.getEmojis(), false);
+            }
+
+            if(quoteStatus.getAttachments().size()==0){
+                quoteMedia.setVisibility(View.GONE);
+            }else{
+                quoteMedia.setVisibility(View.VISIBLE);
+                quoteMedia.setText(quoteContainer.getContext().getString(R.string.quote_status_media_notice,
+                        quoteStatus.getAttachments().size()));
+            }
+        }
     }
 }
