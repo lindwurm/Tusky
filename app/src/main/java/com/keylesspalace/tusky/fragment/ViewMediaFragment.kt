@@ -37,7 +37,6 @@ abstract class ViewMediaFragment : BaseFragment() {
         @JvmStatic protected val ARG_START_POSTPONED_TRANSITION = "startPostponedTransition"
         @JvmStatic protected val ARG_ATTACHMENT = "attach"
         @JvmStatic protected val ARG_AVATAR_URL = "avatarUrl"
-        private const val TAG = "ViewMediaFragment"
 
         @JvmStatic
         fun newInstance(attachment: Attachment, shouldStartPostponedTransition: Boolean): ViewMediaFragment {
@@ -49,7 +48,7 @@ abstract class ViewMediaFragment : BaseFragment() {
                 Attachment.Type.IMAGE -> ViewImageFragment()
                 Attachment.Type.VIDEO,
                 Attachment.Type.GIFV -> ViewVideoFragment()
-                else -> throw Exception("Unknown media type: $attachment")
+                else -> ViewImageFragment()   // it probably won't show anything, but its better than crashing
             }
             fragment.arguments = arguments
             return fragment

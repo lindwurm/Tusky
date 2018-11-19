@@ -27,6 +27,7 @@ import com.keylesspalace.tusky.appstore.EventHub
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent
 import com.keylesspalace.tusky.fragment.preference.*
 import com.keylesspalace.tusky.util.ThemeUtils
+import com.keylesspalace.tusky.util.getNonNullString
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.support.HasSupportFragmentInjector
@@ -83,6 +84,8 @@ class PreferencesActivity : BaseActivity(), SharedPreferences.OnSharedPreference
                 .replace(R.id.fragment_container, fragment)
                 .commit()
 
+        restartActivitiesOnExit = intent.getBooleanExtra("restart", false)
+
     }
 
     override fun onResume() {
@@ -117,9 +120,9 @@ class PreferencesActivity : BaseActivity(), SharedPreferences.OnSharedPreference
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
         when (key) {
             "appTheme" -> {
-                val theme = sharedPreferences.getString("appTheme", ThemeUtils.APP_THEME_DEFAULT)
+                val theme = sharedPreferences.getNonNullString("appTheme", ThemeUtils.APP_THEME_DEFAULT)
                 Log.d("activeTheme", theme)
-                ThemeUtils.setAppNightMode(theme!!, this)
+                ThemeUtils.setAppNightMode(theme, this)
                 restartActivitiesOnExit = true
 
                 // recreate() could be used instead, but it doesn't have an animation B).
