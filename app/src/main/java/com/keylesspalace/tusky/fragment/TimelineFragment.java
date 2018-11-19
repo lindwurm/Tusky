@@ -921,7 +921,7 @@ public class TimelineFragment extends SFragment implements
                     updateAdapter();
                 }
                 int oldSize = this.statuses.size();
-                if (this.statuses.size() > 1) {
+                if (this.statuses.size() >= 1) {
                     addItems(statuses, fromId);
                 } else {
                     /* If this is the first fetch, also save the id from the "previous" link and
