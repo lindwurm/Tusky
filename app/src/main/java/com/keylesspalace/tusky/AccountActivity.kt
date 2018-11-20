@@ -358,11 +358,11 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasSupportF
 
                 TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(accountMovedText, movedIcon, null, null, null)
 
-                accountFollowers.hide()
-                accountFollowing.hide()
-                accountStatuses.hide()
-                accountTabLayout.hide()
-                accountFragmentViewPager.hide()
+                //accountFollowers.hide()
+                //accountFollowing.hide()
+                //accountStatuses.hide()
+                //accountTabLayout.hide()
+                //accountFragmentViewPager.hide()
             }
 
             if (account.isRemote()) {
@@ -447,7 +447,7 @@ class AccountActivity : BottomSheetActivity(), ActionButtonActivity, HasSupportF
     private fun updateButtons() {
         invalidateOptionsMenu()
 
-        if (!blocking && loadedAccount?.moved == null) {
+        if (!blocking /*&&  loadedAccount?.moved == null*/) {
 
             accountFollowButton.show()
             updateFollowButton()
