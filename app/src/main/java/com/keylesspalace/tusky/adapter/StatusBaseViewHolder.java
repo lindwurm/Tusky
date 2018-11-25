@@ -44,6 +44,7 @@ import java.util.Locale;
 
 import at.connyduck.sparkbutton.SparkButton;
 import at.connyduck.sparkbutton.SparkEventListener;
+import jp.kyori.tusky.RichTextUtil;
 
 abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private static final InputFilter[] COLLAPSE_INPUT_FILTER = new InputFilter[]{SmartLengthInputFilter.INSTANCE};
@@ -639,7 +640,8 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
         private void setContent(Spanned content, Status.Mention[] mentions, List<Emoji> emojis,
                                 LinkListener listener) {
-            Spanned emojifiedText = CustomEmojiHelper.emojifyText(content, emojis, quoteContent);
+            Spanned singleLineText = RichTextUtil.replaceSpanned(content, "\n", " ");
+            Spanned emojifiedText = CustomEmojiHelper.emojifyText(singleLineText, emojis, quoteContent);
 
             LinkHelper.setClickableText(quoteContent, emojifiedText, mentions, listener, false);
         }
