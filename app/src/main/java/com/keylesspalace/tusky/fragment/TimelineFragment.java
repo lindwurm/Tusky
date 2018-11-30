@@ -82,6 +82,7 @@ import com.keylesspalace.tusky.util.ViewDataUtils;
 import com.keylesspalace.tusky.view.EndlessOnScrollListener;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -1284,8 +1285,15 @@ public class TimelineFragment extends SFragment implements
     }
 
     private Status.Visibility getCurrentVisibility() {
-        int visibilityInt = preferences.getInt("current_visibility", 1);
-        return Status.Visibility.byNum(visibilityInt);
+        Status.Visibility visibility = Status.Visibility.byNum(preferences.getInt("current_visibility", 1));
+        if (!Arrays.asList(ComposeActivity.CAN_USE_UNLEAKABLE)
+                .contains(accountManager.getActiveAccount().getDomain()) && visibility == Status.Visibility.UNLEAKABLE) {
+            preferences.edit()
+                    .putInt("current_visibility", Status.Visibility.PUBLIC.getNum())
+                    .apply();
+            return Status.Visibility.PUBLIC;
+        }
+        return visibility;
     }
 
     private void updateVisibilityButton() {
@@ -1300,6 +1308,9 @@ public class TimelineFragment extends SFragment implements
             case PRIVATE:
                 visibilityButton.setImageResource(R.drawable.ic_lock_outline_24dp);
                 break;
+            case UNLEAKABLE:
+                visibilityButton.setImageResource(R.drawable.ic_unleakable_24dp);
+                break;
         }
     }
 
@@ -1313,6 +1324,14 @@ public class TimelineFragment extends SFragment implements
                 visibility = Status.Visibility.PRIVATE;
                 break;
             case PRIVATE:
+                if(Arrays.asList(ComposeActivity.CAN_USE_UNLEAKABLE)
+                        .contains(accountManager.getActiveAccount().getDomain())){
+                    visibility = Status.Visibility.UNLEAKABLE;
+                } else {
+                    visibility = Status.Visibility.PUBLIC;
+                }
+                break;
+            case UNLEAKABLE:
                 visibility = Status.Visibility.PUBLIC;
                 break;
             case UNKNOWN:
