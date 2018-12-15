@@ -950,6 +950,7 @@ public class TimelineFragment extends SFragment implements
             kind = Kind.USER;
             if (this.statuses.size() == 0) {
                 sendFetchTimelineRequest(null, null, FetchEnd.BOTTOM, -1);
+                didLoadEverythingBottom = false;
             }
         } else {
             if (this.statuses.size() == 0) {
