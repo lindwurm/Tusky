@@ -14,7 +14,6 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -223,29 +222,20 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             return;
         }
 
-        final TextView statusTimestampInfo = this.timestampInfo;
-        statusTimestampInfo.getViewTreeObserver()
-                .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                    @Override
-                    public void onGlobalLayout() {
-                        final int size = (int) statusTimestampInfo.getTextSize();
-                        visibilityDrawable.setBounds(
-                                0,
-                                0,
-                                size,
-                                size
-                        );
-                        visibilityDrawable.setTint(statusTimestampInfo.getCurrentTextColor());
-                        statusTimestampInfo.setCompoundDrawables(
-                                visibilityDrawable,
-                                null,
-                                null,
-                                null
-                        );
-
-                        statusTimestampInfo.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                    }
-                });
+        final int size = (int) this.timestampInfo.getTextSize();
+        visibilityDrawable.setBounds(
+                0,
+                0,
+                size,
+                size
+        );
+        visibilityDrawable.setTint(this.timestampInfo.getCurrentTextColor());
+        this.timestampInfo.setCompoundDrawables(
+                visibilityDrawable,
+                null,
+                null,
+                null
+        );
     }
 
     protected void showContent(boolean show) {
