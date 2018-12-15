@@ -29,7 +29,6 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
-import android.support.v4.widget.TextViewCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
@@ -60,6 +59,8 @@ class EditProfileActivity : BaseActivity(), Injectable {
         private const val HEADER_PICK_RESULT = 2
         private const val PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1
         private const val MAX_ACCOUNT_FIELDS = 4
+
+        private const val BUNDLE_CURRENTLY_PICKING = "BUNDLE_CURRENTLY_PICKING"
     }
 
     @Inject
@@ -79,6 +80,11 @@ class EditProfileActivity : BaseActivity(), Injectable {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        savedInstanceState?.getString(BUNDLE_CURRENTLY_PICKING)?.let {
+            currentlyPicking = PickType.valueOf(it)
+        }
+
         setContentView(R.layout.activity_edit_profile)
 
         viewModel = ViewModelProviders.of(this, viewModelFactory)[EditProfileViewModel::class.java]
@@ -98,7 +104,7 @@ class EditProfileActivity : BaseActivity(), Injectable {
 
         val plusDrawable = IconicsDrawable(this, GoogleMaterial.Icon.gmd_add).sizeDp(12).color(Color.WHITE)
 
-        TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(addFieldButton, plusDrawable, null, null, null)
+        addFieldButton.setCompoundDrawablesRelativeWithIntrinsicBounds(plusDrawable, null, null, null)
 
         addFieldButton.setOnClickListener {
             accountFieldEditAdapter.addField()
@@ -169,6 +175,11 @@ class EditProfileActivity : BaseActivity(), Injectable {
             }
         })
 
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(BUNDLE_CURRENTLY_PICKING, currentlyPicking.toString())
     }
 
     override fun onStop() {

@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <string name="error_generic">エラーが発生しました。</string>
     <string name="error_empty">本文なしでは投稿できません。</string>
@@ -203,7 +203,7 @@
     <string name="pref_title_http_proxy_port">HTTPプロキシーポート</string>
 
     <string name="pref_default_post_privacy">デフォルトの投稿プライバシー</string>
-    <string name="pref_default_media_sensitivity">常にメディアを閲覧注意としてマーク</string>
+    <string name="pref_default_media_sensitivity">メディアを常に閲覧注意としてマークする</string>
     <string name="pref_publishing">投稿</string>
     <string name="pref_failed_to_sync">設定の同期に失敗しました</string>
 
@@ -221,6 +221,14 @@
         <item>中</item>
         <item>大</item>
         <item>最大</item>
+    </string-array>
+
+    <string name="pref_media_display">メディアの表示</string>
+
+    <string-array name="media_display_names">
+        <item>閲覧注意としてマークされたメディアは隠す</item>
+        <item>閲覧注意としてマークされたメディアも常に表示する</item>
+        <item>全てのメディアを常に隠す</item>
     </string-array>
 
     <string name="notification_channel_mention_name">新しい返信</string>
@@ -262,7 +270,7 @@
     <string name="status_media_video">動画</string>
 
     <string name="state_follow_requested">フォローリクエスト中</string>
-    
+
     <string name="no_content">下書きはありません</string>
 
     <!--These are for timestamps on statuses. For example: "16s" or "2d"-->
@@ -314,7 +322,7 @@
     <string name="emoji_style">絵文字スタイル</string>
     <string name="system_default">システムのデフォルト</string>
     <string name="download_fonts">最初にこれらの絵文字セットをダウンロードする必要があります</string>
-    <string name="performing_lookup_title">検索中...</string>
+    <string name="performing_lookup_title">検索中…</string>
     <string name="expand_collapse_all_statuses">全て開く/閉じる</string>
     <string name="action_open_toot">トゥートを開く</string>
     <string name="restart_required">アプリの再起動が必要です</string>
@@ -322,7 +330,7 @@
     <string name="later">後で</string>
     <string name="restart">再起動</string>
     <string name="caption_systememoji">あなたのデバイスのデフォルト絵文字セットです</string>
-    <string name="caption_blobmoji">Android 4.4–7.1で知られる、Blob絵文字です</string>
+    <string name="caption_blobmoji" tools:ignore="TypographyDashes">Android 4.4-7.1で知られる、Blob絵文字です</string>
     <string name="caption_twemoji">Mastodonの標準絵文字セットです</string>
 
     <string name="download_failed">ダウンロード失敗</string>

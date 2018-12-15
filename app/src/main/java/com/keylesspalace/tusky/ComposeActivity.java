@@ -54,8 +54,6 @@ import android.support.v13.view.inputmethod.InputContentInfoCompat;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
-import android.support.v4.view.ViewCompat;
-import android.support.v4.widget.TextViewCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
@@ -354,7 +352,12 @@ public final class ComposeActivity
                     @Override
                     public void onResponse(@NonNull Call<List<Emoji>> call, @NonNull Response<List<Emoji>> response) {
                         emojiList = response.body();
-                        Collections.sort(emojiList, (a, b) -> a.getShortcode().toLowerCase().compareTo(b.getShortcode().toLowerCase()));
+                        if(emojiList == null) {
+                            emojiList = Collections.emptyList();
+                        }
+                        Collections.sort(emojiList, (a, b) ->
+                                a.getShortcode().toLowerCase(Locale.ROOT).compareTo(
+                                        b.getShortcode().toLowerCase(Locale.ROOT)));
                         setEmojiList(emojiList);
                         cacheInstanceMetadata(activeAccount);
                     }
@@ -411,10 +414,10 @@ public final class ComposeActivity
         int textColor = ThemeUtils.getColor(this, android.R.attr.textColorTertiary);
 
         Drawable cameraIcon = new IconicsDrawable(this, GoogleMaterial.Icon.gmd_camera_alt).color(textColor).sizeDp(18);
-        TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(actionPhotoTake, cameraIcon, null, null, null);
+        actionPhotoTake.setCompoundDrawablesRelativeWithIntrinsicBounds(cameraIcon, null, null, null);
 
         Drawable imageIcon = new IconicsDrawable(this, GoogleMaterial.Icon.gmd_image).color(textColor).sizeDp(18);
-        TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(actionPhotoPick, imageIcon, null, null, null);
+        actionPhotoPick.setCompoundDrawablesRelativeWithIntrinsicBounds(imageIcon, null, null, null);
 
         actionPhotoTake.setOnClickListener(v -> initiateCameraApp());
         actionPhotoPick.setOnClickListener(v -> onMediaPick());
@@ -532,7 +535,7 @@ public final class ComposeActivity
                 Drawable arrowDownIcon = new IconicsDrawable(this, GoogleMaterial.Icon.gmd_arrow_drop_down).sizeDp(12);
 
                 ThemeUtils.setDrawableTint(this, arrowDownIcon, android.R.attr.textColorTertiary);
-                TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(replyTextView, null, null, arrowDownIcon, null);
+                replyTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, arrowDownIcon, null);
 
                 replyTextView.setOnClickListener(v -> {
                     TransitionManager.beginDelayedTransition((ViewGroup) replyContentTextView.getParent());
@@ -542,11 +545,10 @@ public final class ComposeActivity
                         Drawable arrowUpIcon = new IconicsDrawable(this, GoogleMaterial.Icon.gmd_arrow_drop_up).sizeDp(12);
 
                         ThemeUtils.setDrawableTint(this, arrowUpIcon, android.R.attr.textColorTertiary);
-                        TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(replyTextView, null, null, arrowUpIcon, null);
+                        replyTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, arrowUpIcon, null);
                     } else {
                         replyContentTextView.setVisibility(View.GONE);
-
-                        TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(replyTextView, null, null, arrowDownIcon, null);
+                        replyTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, arrowDownIcon, null);
                     }
                 });
             }
@@ -749,14 +751,14 @@ public final class ComposeActivity
                 Snackbar.LENGTH_SHORT);
         bar.setAction(actionId, listener);
         //necessary so snackbar is shown over everything
-        ViewCompat.setElevation(bar.getView(), getResources().getDimensionPixelSize(R.dimen.compose_activity_snackbar_elevation));
+        bar.getView().setElevation(getResources().getDimensionPixelSize(R.dimen.compose_activity_snackbar_elevation));
         bar.show();
     }
 
     private void displayTransientError(@StringRes int stringId) {
         Snackbar bar = Snackbar.make(findViewById(R.id.activity_compose), stringId, Snackbar.LENGTH_LONG);
         //necessary so snackbar is shown over everything
-        ViewCompat.setElevation(bar.getView(), getResources().getDimensionPixelSize(R.dimen.compose_activity_snackbar_elevation));
+        bar.getView().setElevation(getResources().getDimensionPixelSize(R.dimen.compose_activity_snackbar_elevation));
         bar.show();
     }
 
@@ -1624,6 +1626,16 @@ public final class ComposeActivity
     }
 
     private void handleCloseButton() {
+
+        if(composeOptionsBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED ||
+                addMediaBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED ||
+                emojiBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED ) {
+            composeOptionsBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            addMediaBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            emojiBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            return;
+        }
+
         CharSequence contentText = textEditor.getText();
         CharSequence contentWarning = contentWarningEditor.getText();
 

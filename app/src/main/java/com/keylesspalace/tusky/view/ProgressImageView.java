@@ -25,7 +25,6 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
@@ -92,8 +91,8 @@ public final class ProgressImageView extends AppCompatImageView {
         super.onDraw(canvas);
 
         float angle = (progress / 100f) * 360 - 90;
-        float halfWidth = canvas.getWidth() / 2;
-        float halfHeight = canvas.getHeight() / 2;
+        float halfWidth = getWidth() / 2;
+        float halfHeight = getHeight() / 2;
         progressRect.set(halfWidth * 0.75f, halfHeight * 0.75f, halfWidth * 1.25f, halfHeight * 1.25f);
         biggerRect.set(progressRect);
         int margin = 8;
@@ -108,16 +107,16 @@ public final class ProgressImageView extends AppCompatImageView {
         int circleRadius = Utils.dpToPx(getContext(), 14);
         int circleMargin = Utils.dpToPx(getContext(), 14);
 
-        int circleY = canvas.getHeight() - circleMargin - circleRadius / 2;
-        int circleX = canvas.getWidth() - circleMargin - circleRadius / 2;
+        int circleY = getHeight() - circleMargin - circleRadius / 2;
+        int circleX = getWidth() - circleMargin - circleRadius / 2;
 
         canvas.drawCircle(circleX, circleY, circleRadius, markBgPaint);
 
-        captionDrawable.setBounds(canvas.getWidth() - circleMargin - circleRadius,
-                canvas.getHeight() - circleMargin - circleRadius,
-                canvas.getWidth() - circleMargin,
-                canvas.getHeight() - circleMargin);
-        DrawableCompat.setTint(captionDrawable, Color.WHITE);
+        captionDrawable.setBounds(getWidth() - circleMargin - circleRadius,
+                getHeight() - circleMargin - circleRadius,
+                getWidth() - circleMargin,
+                getHeight() - circleMargin);
+        captionDrawable.setTint(Color.WHITE);
         captionDrawable.draw(canvas);
     }
 }

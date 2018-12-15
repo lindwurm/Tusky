@@ -85,12 +85,12 @@ class ViewImageFragment : ViewMediaFragment() {
                     .into(photoView, object : Callback {
                         override fun onSuccess() {
                             // if we loaded image from disk, we should check that view is attached.
-                            if (ViewCompat.isAttachedToWindow(photoView)) {
+                            if (photoView?.isAttachedToWindow == true) {
                                 finishLoadingSuccessfully()
                             } else {
                                 // if view is not attached yet, wait for an attachment and
                                 // start transition when it's finally ready.
-                                photoView.addOnAttachStateChangeListener(
+                                photoView?.addOnAttachStateChangeListener(
                                         object : View.OnAttachStateChangeListener {
                                             override fun onViewAttachedToWindow(v: View?) {
                                                 finishLoadingSuccessfully()
@@ -105,8 +105,10 @@ class ViewImageFragment : ViewMediaFragment() {
                         override fun onError() {
                             // if there's no image in cache, load from network and start transition
                             // immediately.
-                            photoActionsListener.onBringUp()
-                            loadImageFromNetwork(url, photoView)
+                            if (isAdded) {
+                                photoActionsListener.onBringUp()
+                                loadImageFromNetwork(url, photoView)
+                            }
                         }
                     })
         } else {
