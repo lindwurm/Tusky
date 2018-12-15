@@ -190,7 +190,7 @@
     <string name="pref_title_browser_settings">ブラウザ</string>
     <string name="pref_title_custom_tabs">Chrome Custom Tabsを使用する</string>
     <string name="pref_title_hide_follow_button">スクロール中はフォローボタンを隠す</string>
-    <string name="pref_title_status_filter">タイムラインのフィルタリング</string>
+    <string name="pref_title_status_filter">タイムラインの設定</string>
     <string name="pref_title_status_tabs">タブ</string>
     <string name="pref_title_show_boosts">ブーストを表示</string>
     <string name="pref_title_show_replies">返信を表示</string>
@@ -365,4 +365,5 @@
     <string name="unpin_action">固定表示を解除</string>
 
     <string name="quote_status_media_notice">このトゥートには%d件のメディアが存在します。</string>
+    <string name="pref_title_viewpager_offscreen">ViewPagerのoffscreenPageLimitを増やす</string>
 </resources>

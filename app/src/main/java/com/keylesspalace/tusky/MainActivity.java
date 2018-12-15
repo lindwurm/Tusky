@@ -22,6 +22,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.text.emoji.EmojiCompat;
@@ -144,6 +145,9 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
         Drawable pageMarginDrawable = ThemeUtils.getDrawable(this, R.attr.tab_page_margin_drawable,
                 R.drawable.tab_page_margin_dark);
         viewPager.setPageMarginDrawable(pageMarginDrawable);
+        if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean("viewPagerOffScreenLimit", false)){
+            viewPager.setOffscreenPageLimit(3);
+        }
         viewPager.setAdapter(adapter);
 
         tabLayout.setupWithViewPager(viewPager);
