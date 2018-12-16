@@ -34,6 +34,7 @@ import android.view.View;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.di.Injectable;
+import com.keylesspalace.tusky.network.MastodonApi;
 import com.keylesspalace.tusky.util.ThemeUtils;
 
 import java.util.ArrayList;

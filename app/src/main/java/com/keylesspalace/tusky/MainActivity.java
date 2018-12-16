@@ -32,13 +32,16 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.ProfileEditedEvent;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.entity.Account;
+import com.keylesspalace.tusky.entity.Instance;
 import com.keylesspalace.tusky.pager.TimelinePagerAdapter;
 import com.keylesspalace.tusky.util.CustomEmojiHelper;
 import com.keylesspalace.tusky.util.NotificationHelper;
@@ -145,7 +148,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
         Drawable pageMarginDrawable = ThemeUtils.getDrawable(this, R.attr.tab_page_margin_drawable,
                 R.drawable.tab_page_margin_dark);
         viewPager.setPageMarginDrawable(pageMarginDrawable);
-        if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean("viewPagerOffScreenLimit", false)){
+        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("viewPagerOffScreenLimit", false)) {
             viewPager.setOffscreenPageLimit(3);
         }
         viewPager.setAdapter(adapter);
@@ -362,7 +365,10 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
 
                     return false;
                 })
+                .withStickyFooter(R.layout.drawer_footer)
                 .build();
+
+        setupDrawerFooter(drawer.getStickyFooter());
 
         if (BuildConfig.DEBUG) {
             IDrawerItem debugItem = new SecondaryDrawerItem()
@@ -388,6 +394,30 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
                 updateProfiles();
             }
         });
+    }
+
+    private void setupDrawerFooter(View view) {
+        TextView instanceData = view.findViewById(R.id.instance_data);
+        instanceData.setTextColor(instanceData.getHintTextColors());
+
+        getMastodonApi().getInstance().enqueue(new Callback<Instance>() {
+            @Override
+            public void onResponse(@NonNull Call<Instance> call, @NonNull Response<Instance> response) {
+                Instance instance = response.body();
+                if (instance != null) {
+                    instanceData.setText(
+                            String.format("%s\n%s\n%s", instance.getTitle(), instance.getUri(), instance.getVersion())
+                    );
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Instance> call, @NonNull Throwable t) {
+                instanceData.setText(getString(R.string.instance_data_failed));
+            }
+        });
+
+        view.setPadding(0, 0, 0, 0);
     }
 
     private boolean handleProfileClick(IProfile profile, boolean current) {
@@ -509,7 +539,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
         List<AccountEntity> allAccounts = accountManager.getAllAccountsOrderedByActive();
 
 
-        List<IProfile> profiles = new ArrayList<>(allAccounts.size()+1);
+        List<IProfile> profiles = new ArrayList<>(allAccounts.size() + 1);
 
         for (AccountEntity acc : allAccounts) {
             CharSequence emojifiedName = CustomEmojiHelper.emojifyString(acc.getDisplayName(), acc.getEmojis(), headerResult.getView());
@@ -527,7 +557,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
         }
 
         // reuse the already existing "add account" item
-        for (IProfile profile: headerResult.getProfiles()) {
+        for (IProfile profile : headerResult.getProfiles()) {
             if (profile.getIdentifier() == DRAWER_ITEM_ADD_ACCOUNT) {
                 profiles.add(profile);
                 break;
