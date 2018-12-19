@@ -1212,7 +1212,7 @@ public class TimelineFragment extends SFragment implements
             if (isAdded()) {
                 adapter.notifyItemRangeInserted(position, count);
                 Context context = getContext();
-                if (position == 0 && context != null) {
+                if (position == 0 && context != null && layoutManager.findFirstVisibleItemPosition() == 0) {
                     if (count == 1) {
                         jumpToTop();
                     } else {
