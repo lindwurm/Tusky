@@ -1014,13 +1014,17 @@ public class TimelineFragment extends SFragment implements
         Iterator<Status> it = statuses.iterator();
         while (it.hasNext()) {
             Status status = it.next();
-            if ((status.getInReplyToId() != null && filterRemoveReplies)
-                    || (status.getReblog() != null && filterRemoveReblogs)
-                    || (filterRemoveRegex && (filterRemoveRegexMatcher.reset(status.getContent()).find()
-                    || (!status.getSpoilerText().isEmpty() && filterRemoveRegexMatcher.reset(status.getSpoilerText()).find())))) {
+            if (filterStatus(status)) {
                 it.remove();
             }
         }
+    }
+
+    private boolean filterStatus(Status status){
+        return (status.getInReplyToId() != null && filterRemoveReplies)
+                || (status.getReblog() != null && filterRemoveReblogs)
+                || (filterRemoveRegex && (filterRemoveRegexMatcher.reset(status.getContent()).find()
+                || (!status.getSpoilerText().isEmpty() && filterRemoveRegexMatcher.reset(status.getSpoilerText()).find())));
     }
 
     private void updateStatuses(List<Status> newStatuses, @Nullable String fromId,
@@ -1082,10 +1086,7 @@ public class TimelineFragment extends SFragment implements
     }
 
     private void addStatus(Status status) {
-        if ((status.getInReplyToId() == null || !filterRemoveReplies)
-                && (status.getReblog() == null || !filterRemoveReblogs)
-                && (!filterRemoveRegex || (!filterRemoveRegexMatcher.reset(status.getContent()).find()
-                && (status.getSpoilerText().isEmpty() || !filterRemoveRegexMatcher.reset(status.getSpoilerText()).find())))) {
+        if (!filterStatus(status)) {
             statuses.add(0, Either.right(status));
             updateAdapter();
         }
