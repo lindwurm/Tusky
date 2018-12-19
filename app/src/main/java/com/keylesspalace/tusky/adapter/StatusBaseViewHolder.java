@@ -4,11 +4,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.content.res.AppCompatResources;
-import androidx.recyclerview.widget.RecyclerView;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -41,8 +36,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.lang.CharSequence;
 
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.recyclerview.widget.RecyclerView;
 import at.connyduck.sparkbutton.SparkButton;
 import at.connyduck.sparkbutton.SparkEventListener;
 import jp.kyori.tusky.RichTextUtil;
@@ -236,7 +235,7 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 visibilityIcon = R.drawable.ic_lock_open_24dp;
                 break;
             case PRIVATE:
-                visibilityIcon = R.drawable.ic_lock_open_24dp;
+                visibilityIcon = R.drawable.ic_lock_outline_24dp;
                 break;
             case UNLEAKABLE:
                 visibilityIcon = R.drawable.ic_unleakable_24dp;
