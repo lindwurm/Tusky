@@ -64,6 +64,7 @@ import com.keylesspalace.tusky.appstore.PreferenceChangedEvent;
 import com.keylesspalace.tusky.appstore.ReblogEvent;
 import com.keylesspalace.tusky.appstore.StatusComposedEvent;
 import com.keylesspalace.tusky.appstore.StatusDeletedEvent;
+import com.keylesspalace.tusky.appstore.StreamUpdateEvent;
 import com.keylesspalace.tusky.appstore.UnfollowEvent;
 import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.di.Injectable;
@@ -480,6 +481,10 @@ public class TimelineFragment extends SFragment implements
                             handleStatusComposeEvent(status);
                         } else if (event instanceof PreferenceChangedEvent) {
                             onPreferenceChanged(((PreferenceChangedEvent) event).getPreferenceKey());
+                        } else if (event instanceof StreamUpdateEvent) {
+                            if (kind == Kind.HOME) {
+                                addStatus(((StreamUpdateEvent) event).getStatus());
+                            }
                         }
                     });
             eventRegistered = true;
@@ -1058,6 +1063,11 @@ public class TimelineFragment extends SFragment implements
             }
             updateAdapter();
         }
+    }
+    
+    private void addStatus(Status status){
+        statuses.add(0, Either.right(status));
+        updateAdapter();
     }
 
     private void replacePlaceholderWithStatuses(List<Status> newStatuses, boolean fullFetch, int pos) {

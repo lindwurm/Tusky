@@ -17,6 +17,7 @@ package com.keylesspalace.tusky;
 
 import android.arch.lifecycle.Lifecycle;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -71,6 +72,7 @@ import dagger.android.AndroidInjector;
 import dagger.android.DispatchingAndroidInjector;
 import dagger.android.support.HasSupportFragmentInjector;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import jp.kyori.tusky.TimelineStreamingService;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -102,6 +104,9 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
     private AccountHeader headerResult;
     private Drawer drawer;
     private ViewPager viewPager;
+    private SharedPreferences defPrefs;
+
+    private boolean alreadyKilled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,12 +148,14 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
         // Setup the tabs and timeline pager.
         TimelinePagerAdapter adapter = new TimelinePagerAdapter(getSupportFragmentManager());
 
+        defPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
         int pageMargin = getResources().getDimensionPixelSize(R.dimen.tab_page_margin);
         viewPager.setPageMargin(pageMargin);
         Drawable pageMarginDrawable = ThemeUtils.getDrawable(this, R.attr.tab_page_margin_drawable,
                 R.drawable.tab_page_margin_dark);
         viewPager.setPageMarginDrawable(pageMarginDrawable);
-        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("viewPagerOffScreenLimit", false)) {
+        if (defPrefs.getBoolean("viewPagerOffScreenLimit", false)) {
             viewPager.setOffscreenPageLimit(3);
         }
         viewPager.setAdapter(adapter);
@@ -233,7 +240,34 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
         super.onResume();
 
         NotificationHelper.clearNotificationsForActiveAccount(this, accountManager);
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        startStreamingService();
+    }
+
+    private void startStreamingService() {
+        if (defPrefs.getBoolean("useHTLStream", false)) {
+            Intent intent = new Intent(this, TimelineStreamingService.class);
+            startService(intent);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (alreadyKilled) {
+            alreadyKilled = false;
+        } else {
+            stopStreamingService();
+        }
+    }
+
+    private void stopStreamingService() {
+        Intent intent = new Intent(this, TimelineStreamingService.class);
+        stopService(intent);
     }
 
     @Override
@@ -444,6 +478,9 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
 
     private void changeAccount(long newSelectedId) {
         accountManager.setActiveAccount(newSelectedId);
+
+        stopStreamingService();
+        alreadyKilled = true;
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

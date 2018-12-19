@@ -366,4 +366,5 @@
 
     <string name="quote_status_media_notice">このトゥートには%d件のメディアが存在します。</string>
     <string name="pref_title_viewpager_offscreen">ViewPagerのoffscreenPageLimitを増やす</string>
+    <string name="pref_title_htl_streaming">HTLのストリーミングを利用する</string>
 </resources>
