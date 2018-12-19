@@ -16,10 +16,6 @@
 package com.keylesspalace.tusky.fragment;
 
 import android.app.Activity;
-
-import androidx.appcompat.widget.LinearLayoutCompat;
-import androidx.arch.core.util.Function;
-import androidx.lifecycle.Lifecycle;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -29,21 +25,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.tabs.TabLayout;
-import androidx.core.util.Pair;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.content.res.AppCompatResources;
-import androidx.recyclerview.widget.AsyncDifferConfig;
-import androidx.recyclerview.widget.AsyncListDiffer;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListUpdateCallback;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SimpleItemAnimator;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,10 +32,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabLayout;
 import com.keylesspalace.tusky.ComposeActivity;
 import com.keylesspalace.tusky.R;
 import com.keylesspalace.tusky.adapter.TimelineAdapter;
@@ -94,6 +76,22 @@ import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.arch.core.util.Function;
+import androidx.core.util.Pair;
+import androidx.lifecycle.Lifecycle;
+import androidx.recyclerview.widget.AsyncDifferConfig;
+import androidx.recyclerview.widget.AsyncListDiffer;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.ListUpdateCallback;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import at.connyduck.sparkbutton.helpers.Utils;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import retrofit2.Call;
@@ -1066,8 +1064,8 @@ public class TimelineFragment extends SFragment implements
             updateAdapter();
         }
     }
-    
-    private void addStatus(Status status){
+
+    private void addStatus(Status status) {
         statuses.add(0, Either.right(status));
         updateAdapter();
     }
@@ -1215,7 +1213,11 @@ public class TimelineFragment extends SFragment implements
                 adapter.notifyItemRangeInserted(position, count);
                 Context context = getContext();
                 if (position == 0 && context != null) {
-                    recyclerView.scrollBy(0, Utils.dpToPx(context, -30));
+                    if (count == 1) {
+                        jumpToTop();
+                    } else {
+                        recyclerView.scrollBy(0, Utils.dpToPx(context, -30));
+                    }
                 }
             }
         }
@@ -1337,8 +1339,8 @@ public class TimelineFragment extends SFragment implements
                 visibility = Status.Visibility.PRIVATE;
                 break;
             case PRIVATE:
-                if(Arrays.asList(ComposeActivity.CAN_USE_UNLEAKABLE)
-                        .contains(accountManager.getActiveAccount().getDomain())){
+                if (Arrays.asList(ComposeActivity.CAN_USE_UNLEAKABLE)
+                        .contains(accountManager.getActiveAccount().getDomain())) {
                     visibility = Status.Visibility.UNLEAKABLE;
                 } else {
                     visibility = Status.Visibility.PUBLIC;
