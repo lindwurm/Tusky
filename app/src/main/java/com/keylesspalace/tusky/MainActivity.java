@@ -15,7 +15,6 @@
 
 package com.keylesspalace.tusky;
 
-import androidx.lifecycle.Lifecycle;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -27,6 +26,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -67,6 +67,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.emoji.text.EmojiCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.viewpager.widget.ViewPager;
 import dagger.android.AndroidInjector;
 import dagger.android.DispatchingAndroidInjector;
@@ -252,6 +253,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
         if (defPrefs.getBoolean("useHTLStream", false)) {
             Intent intent = new Intent(this, TimelineStreamingService.class);
             startService(intent);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
 
@@ -268,6 +270,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
     private void stopStreamingService() {
         Intent intent = new Intent(this, TimelineStreamingService.class);
         stopService(intent);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
