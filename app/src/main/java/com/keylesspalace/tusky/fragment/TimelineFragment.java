@@ -282,16 +282,7 @@ public class TimelineFragment extends SFragment implements
             layoutRoot.setVisibility(View.GONE);
             composeButton.setVisibility(View.GONE);
         } else {
-            defaultTagInfo = rootView.findViewById(R.id.default_tag_info);
-            visibilityButton = rootView.findViewById(R.id.visibility_button);
-            tootEditText = rootView.findViewById(R.id.toot_edit_text);
-            quickTootButton = rootView.findViewById(R.id.toot_button);
-
-            updateDefaultTagInfo();
-            updateVisibilityButton();
-            visibilityButton.setOnClickListener(v -> setNextVisibility());
-            quickTootButton.setOnClickListener(this::quickToot);
-            recyclerView.requestFocus();
+            setupQuickCompose(rootView);
 
             composeButton.setOnClickListener(v -> {
                 if (tootEditText.getText().length() == 0 && inReplyTo == null) {
@@ -304,6 +295,20 @@ public class TimelineFragment extends SFragment implements
         }
 
         return rootView;
+    }
+
+    private void setupQuickCompose(View rootView) {
+        defaultTagInfo = rootView.findViewById(R.id.default_tag_info);
+        quickReplyInfo = rootView.findViewById(R.id.quick_reply_info);
+        visibilityButton = rootView.findViewById(R.id.visibility_button);
+        tootEditText = rootView.findViewById(R.id.toot_edit_text);
+        quickTootButton = rootView.findViewById(R.id.toot_button);
+
+        updateQuickComposeInfo();
+        updateVisibilityButton();
+        visibilityButton.setOnClickListener(v -> setNextVisibility());
+        quickTootButton.setOnClickListener(this::quickToot);
+        recyclerView.requestFocus();
     }
 
     private void startComposeWithQuickComposeData() {
