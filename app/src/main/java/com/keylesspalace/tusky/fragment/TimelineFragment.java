@@ -1082,8 +1082,13 @@ public class TimelineFragment extends SFragment implements
     }
 
     private void addStatus(Status status) {
-        statuses.add(0, Either.right(status));
-        updateAdapter();
+        if ((status.getInReplyToId() == null || !filterRemoveReplies)
+                && (status.getReblog() == null || !filterRemoveReblogs)
+                && (!filterRemoveRegex || (!filterRemoveRegexMatcher.reset(status.getContent()).find()
+                && (status.getSpoilerText().isEmpty() || !filterRemoveRegexMatcher.reset(status.getSpoilerText()).find())))) {
+            statuses.add(0, Either.right(status));
+            updateAdapter();
+        }
     }
 
     private void replacePlaceholderWithStatuses(List<Status> newStatuses, boolean fullFetch, int pos) {
