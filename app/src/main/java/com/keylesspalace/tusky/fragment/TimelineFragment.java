@@ -69,8 +69,10 @@ import com.keylesspalace.tusky.viewdata.StatusViewData;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -170,10 +172,12 @@ public class TimelineFragment extends SFragment implements
     private boolean checkMobileNetwork;
 
     private FloatingActionButton composeButton;
+    private TextView quickReplyInfo;
     private TextView defaultTagInfo;
     private ImageView visibilityButton;
     private EditText tootEditText;
     private Button quickTootButton;
+    private Status inReplyTo = null;
 
     private SharedPreferences preferences;
 
@@ -290,21 +294,23 @@ public class TimelineFragment extends SFragment implements
             recyclerView.requestFocus();
 
             composeButton.setOnClickListener(v -> {
-                if (tootEditText.getText().length() == 0) {
+                if (tootEditText.getText().length() == 0 && inReplyTo == null) {
                     Intent composeIntent = new Intent(getContext(), ComposeActivity.class);
                     startActivity(composeIntent);
                 } else {
-                    Intent composeIntent = new ComposeActivity.IntentBuilder()
-                            .savedTootText(tootEditText.getText().toString())
-                            .savedVisibility(getCurrentVisibility())
-                            .build(getContext());
-                    tootEditText.getText().clear();
-                    startActivity(composeIntent);
+                    startComposeWithQuickComposeData();
                 }
             });
         }
 
         return rootView;
+    }
+
+    private void startComposeWithQuickComposeData() {
+        Intent composeIntent = setupIntentBuilder()
+                .build(getContext());
+        resetQuickCompose();
+        startActivity(composeIntent);
     }
 
     private void setupTimelinePreferences() {
@@ -515,7 +521,12 @@ public class TimelineFragment extends SFragment implements
 
     @Override
     public void onReply(int position) {
-        super.reply(statuses.get(position).getAsRight());
+        if (kind == Kind.USER || kind == Kind.USER_PINNED || kind == Kind.USER_WITH_REPLIES) {
+            super.reply(statuses.get(position).getAsRight());
+        } else {
+            inReplyTo = statuses.get(position).getAsRight().getActionableStatus();
+            updateQuickReplyInfo();
+        }
     }
 
     @Override
@@ -763,7 +774,7 @@ public class TimelineFragment extends SFragment implements
             }
             case "use_default_text":
             case "default_text": {
-                updateDefaultTagInfo();
+                updateQuickComposeInfo();
                 break;
             }
             case "limitedBandwidthActive":
@@ -1270,6 +1281,19 @@ public class TimelineFragment extends SFragment implements
         }
     };
 
+    private void updateQuickComposeInfo() {
+        updateQuickReplyInfo();
+        updateDefaultTagInfo();
+    }
+
+    private void updateQuickReplyInfo() {
+        if (inReplyTo != null) {
+            quickReplyInfo.setText(String.format("Reply to : %s", inReplyTo.getAccount().getUsername()));
+        } else {
+            quickReplyInfo.setText("");
+        }
+    }
+
     private void updateDefaultTagInfo() {
         boolean useDefaultTag = preferences.getBoolean("use_default_text", false);
         String defaultText = preferences.getString("default_text", "");
@@ -1288,15 +1312,64 @@ public class TimelineFragment extends SFragment implements
 
     private void quickToot(View v) {
         if (tootEditText.getText().toString().length() > 0) {
-            Intent composeIntent = new ComposeActivity.IntentBuilder()
-                    .savedTootText(preferences.getBoolean("use_default_text", false) ?
-                            (tootEditText.getText().toString() + " " + preferences.getString("default_text", "")) : tootEditText.getText().toString())
-                    .savedVisibility(getCurrentVisibility())
+            Intent composeIntent = setupIntentBuilder()
                     .tootRightNow(true)
                     .build(v.getContext());
-            tootEditText.getText().clear();
+
+            resetQuickCompose();
             v.getContext().startActivity(composeIntent);
         }
+    }
+
+    private ComposeActivity.IntentBuilder setupIntentBuilder() {
+        ComposeActivity.IntentBuilder builder = new ComposeActivity.IntentBuilder();
+        return addComposeData(builder);
+    }
+
+    private ComposeActivity.IntentBuilder addComposeData(ComposeActivity.IntentBuilder intentBuilder) {
+        String content = tootEditText.getText().toString();
+        if (preferences.getBoolean("use_default_text", false)) {
+            content += " " + preferences.getString("default_text", "");
+        }
+
+        if (inReplyTo != null) {
+            Status.Mention[] mentions = inReplyTo.getMentions();
+            Set<String> mentionedUsernames = new LinkedHashSet<>();
+            mentionedUsernames.add(inReplyTo.getAccount().getUsername());
+            for (Status.Mention mention : mentions) {
+                mentionedUsernames.add(mention.getUsername());
+            }
+            mentionedUsernames.remove(loggedInUsername);
+
+
+            content = joinMentions(mentionedUsernames) + content;
+
+            intentBuilder = intentBuilder.inReplyToId(inReplyTo.getId())
+                    .savedVisibility(inReplyTo.getVisibility())
+                    .contentWarning(inReplyTo.getSpoilerText())
+                    .mentionedUsernames(mentionedUsernames)
+                    .repyingStatusAuthor(inReplyTo.getAccount().getLocalUsername())
+                    .replyingStatusContent(inReplyTo.getContent().toString());
+        }
+
+        return intentBuilder.savedTootText(content)
+                .savedVisibility(getCurrentVisibility());
+    }
+
+    private String joinMentions(Set<String> mentionedUsernames) {
+        StringBuilder builder = new StringBuilder();
+        for (String name : mentionedUsernames) {
+            builder.append('@');
+            builder.append(name);
+            builder.append(' ');
+        }
+        return builder.toString();
+    }
+
+    private void resetQuickCompose() {
+        tootEditText.getText().clear();
+        inReplyTo = null;
+        updateQuickReplyInfo();
     }
 
     private Status.Visibility getCurrentVisibility() {
