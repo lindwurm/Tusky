@@ -88,10 +88,6 @@
         <Preference
             android:key="timelineFilterPreferences"
             android:title="@string/pref_title_status_tabs" />
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="viewPagerOffScreenLimit"
-            android:title="@string/pref_title_viewpager_offscreen" />
 
     </PreferenceCategory>
 
