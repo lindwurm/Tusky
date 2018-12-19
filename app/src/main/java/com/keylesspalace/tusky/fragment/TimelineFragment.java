@@ -16,8 +16,10 @@
 package com.keylesspalace.tusky.fragment;
 
 import android.app.Activity;
-import android.arch.core.util.Function;
-import android.arch.lifecycle.Lifecycle;
+
+import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.arch.core.util.Function;
+import androidx.lifecycle.Lifecycle;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -27,21 +29,21 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.TabLayout;
-import android.support.v4.util.Pair;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.recyclerview.extensions.AsyncDifferConfig;
-import android.support.v7.recyclerview.extensions.AsyncListDiffer;
-import android.support.v7.util.DiffUtil;
-import android.support.v7.util.ListUpdateCallback;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SimpleItemAnimator;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabLayout;
+import androidx.core.util.Pair;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.recyclerview.widget.AsyncDifferConfig;
+import androidx.recyclerview.widget.AsyncListDiffer;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListUpdateCallback;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -274,7 +276,7 @@ public class TimelineFragment extends SFragment implements
         composeButton = rootView.findViewById(R.id.floating_btn);
 
         if (kind == Kind.USER || kind == Kind.USER_PINNED || kind == Kind.USER_WITH_REPLIES) {
-            LinearLayout layoutRoot = rootView.findViewById(R.id.quick_compose_root);
+            LinearLayoutCompat layoutRoot = rootView.findViewById(R.id.quick_compose_root);
             layoutRoot.setVisibility(View.GONE);
             composeButton.setVisibility(View.GONE);
         } else {
@@ -338,7 +340,7 @@ public class TimelineFragment extends SFragment implements
     private void setupSwipeRefreshLayout() {
         Context context = swipeRefreshLayout.getContext();
         swipeRefreshLayout.setOnRefreshListener(this);
-        swipeRefreshLayout.setColorSchemeResources(R.color.primary);
+        swipeRefreshLayout.setColorSchemeResources(R.color.tusky_blue);
         swipeRefreshLayout.setProgressBackgroundColorSchemeColor(ThemeUtils.getColor(context,
                 android.R.attr.colorBackground));
     }

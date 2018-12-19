@@ -4,11 +4,11 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -41,6 +41,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.lang.CharSequence;
 
 import at.connyduck.sparkbutton.SparkButton;
 import at.connyduck.sparkbutton.SparkEventListener;
@@ -132,11 +133,46 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         username.setText(usernameText);
     }
 
-    private void setContent(Spanned content, Status.Mention[] mentions, List<Emoji> emojis,
-                            StatusActionListener listener, boolean removeQuote) {
-        Spanned emojifiedText = CustomEmojiHelper.emojifyText(content, emojis, this.content);
+    private void setSpoilerAndContent(StatusViewData.Concrete status,
+                                final StatusActionListener listener, boolean removeQuote) {
+        if (status.getSpoilerText() == null || status.getSpoilerText().isEmpty()) {
+            contentWarningDescription.setVisibility(View.GONE);
+            contentWarningButton.setVisibility(View.GONE);
+            this.setTextVisible(true, status, listener, removeQuote);
+        } else {
+            boolean expanded = status.isExpanded();
+            CharSequence emojiSpoiler = CustomEmojiHelper.emojifyString(
+                    status.getSpoilerText(), status.getStatusEmojis(), contentWarningDescription);
+            contentWarningDescription.setText(emojiSpoiler);
+            contentWarningDescription.setVisibility(View.VISIBLE);
+            contentWarningButton.setVisibility(View.VISIBLE);
+            contentWarningButton.setChecked(expanded);
+            contentWarningButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                contentWarningDescription.invalidate();
+                if (getAdapterPosition() != RecyclerView.NO_POSITION) {
+                    listener.onExpandedChange(isChecked, getAdapterPosition());
+                }
+                this.setTextVisible(isChecked, status, listener, removeQuote);
+            });
+            this.setTextVisible(expanded, status, listener, removeQuote);
+        }
+    }
 
-        LinkHelper.setClickableText(this.content, emojifiedText, mentions, listener, removeQuote);
+    private void setTextVisible(boolean visible, StatusViewData.Concrete status,
+                                final StatusActionListener listener, boolean removeQuote) {
+        Status.Mention[] mentions = status.getMentions();
+        if (visible) {
+            Spanned emojifiedText = CustomEmojiHelper.emojifyText(
+                    status.getContent(), status.getStatusEmojis(), this.content);
+            LinkHelper.setClickableText(this.content, emojifiedText, mentions, listener, removeQuote);
+            this.content.setVisibility(View.VISIBLE);
+        } else {
+            if (mentions == null || mentions.length == 0) {
+                this.content.setVisibility(View.GONE);
+            } else {
+                LinkHelper.setClickableMentions(this.content, mentions, listener);
+            }
+        }
     }
 
     void setAvatar(String url, @Nullable String rebloggedUrl) {
@@ -482,32 +518,6 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         sensitiveMediaShow.setVisibility(View.GONE);
     }
 
-    private void setSpoilerText(String spoilerText, List<Emoji> emojis,
-                                final boolean expanded, final StatusActionListener listener) {
-        CharSequence emojiSpoiler =
-                CustomEmojiHelper.emojifyString(spoilerText, emojis, contentWarningDescription);
-        contentWarningDescription.setText(emojiSpoiler);
-        contentWarningDescription.setVisibility(View.VISIBLE);
-        contentWarningButton.setVisibility(View.VISIBLE);
-        contentWarningButton.setChecked(expanded);
-        contentWarningButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            contentWarningDescription.invalidate();
-            if (getAdapterPosition() != RecyclerView.NO_POSITION) {
-                listener.onExpandedChange(isChecked, getAdapterPosition());
-            }
-            content.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-
-        });
-        content.setVisibility(expanded ? View.VISIBLE : View.GONE);
-
-    }
-
-    private void hideSpoilerText() {
-        contentWarningDescription.setVisibility(View.GONE);
-        contentWarningButton.setVisibility(View.GONE);
-        content.setVisibility(View.VISIBLE);
-    }
-
     private void setupButtons(final StatusActionListener listener, final String accountId) {
         /* Originally position was passed through to all these listeners, but it caused several
          * bugs where other statuses in the list would be removed or added and cause the position
@@ -614,11 +624,8 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         setupButtons(listener, status.getSenderId());
         setRebloggingEnabled(status.getRebloggingEnabled(), status.getVisibility());
         setQuoteEnabled(status.getRebloggingEnabled(), status.getVisibility());
-        if (status.getSpoilerText() == null || status.getSpoilerText().isEmpty()) {
-            hideSpoilerText();
-        } else {
-            setSpoilerText(status.getSpoilerText(), status.getStatusEmojis(), status.isExpanded(), listener);
-        }
+
+        setSpoilerAndContent(status, listener, status.getQuote() != null);
 
         // When viewing threads this ViewHolder is used and the main post does not have a collapse
         // button by design so avoid crashing the app when that happens
@@ -643,9 +650,6 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 content.setFilters(NO_INPUT_FILTER);
             }
         }
-
-        setContent(status.getContent(), status.getMentions(), status.getStatusEmojis(), listener,
-                status.getQuote() != null);
     }
 
     static class QuoteInlineHelper {
