@@ -246,6 +246,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
     @Override
     protected void onStart() {
         super.onStart();
+        stopStreamingService();
         startStreamingService();
     }
 
