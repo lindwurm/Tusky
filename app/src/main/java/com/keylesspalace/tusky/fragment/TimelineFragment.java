@@ -277,7 +277,7 @@ public class TimelineFragment extends SFragment implements
 
         composeButton = rootView.findViewById(R.id.floating_btn);
 
-        if (kind == Kind.USER || kind == Kind.USER_PINNED || kind == Kind.USER_WITH_REPLIES) {
+        if (!quoteComposeExists()) {
             LinearLayoutCompat layoutRoot = rootView.findViewById(R.id.quick_compose_root);
             layoutRoot.setVisibility(View.GONE);
             composeButton.setVisibility(View.GONE);
@@ -295,6 +295,15 @@ public class TimelineFragment extends SFragment implements
         }
 
         return rootView;
+    }
+
+    private boolean quoteComposeExists() {
+        return kind == Kind.HOME
+                || kind == Kind.PUBLIC_LOCAL
+                || kind == Kind.PUBLIC_FEDERATED
+                || kind == Kind.FAVOURITES
+                || kind == Kind.LIST
+                || kind == Kind.TAG;
     }
 
     private void setupQuickCompose(View rootView) {
@@ -526,7 +535,7 @@ public class TimelineFragment extends SFragment implements
 
     @Override
     public void onReply(int position) {
-        if (kind == Kind.USER || kind == Kind.USER_PINNED || kind == Kind.USER_WITH_REPLIES) {
+        if (!quoteComposeExists()) {
             super.reply(statuses.get(position).getAsRight());
         } else {
             inReplyTo = statuses.get(position).getAsRight().getActionableStatus();
