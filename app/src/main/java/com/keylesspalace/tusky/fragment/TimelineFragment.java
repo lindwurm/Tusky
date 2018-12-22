@@ -1193,6 +1193,9 @@ public class TimelineFragment extends SFragment implements
     private void handleStatusComposeEvent(@NonNull Status status) {
         switch (kind) {
             case HOME:
+                if (preferences.getBoolean("useHTLStream", false)){
+                    break;
+                }
             case PUBLIC_FEDERATED:
             case PUBLIC_LOCAL:
                 break;
