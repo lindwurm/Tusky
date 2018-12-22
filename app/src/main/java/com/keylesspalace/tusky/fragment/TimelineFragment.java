@@ -1357,6 +1357,8 @@ public class TimelineFragment extends SFragment implements
             content += " " + preferences.getString("default_text", "");
         }
 
+        intentBuilder = intentBuilder.savedVisibility(getCurrentVisibility());
+
         if (inReplyTo != null) {
             Status.Mention[] mentions = inReplyTo.getMentions();
             Set<String> mentionedUsernames = new LinkedHashSet<>();
@@ -1377,8 +1379,7 @@ public class TimelineFragment extends SFragment implements
                     .replyingStatusContent(inReplyTo.getContent().toString());
         }
 
-        return intentBuilder.savedTootText(content)
-                .savedVisibility(getCurrentVisibility());
+        return intentBuilder.savedTootText(content);
     }
 
     private String joinMentions(Set<String> mentionedUsernames) {
