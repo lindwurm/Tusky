@@ -41,6 +41,7 @@ import com.keylesspalace.tusky.ComposeActivity;
 import com.keylesspalace.tusky.R;
 import com.keylesspalace.tusky.adapter.TimelineAdapter;
 import com.keylesspalace.tusky.appstore.BlockEvent;
+import com.keylesspalace.tusky.appstore.DrawerFooterClickedEvent;
 import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.FavoriteEvent;
 import com.keylesspalace.tusky.appstore.MuteEvent;
@@ -504,6 +505,10 @@ public class TimelineFragment extends SFragment implements
                         } else if (event instanceof StreamUpdateEvent) {
                             if (kind == Kind.HOME) {
                                 addStatus(((StreamUpdateEvent) event).getStatus());
+                            }
+                        } else if (event instanceof DrawerFooterClickedEvent) {
+                            if (quoteComposeExists()) {
+                                tootEditText.setText("にゃーん");
                             }
                         }
                     });
@@ -1029,7 +1034,7 @@ public class TimelineFragment extends SFragment implements
         }
     }
 
-    private boolean filterStatus(Status status){
+    private boolean filterStatus(Status status) {
         return (status.getInReplyToId() != null && filterRemoveReplies)
                 || (status.getReblog() != null && filterRemoveReblogs)
                 || (filterRemoveRegex && (filterRemoveRegexMatcher.reset(status.getContent()).find()
