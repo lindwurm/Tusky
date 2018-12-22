@@ -56,7 +56,6 @@ public class TimelineStreamingService extends Service implements Injectable {
     }
 
     private void connectWebsocket(String endpoint) {
-        WebSocketImpl.DEBUG = true;
         try {
             streamingClient = new TimelineStreamingClient(this, new URI(endpoint), eventHub);
         } catch (URISyntaxException e) {
