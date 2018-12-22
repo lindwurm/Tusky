@@ -10,8 +10,6 @@ import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.di.Injectable;
 
-import org.java_websocket.WebSocketImpl;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 
