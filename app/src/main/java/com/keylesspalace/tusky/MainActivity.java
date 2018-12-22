@@ -58,6 +58,8 @@ import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 import com.squareup.picasso.Picasso;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,7 +76,7 @@ import dagger.android.AndroidInjector;
 import dagger.android.DispatchingAndroidInjector;
 import dagger.android.support.HasSupportFragmentInjector;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import jp.kyori.tusky.TimelineStreamingService;
+import jp.kyori.tusky.TimelineStreamingClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -109,6 +111,8 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
     private SharedPreferences defPrefs;
 
     private boolean alreadyKilled = false;
+
+    private TimelineStreamingClient streamingClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -247,16 +251,38 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
     @Override
     protected void onStart() {
         super.onStart();
-        stopStreamingService();
-        startStreamingService();
+        startStreaming();
     }
 
-    private void startStreamingService() {
+    private void startStreaming() {
         if (defPrefs.getBoolean("useHTLStream", false)) {
-            Intent intent = new Intent(this, TimelineStreamingService.class);
-            startService(intent);
+            connectWebsocket(buildStreamingUrl());
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
+    }
+
+    private String buildStreamingUrl() {
+        AccountEntity activeAccount = accountManager.getActiveAccount();
+        if (activeAccount != null) {
+            return "wss://" + activeAccount.getDomain() + "/api/v1/streaming/?" + "stream=user" + "&" + "access_token" + "=" + activeAccount.getAccessToken();
+        }else{
+            return null;
+        }
+    }
+
+    private void connectWebsocket(String endpoint) {
+        if (streamingClient != null){
+            stopStreaming();
+        }
+
+        try {
+            streamingClient = new TimelineStreamingClient(this, new URI(endpoint), eventHub);
+        } catch (URISyntaxException e) {
+            Log.e(TAG, "connectWebsocket: ", e);
+            return;
+        }
+
+        streamingClient.connect();
     }
 
     @Override
@@ -265,13 +291,13 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
         if (alreadyKilled) {
             alreadyKilled = false;
         } else {
-            stopStreamingService();
+            stopStreaming();
         }
     }
 
-    private void stopStreamingService() {
-        Intent intent = new Intent(this, TimelineStreamingService.class);
-        stopService(intent);
+    private void stopStreaming() {
+        streamingClient.close();
+        streamingClient = null;
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
@@ -495,7 +521,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
     private void changeAccount(long newSelectedId) {
         accountManager.setActiveAccount(newSelectedId);
 
-        stopStreamingService();
+        stopStreaming();
         alreadyKilled = true;
 
         Intent intent = new Intent(this, MainActivity.class);

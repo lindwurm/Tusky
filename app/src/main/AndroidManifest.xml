@@ -156,7 +156,6 @@
             </intent-filter>
         </service>
         <service android:name=".service.SendTootService" />
-        <service android:name="jp.kyori.tusky.TimelineStreamingService" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

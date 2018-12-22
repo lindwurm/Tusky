@@ -18,13 +18,9 @@ package com.keylesspalace.tusky.di
 import com.keylesspalace.tusky.service.SendTootService
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
-import jp.kyori.tusky.TimelineStreamingService
 
 @Module
 abstract class ServicesModule {
     @ContributesAndroidInjector
     abstract fun contributesSendTootService(): SendTootService
-
-    @ContributesAndroidInjector
-    abstract fun contributesTimelineStreamingService(): TimelineStreamingService
 }

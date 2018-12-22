@@ -26,7 +26,7 @@ public class TimelineStreamingClient extends WebSocketClient {
     private Handler handler;
     private EventHub eventHub;
 
-    TimelineStreamingClient(Context context, URI uri, EventHub eventHub) {
+    public TimelineStreamingClient(Context context, URI uri, EventHub eventHub) {
         super(uri);
         this.context = context;
         handler = new Handler(context.getMainLooper());
