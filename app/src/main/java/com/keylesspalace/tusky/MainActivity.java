@@ -276,7 +276,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
         }
 
         try {
-            streamingClient = new TimelineStreamingClient(this, new URI(endpoint), eventHub);
+            streamingClient = new TimelineStreamingClient(new URI(endpoint), eventHub);
         } catch (URISyntaxException e) {
             Log.e(TAG, "connectWebsocket: ", e);
             return;

@@ -1,10 +1,7 @@
 package jp.kyori.tusky;
 
-import android.content.Context;
-import android.os.Handler;
 import android.text.Spanned;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -22,20 +19,16 @@ import java.net.URI;
 
 public class TimelineStreamingClient extends WebSocketClient {
 
-    private Context context;
-    private Handler handler;
     private EventHub eventHub;
 
-    public TimelineStreamingClient(Context context, URI uri, EventHub eventHub) {
+    public TimelineStreamingClient(URI uri, EventHub eventHub) {
         super(uri);
-        this.context = context;
-        handler = new Handler(context.getMainLooper());
         this.eventHub = eventHub;
     }
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        showToast("Stream Connected.");
+        Log.d("TimelineStreamingClient", "onOpen: Stream Connected.");
     }
 
     @Override
@@ -44,7 +37,7 @@ public class TimelineStreamingClient extends WebSocketClient {
         StreamEvent event = gson.fromJson(message, StreamEvent.class);
 
         String payload = event.getPayload();
-        switch (event.getEvent()){
+        switch (event.getEvent()) {
             case UPDATE:
                 Status status = gson.fromJson(payload, Status.class);
                 eventHub.dispatch(new StreamUpdateEvent(status));
@@ -54,7 +47,7 @@ public class TimelineStreamingClient extends WebSocketClient {
         }
     }
 
-    private Gson getGson(){
+    private Gson getGson() {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(Spanned.class, new SpannedTypeAdapter());
         return gsonBuilder.create();
@@ -62,16 +55,11 @@ public class TimelineStreamingClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        showToast("Stream Closed.");
+        Log.d("TimelineStreamingClient", "onClose: Stream Closed.");
     }
 
     @Override
     public void onError(Exception ex) {
         Log.e("TimelineStreamingClient", "onError: ", ex);
-    }
-
-    private void showToast(String message) {
-        Log.d("TimelineStreamingClient", message);
-        handler.post(() -> Toast.makeText(context.getApplicationContext(), message, Toast.LENGTH_SHORT).show());
     }
 }
