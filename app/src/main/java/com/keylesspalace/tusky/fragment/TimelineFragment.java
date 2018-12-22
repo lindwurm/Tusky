@@ -1101,8 +1101,10 @@ public class TimelineFragment extends SFragment implements
 
     private void addStatus(Status status) {
         if (!filterStatus(status)) {
-            statuses.add(0, Either.right(status));
-            updateAdapter();
+            if (findStatusOrReblogPositionById(status.getId()) < 0) {
+                statuses.add(0, Either.right(status));
+                updateAdapter();
+            }
         }
     }
 
