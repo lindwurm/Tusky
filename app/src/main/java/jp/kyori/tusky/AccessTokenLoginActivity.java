@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.google.android.material.textfield.TextInputEditText;
@@ -32,7 +31,7 @@ public class AccessTokenLoginActivity extends AppCompatActivity implements Injec
     AccountManager accountManager;
 
     TextInputEditText domainEditText;
-    EditText accessTokenEditText;
+    TextInputEditText accessTokenEditText;
     TextView logTextView;
 
     @Override
