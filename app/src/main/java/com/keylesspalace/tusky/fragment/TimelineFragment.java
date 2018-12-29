@@ -1196,7 +1196,7 @@ public class TimelineFragment extends SFragment implements
         switch (kind) {
             case HOME:
                 if (preferences.getBoolean("useHTLStream", false)){
-                    break;
+                    return;
                 }
             case PUBLIC_FEDERATED:
             case PUBLIC_LOCAL:
