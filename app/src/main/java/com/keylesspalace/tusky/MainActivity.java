@@ -265,13 +265,13 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
         AccountEntity activeAccount = accountManager.getActiveAccount();
         if (activeAccount != null) {
             return "wss://" + activeAccount.getDomain() + "/api/v1/streaming/?" + "stream=user" + "&" + "access_token" + "=" + activeAccount.getAccessToken();
-        }else{
+        } else {
             return null;
         }
     }
 
     private void connectWebsocket(String endpoint) {
-        if (streamingClient != null){
+        if (streamingClient != null) {
             stopStreaming();
         }
 
@@ -296,6 +296,9 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
     }
 
     private void stopStreaming() {
+        if (streamingClient == null) {
+            return;
+        }
         streamingClient.close();
         streamingClient = null;
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
