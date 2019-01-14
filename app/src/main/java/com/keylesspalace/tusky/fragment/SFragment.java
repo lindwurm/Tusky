@@ -19,13 +19,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityOptionsCompat;
-import androidx.core.view.ViewCompat;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.widget.PopupMenu;
 import android.text.Spanned;
 import android.view.Menu;
 import android.view.View;
@@ -51,6 +44,13 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.core.app.ActivityOptionsCompat;
+import androidx.core.view.ViewCompat;
+
 /* Note from Andrew on Jan. 22, 2017: This class is a design problem for me, so I left it with an
  * awkward name. TimelineFragment and NotificationFragment have significant overlap but the nature
  * of that is complicated by how they're coupled with Status and Notification and the corresponding
@@ -58,8 +58,6 @@ import javax.inject.Inject;
  * overlap functionality. So, I'm momentarily leaving it and hopefully working on those will clear
  * up what needs to be where. */
 public abstract class SFragment extends BaseFragment {
-    protected String loggedInAccountId;
-    protected String loggedInUsername;
 
     protected abstract TimelineCases timelineCases();
 
@@ -73,16 +71,6 @@ public abstract class SFragment extends BaseFragment {
     public MastodonApi mastodonApi;
     @Inject
     public AccountManager accountManager;
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        AccountEntity activeAccount = accountManager.getActiveAccount();
-        if (activeAccount != null) {
-            loggedInAccountId = activeAccount.getAccountId();
-            loggedInUsername = activeAccount.getUsername();
-        }
-    }
 
     @Override
     public void startActivity(Intent intent) {
@@ -125,6 +113,11 @@ public abstract class SFragment extends BaseFragment {
         Status.Mention[] mentions = actionableStatus.getMentions();
         Set<String> mentionedUsernames = new LinkedHashSet<>();
         mentionedUsernames.add(actionableStatus.getAccount().getUsername());
+        String loggedInUsername = null;
+        AccountEntity activeAccount = accountManager.getActiveAccount();
+        if(activeAccount != null) {
+            loggedInUsername = activeAccount.getUsername();
+        }
         for (Status.Mention mention : mentions) {
             mentionedUsernames.add(mention.getUsername());
         }
@@ -147,6 +140,11 @@ public abstract class SFragment extends BaseFragment {
         Status.Mention[] mentions = actionableStatus.getMentions();
         Set<String> mentionedUsernames = new LinkedHashSet<>();
         mentionedUsernames.add(actionableStatus.getAccount().getUsername());
+        String loggedInUsername = null;
+        AccountEntity activeAccount = accountManager.getActiveAccount();
+        if(activeAccount != null) {
+            loggedInUsername = activeAccount.getUsername();
+        }
         for (Status.Mention mention : mentions) {
             mentionedUsernames.add(mention.getUsername());
         }
@@ -170,6 +168,12 @@ public abstract class SFragment extends BaseFragment {
         final String accountUsername = status.getActionableStatus().getAccount().getUsername();
         final Spanned content = status.getActionableStatus().getContent();
         final String statusUrl = status.getActionableStatus().getUrl();
+        String loggedInAccountId = null;
+        AccountEntity activeAccount = accountManager.getActiveAccount();
+        if(activeAccount != null) {
+            loggedInAccountId = activeAccount.getAccountId();
+        }
+
         PopupMenu popup = new PopupMenu(getContext(), view);
         // Give a different menu depending on whether this is the user's own toot or not.
         if (loggedInAccountId == null || !loggedInAccountId.equals(accountId)) {

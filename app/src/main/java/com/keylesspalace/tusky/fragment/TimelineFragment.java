@@ -51,6 +51,7 @@ import com.keylesspalace.tusky.appstore.StatusComposedEvent;
 import com.keylesspalace.tusky.appstore.StatusDeletedEvent;
 import com.keylesspalace.tusky.appstore.StreamUpdateEvent;
 import com.keylesspalace.tusky.appstore.UnfollowEvent;
+import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.di.Injectable;
 import com.keylesspalace.tusky.entity.Status;
@@ -1372,6 +1373,11 @@ public class TimelineFragment extends SFragment implements
             Status.Mention[] mentions = inReplyTo.getMentions();
             Set<String> mentionedUsernames = new LinkedHashSet<>();
             mentionedUsernames.add(inReplyTo.getAccount().getUsername());
+            String loggedInUsername = null;
+            AccountEntity activeAccount = accountManager.getActiveAccount();
+            if(activeAccount != null) {
+                loggedInUsername = activeAccount.getUsername();
+            }
             for (Status.Mention mention : mentions) {
                 mentionedUsernames.add(mention.getUsername());
             }

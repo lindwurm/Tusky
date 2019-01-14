@@ -50,8 +50,6 @@ import at.connyduck.sparkbutton.SparkEventListener;
 import jp.kyori.tusky.RichTextUtil;
 
 abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
-    private static final InputFilter[] COLLAPSE_INPUT_FILTER = new InputFilter[]{SmartLengthInputFilter.INSTANCE};
-    private static final InputFilter[] NO_INPUT_FILTER = new InputFilter[0];
 
     private TextView displayName;
     private TextView username;
@@ -68,7 +66,6 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private View sensitiveMediaShow;
     private TextView mediaLabel;
     private ToggleButton contentWarningButton;
-    private ToggleButton contentCollapseButton;
     private RelativeLayout quoteContainer;
 
     ImageView avatar;
@@ -112,7 +109,6 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         mediaLabel = itemView.findViewById(R.id.status_media_label);
         contentWarningDescription = itemView.findViewById(R.id.status_content_warning_description);
         contentWarningButton = itemView.findViewById(R.id.status_content_warning_button);
-        contentCollapseButton = itemView.findViewById(R.id.button_toggle_content);
 
         quoteContainer = itemView.findViewById(R.id.status_quote_inline_container);
 
@@ -645,29 +641,6 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
         setSpoilerAndContent(status, listener, status.getQuote() != null);
 
-        // When viewing threads this ViewHolder is used and the main post does not have a collapse
-        // button by design so avoid crashing the app when that happens
-        if (contentCollapseButton != null) {
-            if (status.isCollapsible() && (status.isExpanded() || status.getSpoilerText() == null || status.getSpoilerText().isEmpty())) {
-                contentCollapseButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                    int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION)
-                        listener.onContentCollapsedChange(isChecked, position);
-                });
-
-                contentCollapseButton.setVisibility(View.VISIBLE);
-                if (status.isCollapsed()) {
-                    contentCollapseButton.setChecked(true);
-                    content.setFilters(COLLAPSE_INPUT_FILTER);
-                } else {
-                    contentCollapseButton.setChecked(false);
-                    content.setFilters(NO_INPUT_FILTER);
-                }
-            } else {
-                contentCollapseButton.setVisibility(View.GONE);
-                content.setFilters(NO_INPUT_FILTER);
-            }
-        }
     }
 
     static class QuoteInlineHelper {
