@@ -127,7 +127,7 @@ public abstract class SFragment extends BaseFragment {
                 .replyVisibility(replyVisibility)
                 .contentWarning(contentWarning)
                 .mentionedUsernames(mentionedUsernames)
-                .repyingStatusAuthor(actionableStatus.getAccount().getLocalUsername())
+                .replyingStatusAuthor(actionableStatus.getAccount().getLocalUsername())
                 .replyingStatusContent(actionableStatus.getContent().toString())
                 .build(getContext());
         getActivity().startActivity(intent);
