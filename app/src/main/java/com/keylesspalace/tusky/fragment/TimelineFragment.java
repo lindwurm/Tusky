@@ -791,6 +791,10 @@ public class TimelineFragment extends SFragment implements
                 alwaysShowSensitiveMedia = accountManager.getActiveAccount().getAlwaysShowSensitiveMedia();
                 break;
             }
+            case "current_visibility": {
+                updateVisibilityButton();
+                break;
+            }
             case "use_default_text":
             case "default_text": {
                 updateQuickComposeInfo();
@@ -1410,6 +1414,7 @@ public class TimelineFragment extends SFragment implements
             preferences.edit()
                     .putInt("current_visibility", Status.Visibility.PUBLIC.getNum())
                     .apply();
+            eventHub.dispatch(new PreferenceChangedEvent("current_visibility"));
             return Status.Visibility.PUBLIC;
         }
         return visibility;
@@ -1460,6 +1465,7 @@ public class TimelineFragment extends SFragment implements
         preferences.edit()
                 .putInt("current_visibility", visibility.getNum())
                 .apply();
+        eventHub.dispatch(new PreferenceChangedEvent("current_visibility"));
         updateVisibilityButton();
     }
 }
