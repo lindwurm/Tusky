@@ -1390,7 +1390,7 @@ public class TimelineFragment extends SFragment implements
                     .savedVisibility(inReplyTo.getVisibility())
                     .contentWarning(inReplyTo.getSpoilerText())
                     .mentionedUsernames(mentionedUsernames)
-                    .repyingStatusAuthor(inReplyTo.getAccount().getLocalUsername())
+                    .replyingStatusAuthor(inReplyTo.getAccount().getLocalUsername())
                     .replyingStatusContent(inReplyTo.getContent().toString());
         }
 
