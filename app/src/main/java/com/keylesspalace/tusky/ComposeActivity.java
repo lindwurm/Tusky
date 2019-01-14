@@ -189,7 +189,6 @@ public final class ComposeActivity
     private static final String CONTENT_WARNING_EXTRA = "content_warning";
     private static final String MENTIONED_USERNAMES_EXTRA = "mentioned_usernames";
     private static final String REPLYING_STATUS_AUTHOR_USERNAME_EXTRA = "replying_author_nickname_extra";
-    private static final String MOVE_CURSOR_TO_TOP = "move_cursor_to_top";
     private static final String REPLYING_STATUS_CONTENT_EXTRA = "replying_status_content";
     private static final String TOOT_RIGHT_NOW = "toot_right_now";
     // Mastodon only counts URLs as this long in terms of status character limits
@@ -501,11 +500,6 @@ public final class ComposeActivity
             if (!TextUtils.isEmpty(savedTootText)) {
                 startingText = savedTootText;
                 textEditor.setText(savedTootText);
-            }
-
-            if (intent.getBooleanExtra(MOVE_CURSOR_TO_TOP, false)) {
-                textEditor.setSelection(0, textEditor.length());
-                textEditor.setSelection(0);
             }
 
             // try to redo a list of media
@@ -1853,7 +1847,6 @@ public final class ComposeActivity
         private String replyingStatusAuthor;
         @Nullable
         private String replyingStatusContent;
-        private boolean moveCursorToTop = false;
         private boolean tootRightNow = false;
 
         public IntentBuilder savedTootUid(int uid) {
@@ -1921,11 +1914,6 @@ public final class ComposeActivity
             return this;
         }
 
-        public IntentBuilder moveCursorToTop(boolean cursor) {
-            this.moveCursorToTop = cursor;
-            return this;
-        }
-
         public IntentBuilder tootRightNow(boolean bool) {
             this.tootRightNow = bool;
             return this;
@@ -1974,7 +1962,6 @@ public final class ComposeActivity
             if (replyingStatusAuthor != null) {
                 intent.putExtra(REPLYING_STATUS_AUTHOR_USERNAME_EXTRA, replyingStatusAuthor);
             }
-            intent.putExtra(MOVE_CURSOR_TO_TOP, moveCursorToTop);
             intent.putExtra(TOOT_RIGHT_NOW, tootRightNow);
 
             return intent;
