@@ -542,6 +542,15 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 listener.onReply(position);
             }
         });
+        replyButton.setOnLongClickListener(v -> {
+            int position = getAdapterPosition();
+            if (position != RecyclerView.NO_POSITION) {
+                listener.onFavourite(!favourited, position);
+                listener.onReblog(!reblogged, position);
+            }
+            return true;
+        });
+        replyButton.setLongClickable(true);
         reblogButton.setEventListener(new SparkEventListener() {
             @Override
             public void onEvent(ImageView button, boolean buttonState) {
