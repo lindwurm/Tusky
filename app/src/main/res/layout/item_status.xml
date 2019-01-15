@@ -377,7 +377,6 @@
         style="?attr/image_button_style"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
         android:contentDescription="@string/action_quote"
         android:padding="4dp"
