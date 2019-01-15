@@ -33,6 +33,7 @@ import android.widget.TextView;
 
 import com.google.android.material.tabs.TabLayout;
 import com.keylesspalace.tusky.appstore.DrawerFooterClickedEvent;
+import com.keylesspalace.tusky.appstore.CacheUpdater;
 import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.ProfileEditedEvent;
 import com.keylesspalace.tusky.db.AccountEntity;
@@ -104,6 +105,8 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
     public DispatchingAndroidInjector<Fragment> fragmentInjector;
     @Inject
     public EventHub eventHub;
+    @Inject
+    public CacheUpdater cacheUpdater;
 
     private AccountHeader headerResult;
     private Drawer drawer;
@@ -522,6 +525,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
 
 
     private void changeAccount(long newSelectedId) {
+        cacheUpdater.stop();
         accountManager.setActiveAccount(newSelectedId);
 
         stopStreaming();
@@ -547,6 +551,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
                     .setPositiveButton(android.R.string.yes, (dialog, which) -> {
 
                         NotificationHelper.deleteNotificationChannelsForAccount(accountManager.getActiveAccount(), MainActivity.this);
+                        cacheUpdater.clearForUser(activeAccount.getId());
 
                         AccountEntity newAccount = accountManager.logActiveAccountOut();
 

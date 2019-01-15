@@ -15,8 +15,6 @@
 
 package com.keylesspalace.tusky.network;
 
-import androidx.annotation.Nullable;
-
 import com.keylesspalace.tusky.entity.AccessToken;
 import com.keylesspalace.tusky.entity.Account;
 import com.keylesspalace.tusky.entity.AppCredentials;
@@ -33,6 +31,7 @@ import com.keylesspalace.tusky.entity.StatusContext;
 
 import java.util.List;
 
+import androidx.annotation.Nullable;
 import io.reactivex.Single;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -62,6 +61,12 @@ public interface MastodonApi {
 
     @GET("api/v1/timelines/home")
     Call<List<Status>> homeTimeline(
+            @Query("max_id") String maxId,
+            @Query("since_id") String sinceId,
+            @Query("limit") Integer limit);
+
+    @GET("api/v1/timelines/home")
+    Single<List<Status>> homeTimelineSingle(
             @Query("max_id") String maxId,
             @Query("since_id") String sinceId,
             @Query("limit") Integer limit);
@@ -147,16 +152,16 @@ public interface MastodonApi {
     Call<ResponseBody> deleteStatus(@Path("id") String statusId);
 
     @POST("api/v1/statuses/{id}/reblog")
-    Call<Status> reblogStatus(@Path("id") String statusId);
+    Single<Status> reblogStatus(@Path("id") String statusId);
 
     @POST("api/v1/statuses/{id}/unreblog")
-    Call<Status> unreblogStatus(@Path("id") String statusId);
+    Single<Status> unreblogStatus(@Path("id") String statusId);
 
     @POST("api/v1/statuses/{id}/favourite")
-    Call<Status> favouriteStatus(@Path("id") String statusId);
+    Single<Status> favouriteStatus(@Path("id") String statusId);
 
     @POST("api/v1/statuses/{id}/unfavourite")
-    Call<Status> unfavouriteStatus(@Path("id") String statusId);
+    Single<Status> unfavouriteStatus(@Path("id") String statusId);
 
     @POST("api/v1/statuses/{id}/pin")
     Single<Status> pinStatus(@Path("id") String statusId);
