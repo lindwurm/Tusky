@@ -1193,6 +1193,7 @@ public class TimelineFragment extends SFragment implements
             if (findStatusOrReblogPositionById(status.getId()) < 0) {
                 statuses.add(0, new Either.Right<>(status));
                 updateAdapter();
+                timelineRepo.addSingleStatusToDb(status);
             }
         }
     }

@@ -31,6 +31,7 @@ enum class TimelineRequestMode {
 interface TimelineRepository {
     fun getStatuses(maxId: String?, sinceId: String?, limit: Int,
                     requestMode: TimelineRequestMode): Single<out List<TimelineStatus>>
+    fun addSingleStatusToDb(status: Status)
 
     companion object {
         val CLEANUP_INTERVAL = TimeUnit.DAYS.toMillis(14)
@@ -59,6 +60,18 @@ class TimelineRepositoryImpl(
         } else {
             getStatusesFromNetwork(maxId, sinceId, limit, instance, accountId, requestMode)
         }
+    }
+
+    override fun addSingleStatusToDb(status: Status) {
+        val acc = accountManager.activeAccount ?: throw IllegalStateException()
+        val accountId = acc.id
+        val instance = acc.domain
+
+        timelineDao.insertInTransaction(
+                status.toEntity(accountId, instance),
+                status.account.toEntity(instance, accountId),
+                status.reblog?.account?.toEntity(instance, accountId)
+        )
     }
 
     private fun getStatusesFromNetwork(maxId: String?, sinceId: String?, limit: Int,
