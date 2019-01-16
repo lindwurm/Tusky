@@ -400,5 +400,6 @@
 
     <string name="title_reblogged_by">Boosted by</string>
     <string name="title_favourited_by">Favourited by</string>
+    <string name="toast_send_stack_trace">よければ前回クラッシュ時のエラーレポートを開発者に送信してください</string>
 
 </resources>

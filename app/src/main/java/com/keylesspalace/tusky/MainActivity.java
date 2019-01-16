@@ -23,6 +23,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -30,6 +31,7 @@ import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.tabs.TabLayout;
 import com.keylesspalace.tusky.appstore.DrawerFooterClickedEvent;
@@ -242,6 +244,8 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
 
         // Flush old media that was cached for sharing
         deleteStaleCachedMedia(getApplicationContext().getExternalFilesDir("Tusky"));
+
+        sendCrashReport();
     }
 
     @Override
@@ -657,6 +661,20 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
 
     private void onFetchUserInfoFailure(Exception exception) {
         Log.e(TAG, "Failed to fetch user info. " + exception.getMessage());
+    }
+
+    private void sendCrashReport() {
+        String stackTrace = defPrefs.getString("stack_trace", null);
+        if (!TextUtils.isEmpty(stackTrace)) {
+            Toast.makeText(this, getString(R.string.toast_send_stack_trace), Toast.LENGTH_LONG)
+                    .show();
+            Intent intent = new ComposeActivity.IntentBuilder()
+                    .savedTootText(("@ars42525@odakyu.app " + stackTrace).substring(0, 400))
+                    .contentWarning("TuskyEx StackTrace")
+                    .build(this);
+            startActivity(intent);
+        }
+        defPrefs.edit().remove("stack_trace").apply();
     }
 
     @Override
