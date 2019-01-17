@@ -18,6 +18,7 @@ package com.keylesspalace.tusky.fragment
 import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.text.Spanned
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -25,6 +26,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.gson.GsonBuilder
 import com.keylesspalace.tusky.AccountActivity
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.ViewTagActivity
@@ -32,6 +34,8 @@ import com.keylesspalace.tusky.adapter.SearchResultsAdapter
 import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.entity.SearchResults
 import com.keylesspalace.tusky.interfaces.StatusActionListener
+import com.keylesspalace.tusky.json.SpannedTypeAdapter
+import com.keylesspalace.tusky.network.NotestockApi
 import com.keylesspalace.tusky.network.TimelineCases
 import com.keylesspalace.tusky.util.ViewDataUtils
 import com.keylesspalace.tusky.viewdata.StatusViewData
@@ -39,15 +43,20 @@ import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_search.*
+import okhttp3.HttpUrl
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Inject
 
 class SearchFragment : SFragment(), StatusActionListener, Injectable {
 
     @Inject
     lateinit var timelineCases: TimelineCases
+
+    private lateinit var notestockApi: NotestockApi
 
     private lateinit var searchAdapter: SearchResultsAdapter
 
@@ -75,6 +84,15 @@ class SearchFragment : SFragment(), StatusActionListener, Injectable {
                 useAbsoluteTime)
         searchRecyclerView.adapter = searchAdapter
 
+        val notestockUrl = HttpUrl.Builder()
+                .scheme("https").host("notestock.osa-p.net").build()
+        val gson = GsonBuilder()
+                .registerTypeAdapter(Spanned::class.java, SpannedTypeAdapter())
+                .create()
+        val retrofit = Retrofit.Builder()
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .baseUrl(notestockUrl).build()
+        notestockApi = retrofit.create(NotestockApi::class.java)
     }
 
     fun search(query: String) {
@@ -100,6 +118,30 @@ class SearchFragment : SFragment(), StatusActionListener, Injectable {
         }
         mastodonApi.search(query, true)
                 .enqueue(callback)
+    }
+
+    fun notestockSearch(query: String) {
+        clearResults()
+        val callback = object : Callback<SearchResults> {
+            override fun onResponse(call: Call<SearchResults>, response: Response<SearchResults>) {
+                if (response.isSuccessful) {
+                    val results = response.body()
+                    if (results != null && (results.accounts.isNotEmpty() || results.statuses.isNotEmpty() || results.hashtags.isNotEmpty())) {
+                        searchAdapter.updateSearchResults(results)
+                        hideFeedback()
+                    } else {
+                        displayNoResults()
+                    }
+                } else {
+                    onSearchFailure()
+                }
+            }
+
+            override fun onFailure(call: Call<SearchResults>, t: Throwable) {
+                onSearchFailure()
+            }
+        }
+        notestockApi.search(query).enqueue(callback)
     }
 
     private fun onSearchFailure() {
@@ -182,7 +224,7 @@ class SearchFragment : SFragment(), StatusActionListener, Injectable {
 
     override fun onQuote(position: Int) {
         val status = searchAdapter.getStatusAtPosition(position)
-        if(status != null) {
+        if (status != null) {
             super.quote(status)
         }
     }

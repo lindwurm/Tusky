@@ -34,6 +34,7 @@ import com.mikepenz.iconics.utils.Utils;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -90,7 +91,7 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         moreButton = itemView.findViewById(R.id.status_more);
         reblogged = false;
         favourited = false;
-        mediaPreviews = new MediaPreviewImageView[] {
+        mediaPreviews = new MediaPreviewImageView[]{
                 itemView.findViewById(R.id.status_media_preview_0),
                 itemView.findViewById(R.id.status_media_preview_1),
                 itemView.findViewById(R.id.status_media_preview_2),
@@ -130,7 +131,7 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     }
 
     private void setSpoilerAndContent(StatusViewData.Concrete status,
-                                final StatusActionListener listener, boolean removeQuote) {
+                                      final StatusActionListener listener, boolean removeQuote) {
         if (status.getSpoilerText() == null || status.getSpoilerText().isEmpty()) {
             contentWarningDescription.setVisibility(View.GONE);
             contentWarningButton.setVisibility(View.GONE);
@@ -162,9 +163,9 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                     status.getContent(), status.getStatusEmojis(), this.content);
             LinkHelper.setClickableText(this.content, emojifiedText, mentions, listener, removeQuote);
         } else {
-                LinkHelper.setClickableMentions(this.content, mentions, listener);
+            LinkHelper.setClickableMentions(this.content, mentions, listener);
         }
-        if(TextUtils.isEmpty(this.content.getText())) {
+        if (TextUtils.isEmpty(this.content.getText())) {
             this.content.setVisibility(View.GONE);
         } else {
             this.content.setVisibility(View.VISIBLE);
@@ -624,6 +625,9 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         setQuoteContainer(status.getQuote(), listener);
         List<Attachment> attachments = status.getAttachments();
         boolean sensitive = status.isSensitive();
+        if (attachments == null) {
+            attachments = new ArrayList<>();
+        }
         if (mediaPreviewEnabled) {
             setMediaPreviews(attachments, sensitive, listener, status.isShowingContent());
 
@@ -751,9 +755,9 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 setSpoilerText(quoteStatus.getSpoilerText(), quoteStatus.getEmojis(), false);
             }
 
-            if(quoteStatus.getAttachments().size()==0){
+            if (quoteStatus.getAttachments().size() == 0) {
                 quoteMedia.setVisibility(View.GONE);
-            }else{
+            } else {
                 quoteMedia.setVisibility(View.VISIBLE);
                 quoteMedia.setText(quoteContainer.getContext().getString(R.string.quote_status_media_notice,
                         quoteStatus.getAttachments().size()));
