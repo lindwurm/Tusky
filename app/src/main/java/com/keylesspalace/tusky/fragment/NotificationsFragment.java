@@ -28,7 +28,6 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.keylesspalace.tusky.MainActivity;
 import com.keylesspalace.tusky.R;
@@ -67,7 +66,6 @@ import javax.inject.Inject;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.arch.core.util.Function;
 import androidx.core.util.Pair;
 import androidx.lifecycle.Lifecycle;
@@ -212,12 +210,18 @@ public class NotificationsFragment extends SFragment implements
 
         sendFetchNotificationsRequest(null, null, FetchEnd.BOTTOM, -1);
 
-        LinearLayoutCompat layoutRoot=rootView.findViewById(R.id.quick_compose_root);
-        layoutRoot.setVisibility(View.GONE);
-        FloatingActionButton composeButton=rootView.findViewById(R.id.floating_btn);
-        composeButton.setVisibility(View.GONE);
+        removeQuickCompose(rootView);
 
         return rootView;
+    }
+
+    private void removeQuickCompose(View rootView){
+        rootView.findViewById(R.id.floating_btn).setVisibility(View.GONE);
+        rootView.findViewById(R.id.default_tag_info).setVisibility(View.GONE);
+        rootView.findViewById(R.id.quick_reply_info).setVisibility(View.GONE);
+        rootView.findViewById(R.id.visibility_button).setVisibility(View.GONE);
+        rootView.findViewById(R.id.toot_edit_text).setVisibility(View.GONE);
+        rootView.findViewById(R.id.toot_button).setVisibility(View.GONE);
     }
 
     private void setupNothingView() {

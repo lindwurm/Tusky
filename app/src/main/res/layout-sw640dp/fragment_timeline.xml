@@ -14,7 +14,9 @@
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/swipe_refresh_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@id/default_tag_info"
+            app:layout_constraintTop_toTopOf="parent" >
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_view"
@@ -27,7 +29,7 @@
             android:id="@+id/progress_bar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/default_tag_info"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -40,24 +42,70 @@
             android:text="@string/footer_empty"
             android:textAlignment="center"
             android:textSize="?attr/status_text_medium"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/default_tag_info"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/floating_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:contentDescription="@string/action_compose"
+            android:foregroundGravity="right|bottom"
+            app:layout_constraintBottom_toTopOf="@id/default_tag_info"
+            app:layout_constraintRight_toRightOf="parent"
+            app:srcCompat="@drawable/ic_create_24dp" />
+
+        <TextView
+            android:id="@+id/quick_reply_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@id/toot_edit_text"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/default_tag_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@id/toot_edit_text"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <ImageView
+            android:id="@+id/visibility_button"
+            android:layout_width="24dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:clickable="true"
+            android:contentDescription="@null"
+            android:focusable="true"
+            android:scaleType="center"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/ic_public_24dp" />
+
+        <EditText
+            android:id="@+id/toot_edit_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/toot_area_hint"
+            android:inputType="textMultiLine"
+            android:minHeight="48dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/toot_button"
+            app:layout_constraintStart_toEndOf="@id/visibility_button" />
+
+        <Button
+            android:id="@+id/toot_button"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="@string/action_send_public"
+            android:textColor="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/floating_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone" />
-
-    <LinearLayout
-        android:id="@+id/quick_compose_root"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:orientation="vertical" />
 
 </FrameLayout>

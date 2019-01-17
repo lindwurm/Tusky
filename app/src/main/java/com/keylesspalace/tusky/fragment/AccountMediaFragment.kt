@@ -188,8 +188,12 @@ class AccountMediaFragment : BaseFragment(), Injectable {
             }
         })
 
-        quick_compose_root.visibility = View.GONE
         floating_btn.visibility = View.GONE
+        default_tag_info.visibility = View.GONE
+        quick_reply_info.visibility = View.GONE
+        visibility_button.visibility = View.GONE
+        toot_edit_text.visibility = View.GONE
+        toot_button.visibility = View.GONE
     }
 
     // That's sort of an optimization to only load media once user has opened the tab

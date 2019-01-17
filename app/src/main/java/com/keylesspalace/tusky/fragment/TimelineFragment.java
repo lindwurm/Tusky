@@ -71,8 +71,8 @@ import com.keylesspalace.tusky.util.ViewDataUtils;
 import com.keylesspalace.tusky.view.EndlessOnScrollListener;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
 
-import java.util.Arrays;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -87,7 +87,6 @@ import javax.inject.Inject;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.arch.core.util.Function;
 import androidx.core.util.Pair;
 import androidx.lifecycle.Lifecycle;
@@ -269,23 +268,16 @@ public class TimelineFragment extends SFragment implements
         }
 
         composeButton = rootView.findViewById(R.id.floating_btn);
+        composeButton.setOnClickListener(v -> {
+            if (tootEditText.getText().length() == 0 && inReplyTo == null) {
+                Intent composeIntent = new Intent(getContext(), ComposeActivity.class);
+                startActivity(composeIntent);
+            } else {
+                startComposeWithQuickComposeData();
+            }
+        });
 
-        if (!quickComposeExists()) {
-            LinearLayoutCompat layoutRoot = rootView.findViewById(R.id.quick_compose_root);
-            layoutRoot.setVisibility(View.GONE);
-            composeButton.setVisibility(View.GONE);
-        } else {
-            setupQuickCompose(rootView);
-
-            composeButton.setOnClickListener(v -> {
-                if (tootEditText.getText().length() == 0 && inReplyTo == null) {
-                    Intent composeIntent = new Intent(getContext(), ComposeActivity.class);
-                    startActivity(composeIntent);
-                } else {
-                    startComposeWithQuickComposeData();
-                }
-            });
-        }
+        setupQuickCompose(rootView);
 
         return rootView;
     }
@@ -306,11 +298,20 @@ public class TimelineFragment extends SFragment implements
         tootEditText = rootView.findViewById(R.id.toot_edit_text);
         quickTootButton = rootView.findViewById(R.id.toot_button);
 
-        updateQuickComposeInfo();
-        updateVisibilityButton();
-        visibilityButton.setOnClickListener(v -> setNextVisibility());
-        quickTootButton.setOnClickListener(this::quickToot);
-        recyclerView.requestFocus();
+        if (quickComposeExists()) {
+            updateQuickComposeInfo();
+            updateVisibilityButton();
+            visibilityButton.setOnClickListener(v -> setNextVisibility());
+            quickTootButton.setOnClickListener(this::quickToot);
+            recyclerView.requestFocus();
+        } else {
+            composeButton.setVisibility(View.GONE);
+            defaultTagInfo.setVisibility(View.GONE);
+            quickReplyInfo.setVisibility(View.GONE);
+            visibilityButton.setVisibility(View.GONE);
+            tootEditText.setVisibility(View.GONE);
+            quickTootButton.setVisibility(View.GONE);
+        }
     }
 
     private void startComposeWithQuickComposeData() {
@@ -992,13 +993,13 @@ public class TimelineFragment extends SFragment implements
             } else {
                 mode = TimelineRequestMode.NETWORK;
             }
-                    timelineRepo.getStatuses(fromId, uptoId, LOAD_AT_ONCE, mode)
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
-                            .subscribe(
-                                    (result) -> onFetchTimelineSuccess(result, fetchEnd, pos),
-                                    (err) -> onFetchTimelineFailure(new Exception(err), fetchEnd, pos)
-                            );
+            timelineRepo.getStatuses(fromId, uptoId, LOAD_AT_ONCE, mode)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
+                    .subscribe(
+                            (result) -> onFetchTimelineSuccess(result, fetchEnd, pos),
+                            (err) -> onFetchTimelineFailure(new Exception(err), fetchEnd, pos)
+                    );
         } else {
             Callback<List<Status>> callback = new Callback<List<Status>>() {
                 @Override
@@ -1284,7 +1285,7 @@ public class TimelineFragment extends SFragment implements
     private void handleStatusComposeEvent(@NonNull Status status) {
         switch (kind) {
             case HOME:
-                if (preferences.getBoolean("useHTLStream", false)){
+                if (preferences.getBoolean("useHTLStream", false)) {
                     return;
                 }
             case PUBLIC_FEDERATED:
@@ -1453,7 +1454,7 @@ public class TimelineFragment extends SFragment implements
             mentionedUsernames.add(inReplyTo.getAccount().getUsername());
             String loggedInUsername = null;
             AccountEntity activeAccount = accountManager.getActiveAccount();
-            if(activeAccount != null) {
+            if (activeAccount != null) {
                 loggedInUsername = activeAccount.getUsername();
             }
             for (Status.Mention mention : mentions) {
