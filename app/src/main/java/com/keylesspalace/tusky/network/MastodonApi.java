@@ -219,8 +219,7 @@ public interface MastodonApi {
             @Query("since_id") String sinceId,
             @Query("limit") Integer limit,
             @Nullable @Query("exclude_replies") Boolean excludeReplies,
-            @Nullable @Query("only_media") Boolean onlyMedia,
-            @Nullable @Query("pinned") Boolean pinned);
+            @Nullable @Query("only_media") Boolean onlyMedia);
 
     @GET("api/v1/accounts/{id}/followers")
     Call<List<Account>> accountFollowers(
