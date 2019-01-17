@@ -1051,7 +1051,7 @@ public class TimelineFragment extends SFragment implements
                     statuses.remove(statuses.size() - 1);
                 }
                 int oldSize = this.statuses.size();
-                if (this.statuses.size() >= 1) {
+                if (this.statuses.size() > 1) {
                     addItems(statuses);
                 } else {
                     updateStatuses(statuses, fullFetch);
