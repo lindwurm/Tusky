@@ -270,7 +270,7 @@ public class TimelineFragment extends SFragment implements
 
         composeButton = rootView.findViewById(R.id.floating_btn);
 
-        if (!quoteComposeExists()) {
+        if (!quickComposeExists()) {
             LinearLayoutCompat layoutRoot = rootView.findViewById(R.id.quick_compose_root);
             layoutRoot.setVisibility(View.GONE);
             composeButton.setVisibility(View.GONE);
@@ -290,7 +290,7 @@ public class TimelineFragment extends SFragment implements
         return rootView;
     }
 
-    private boolean quoteComposeExists() {
+    private boolean quickComposeExists() {
         return kind == Kind.HOME
                 || kind == Kind.PUBLIC_LOCAL
                 || kind == Kind.PUBLIC_FEDERATED
@@ -573,7 +573,7 @@ public class TimelineFragment extends SFragment implements
                                 addStatus(((StreamUpdateEvent) event).getStatus());
                             }
                         } else if (event instanceof DrawerFooterClickedEvent) {
-                            if (quoteComposeExists()) {
+                            if (quickComposeExists()) {
                                 tootEditText.setText("にゃーん");
                             }
                         }
@@ -620,7 +620,7 @@ public class TimelineFragment extends SFragment implements
 
     @Override
     public void onReply(int position) {
-        if (!quoteComposeExists()) {
+        if (!quickComposeExists()) {
             super.reply(statuses.get(position).asRight());
         } else {
             inReplyTo = statuses.get(position).asRight().getActionableStatus();
