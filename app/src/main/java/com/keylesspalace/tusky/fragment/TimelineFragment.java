@@ -32,6 +32,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -1072,7 +1073,7 @@ public class TimelineFragment extends SFragment implements
             if (this.statuses.size() == 0) {
                 sendFetchTimelineRequest(null, null, FetchEnd.BOTTOM, -1);
             }
-        } else {
+        }else {
             if (this.statuses.size() == 0) {
                 nothingMessageView.setVisibility(View.VISIBLE);
             }
