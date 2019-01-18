@@ -259,7 +259,8 @@ class TimelineRepositoryImpl(
                 bot = false,
                 emojis = gson.fromJson(this.emojis, emojisListTypeToken.type),
                 fields = null,
-                moved = null
+                moved = null,
+                notestockUsername = null
         )
     }
 

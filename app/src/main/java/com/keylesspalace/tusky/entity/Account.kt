@@ -44,12 +44,13 @@ data class Account(
         val bot: Boolean,
         val emojis: List<Emoji>?,  // nullable for backward compatibility
         val fields: List<Field>?,  //nullable for backward compatibility
-        val moved: Account? = null
+        val moved: Account? = null,
+        @SerializedName("name") val notestockUsername: String?
 
 ) : Parcelable {
 
     val name: String
-        get() = if (displayName.isEmpty()) {
+        get() = notestockUsername ?: if (displayName.isEmpty()) {
             localUsername
         } else displayName
 
