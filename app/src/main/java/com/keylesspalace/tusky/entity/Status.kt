@@ -27,7 +27,7 @@ data class Status(
         @SerializedName("in_reply_to_account_id") val inReplyToAccountId: String?,
         val reblog: Status?,
         val content: Spanned,
-        @SerializedName("created_at") val createdAt: Date,
+        @SerializedName("created_at", alternate = ["published"]) val createdAt: Date,
         val emojis: List<Emoji>,
         @SerializedName("reblogs_count") val reblogsCount: Int,
         @SerializedName("favourites_count") val favouritesCount: Int,
