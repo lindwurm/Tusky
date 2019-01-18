@@ -30,7 +30,7 @@ import java.util.*
 data class Account(
         val id: String,
         @SerializedName("username") val localUsername: String,
-        @SerializedName("acct") val username: String,
+        @SerializedName("acct", alternate = ["subject"]) val username: String,
         @SerializedName("display_name") val displayName: String,
         val note: @WriteWith<SpannedParceler>() Spanned,
         val url: String,
