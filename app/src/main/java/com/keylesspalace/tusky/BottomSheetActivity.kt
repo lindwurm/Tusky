@@ -187,6 +187,7 @@ abstract class BottomSheetActivity : BaseActivity() {
 // https://pleroma.foo.bar/objects/d4643c42-3ae0-4b73-b8b0-c725f5819207
 // https://mastodon.foo.bar/users/User/statuses/000000000000000000
 // https://misskey.foo.bar/notes/0123456789abcdefabcdefab
+// username@example.com
 fun looksLikeMastodonUrl(urlString: String): Boolean {
     val uri: URI
     try {
@@ -208,6 +209,7 @@ fun looksLikeMastodonUrl(urlString: String): Boolean {
             path.matches("^/notice/\\d+$".toRegex()) ||
             path.matches("^/objects/[-a-f0-9]+$".toRegex()) ||
             path.matches("^/users/[^/]+/statuses/[0-9]+$".toRegex()) ||
-            path.matches("^/notes/[a-f0-9]+$".toRegex())
+            path.matches("^/notes/[a-f0-9]+$".toRegex()) ||
+            path.matches("^[^@]+@[^@]+$".toRegex())
 
 }

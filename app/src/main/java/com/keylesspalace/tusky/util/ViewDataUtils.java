@@ -15,12 +15,12 @@
 
 package com.keylesspalace.tusky.util;
 
-import androidx.annotation.Nullable;
-
 import com.keylesspalace.tusky.entity.Notification;
 import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.viewdata.NotificationViewData;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
+
+import androidx.annotation.Nullable;
 
 /**
  * Created by charlag on 12/07/2017.
@@ -64,6 +64,7 @@ public final class ViewDataUtils {
                 ))
                 .setCollapsed(true)
                 .setQuote(visibleStatus.getQuote())
+                .setIsNotestock(visibleStatus.isNotestock())
                 .createStatusViewData();
     }
 

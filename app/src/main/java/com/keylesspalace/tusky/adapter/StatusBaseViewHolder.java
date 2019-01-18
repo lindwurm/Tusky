@@ -531,12 +531,19 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         sensitiveMediaShow.setVisibility(View.GONE);
     }
 
-    private void setupButtons(final StatusActionListener listener, final String accountId) {
+    private void setupButtons(final StatusActionListener listener, final String accountId,
+                              final boolean isNotestock, final String acct) {
         /* Originally position was passed through to all these listeners, but it caused several
          * bugs where other statuses in the list would be removed or added and cause the position
          * here to become outdated. So, getting the adapter position at the time the listener is
          * actually called is the appropriate solution. */
-        avatar.setOnClickListener(v -> listener.onViewAccount(accountId));
+        avatar.setOnClickListener(v -> {
+            if (isNotestock) {
+                listener.onViewUrl(acct, acct);
+            } else {
+                listener.onViewAccount(accountId);
+            }
+        });
         replyButton.setOnClickListener(v -> {
             int position = getAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
@@ -646,7 +653,7 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             hideSensitiveMediaWarning();
         }
 
-        setupButtons(listener, status.getSenderId());
+        setupButtons(listener, status.getSenderId(), status.isNotestock(), status.getNickname());
         setRebloggingEnabled(status.getRebloggingEnabled(), status.getVisibility());
         setQuoteEnabled(status.getRebloggingEnabled(), status.getVisibility());
 
