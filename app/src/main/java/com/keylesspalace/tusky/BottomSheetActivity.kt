@@ -17,10 +17,10 @@ package com.keylesspalace.tusky
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.annotation.VisibleForTesting
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import android.view.View
 import android.widget.LinearLayout
+import androidx.annotation.VisibleForTesting
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.keylesspalace.tusky.entity.SearchResults
 import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.MastodonApi
@@ -66,7 +66,7 @@ abstract class BottomSheetActivity : BaseActivity() {
     }
 
     open fun viewUrl(url: String, text: String) {
-        if(FORCE_BROWSER.contains(text)) {
+        if (FORCE_BROWSER.contains(text)) {
             openLink(url)
             return
         }
@@ -116,10 +116,14 @@ abstract class BottomSheetActivity : BaseActivity() {
 
     open fun viewThread(status: Status) {
         if (!isSearching()) {
-            val intent = Intent(this, ViewThreadActivity::class.java)
-            intent.putExtra("id", status.actionableId)
-            intent.putExtra("url", status.actionableStatus.url)
-            startActivityWithSlideInAnimation(intent)
+            if (status.isNotestock) {
+                viewUrl(status.id, status.id)
+            } else {
+                val intent = Intent(this, ViewThreadActivity::class.java)
+                intent.putExtra("id", status.actionableId)
+                intent.putExtra("url", status.actionableStatus.url)
+                startActivityWithSlideInAnimation(intent)
+            }
         }
     }
 

@@ -49,6 +49,9 @@ data class Status(
     val actionableStatus: Status
         get() = reblog ?: this
 
+    val isNotestock: Boolean
+        get() = !account.notestockUsername.isNullOrEmpty()
+
 
     enum class Visibility(val num: Int) {
         UNKNOWN(0),
