@@ -569,7 +569,7 @@ public class TimelineFragment extends SFragment implements
                             onPreferenceChanged(((PreferenceChangedEvent) event).getPreferenceKey());
                         } else if (event instanceof StreamUpdateEvent) {
                             if (kind == Kind.HOME) {
-                                addStatus(((StreamUpdateEvent) event).getStatus());
+                                handleStreamUpdateEvent((StreamUpdateEvent) event);
                             }
                         } else if (event instanceof DrawerFooterClickedEvent) {
                             if (quickComposeExists()) {
@@ -1179,13 +1179,19 @@ public class TimelineFragment extends SFragment implements
         }
     }
 
-    private void addStatus(Status status) {
-        if (!filterStatus(status)) {
-            if (findStatusOrReblogPositionById(status.getId()) < 0) {
-                statuses.add(0, new Either.Right<>(status));
-                updateAdapter();
-                timelineRepo.addSingleStatusToDb(status);
+    private void addStatus(Either<Placeholder, Status> item) {
+        if (item.isRight()) {
+            Status status = item.asRight();
+            if (!filterStatus(status)) {
+                if (findStatusOrReblogPositionById(status.getId()) < 0) {
+                    statuses.add(0, item);
+                    updateAdapter();
+                    timelineRepo.addSingleStatusToDb(status);
+                }
             }
+        } else {
+            statuses.add(0, item);
+            updateAdapter();
         }
     }
 
@@ -1311,6 +1317,15 @@ public class TimelineFragment extends SFragment implements
         if (reloadTimeline) {
             onRefresh();
         }
+    }
+
+    private void handleStreamUpdateEvent(StreamUpdateEvent event){
+        Status status = event.getStatus();
+        if (event.getFirst() && statuses.get(0).isRight()) {
+            Placeholder placeholder = new Placeholder(statuses.get(0).asRight().getId() + 1);
+            addStatus(new Either.Left<>(placeholder));
+        }
+        addStatus(new Either.Right<>(status));
     }
 
     private List<Either<Placeholder, Status>> liftStatusList(List<Status> list) {

@@ -12,5 +12,5 @@ data class StatusDeletedEvent(val statusId: String) : Dispatchable
 data class StatusComposedEvent(val status: Status) : Dispatchable
 data class ProfileEditedEvent(val newProfileData: Account) : Dispatchable
 data class PreferenceChangedEvent(val preferenceKey: String) : Dispatchable
-data class StreamUpdateEvent(val status: Status) : Dispatchable
+data class StreamUpdateEvent(val status: Status, val first: Boolean) : Dispatchable
 data class DrawerFooterClickedEvent(val placeholder: Boolean) : Dispatchable

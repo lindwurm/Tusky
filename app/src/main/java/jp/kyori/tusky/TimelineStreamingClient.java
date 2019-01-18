@@ -21,6 +21,8 @@ public class TimelineStreamingClient extends WebSocketClient {
 
     private EventHub eventHub;
 
+    private boolean isFirstStatus = true;
+
     public TimelineStreamingClient(URI uri, EventHub eventHub) {
         super(uri);
         this.eventHub = eventHub;
@@ -40,7 +42,8 @@ public class TimelineStreamingClient extends WebSocketClient {
         switch (event.getEvent()) {
             case UPDATE:
                 Status status = gson.fromJson(payload, Status.class);
-                eventHub.dispatch(new StreamUpdateEvent(status));
+                eventHub.dispatch(new StreamUpdateEvent(status, isFirstStatus));
+                isFirstStatus = false;
                 break;
             case DELETE:
                 eventHub.dispatch(new StatusDeletedEvent(payload));
