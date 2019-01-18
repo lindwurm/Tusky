@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.GsonBuilder
 import com.keylesspalace.tusky.AccountActivity
+import com.keylesspalace.tusky.BuildConfig
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.ViewTagActivity
 import com.keylesspalace.tusky.adapter.SearchResultsAdapter
@@ -44,6 +45,8 @@ import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_search.*
 import okhttp3.HttpUrl
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -86,10 +89,19 @@ class SearchFragment : SFragment(), StatusActionListener, Injectable {
 
         val notestockUrl = HttpUrl.Builder()
                 .scheme("https").host("notestock.osa-p.net").build()
+        val httpClient = OkHttpClient.Builder()
+                .addInterceptor(HttpLoggingInterceptor()
+                        .setLevel(if (BuildConfig.DEBUG) {
+                            HttpLoggingInterceptor.Level.BASIC
+                        } else {
+                            HttpLoggingInterceptor.Level.NONE
+                        }))
+                .build()
         val gson = GsonBuilder()
                 .registerTypeAdapter(Spanned::class.java, SpannedTypeAdapter())
                 .create()
         val retrofit = Retrofit.Builder()
+                .client(httpClient)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .baseUrl(notestockUrl).build()
         notestockApi = retrofit.create(NotestockApi::class.java)
