@@ -1319,13 +1319,14 @@ public class TimelineFragment extends SFragment implements
         }
     }
 
-    private void handleStreamUpdateEvent(StreamUpdateEvent event){
+    private void handleStreamUpdateEvent(StreamUpdateEvent event) {
         Status status = event.getStatus();
         if (event.getFirst() && statuses.get(0).isRight()) {
             Placeholder placeholder = new Placeholder(statuses.get(0).asRight().getId() + 1);
-            addStatus(new Either.Left<>(placeholder));
+            updateStatuses(Arrays.asList(new Either.Right<>(status), new Either.Left<>(placeholder)), false);
+        } else {
+            addStatus(new Either.Right<>(status));
         }
-        addStatus(new Either.Right<>(status));
     }
 
     private List<Either<Placeholder, Status>> liftStatusList(List<Status> list) {
