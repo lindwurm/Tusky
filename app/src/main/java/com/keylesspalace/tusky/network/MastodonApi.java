@@ -15,8 +15,6 @@
 
 package com.keylesspalace.tusky.network;
 
-import androidx.annotation.Nullable;
-
 import com.keylesspalace.tusky.entity.AccessToken;
 import com.keylesspalace.tusky.entity.Account;
 import com.keylesspalace.tusky.entity.AppCredentials;
@@ -33,6 +31,7 @@ import com.keylesspalace.tusky.entity.StatusContext;
 
 import java.util.List;
 
+import androidx.annotation.Nullable;
 import io.reactivex.Single;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -130,6 +129,7 @@ public interface MastodonApi {
             @Field("visibility") String visibility,
             @Field("sensitive") Boolean sensitive,
             @Field("media_ids[]") List<String> mediaIds,
+            @Field("scheduled_at") String scheduledAt,
             @Header("Idempotency-Key") String idempotencyKey);
 
     @GET("api/v1/statuses/{id}")
