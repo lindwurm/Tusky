@@ -109,6 +109,7 @@
     <string name="action_toggle_visibility">Toot visibility</string>
     <string name="action_content_warning">Content warning</string>
     <string name="action_emoji_keyboard">Emoji keyboard</string>
+    <string name="action_schedule_toot">Schedule Toot</string>
 
     <string name="download_image">Downloading %1$s</string>
 
@@ -402,6 +403,7 @@
 
     <string name="title_reblogged_by">Boosted by</string>
     <string name="title_favourited_by">Favourited by</string>
+    <string name="hint_configure_scheduled_toot">Tap here to configure scheduled toot.</string>
     <string name="toast_send_stack_trace">よければ前回クラッシュ時のエラーレポートを開発者に送信してください</string>
     <string name="action_search_notestock">Search using Notestock</string>
 
