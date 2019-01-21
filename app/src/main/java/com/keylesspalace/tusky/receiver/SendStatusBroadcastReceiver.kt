@@ -23,7 +23,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat
-import android.util.Log
 import com.keylesspalace.tusky.ComposeActivity
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.db.AccountManager
