@@ -129,8 +129,6 @@ public interface MastodonApi {
             @Field("visibility") String visibility,
             @Field("sensitive") Boolean sensitive,
             @Field("media_ids[]") List<String> mediaIds,
-            @Nullable @Field("quote_id") String quoteId,
-            @Field("scheduled_at") String scheduledAt,
             @Header("Idempotency-Key") String idempotencyKey);
 
     @GET("api/v1/statuses/{id}")

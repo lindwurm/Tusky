@@ -83,7 +83,7 @@ public class ComposeScheduleView extends ConstraintLayout {
             picker.setArguments(args);
         }
         picker.show(((AppCompatActivity) getContext()).getSupportFragmentManager(),
-                DatePickerFragment.PICKER_TAG);
+                "date_picker");
     }
 
     private void openPickTimeDialog() {
@@ -95,7 +95,7 @@ public class ComposeScheduleView extends ConstraintLayout {
             picker.setArguments(args);
         }
         picker.show(((AppCompatActivity) getContext()).getSupportFragmentManager(),
-                TimePickerFragment.PICKER_TAG);
+                "time_picker");
     }
 
     public void onDateSet(int year, int month, int dayOfMonth) {

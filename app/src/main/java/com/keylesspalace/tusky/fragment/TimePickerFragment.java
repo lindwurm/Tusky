@@ -14,7 +14,6 @@ import androidx.fragment.app.DialogFragment;
 
 public class TimePickerFragment extends DialogFragment {
 
-    public static final String PICKER_TAG = "time_picker";
     public static final String PICKER_TIME_HOUR = "picker_time_hour";
     public static final String PICKER_TIME_MINUTE = "picker_time_minute";
 

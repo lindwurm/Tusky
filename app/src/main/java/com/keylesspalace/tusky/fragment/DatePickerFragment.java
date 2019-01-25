@@ -14,7 +14,6 @@ import androidx.fragment.app.DialogFragment;
 
 public class DatePickerFragment extends DialogFragment {
 
-    public static final String PICKER_TAG = "date_picker";
     public static final String PICKER_TIME_YEAR = "picker_time_year";
     public static final String PICKER_TIME_MONTH = "picker_time_month";
     public static final String PICKER_TIME_DAY = "picker_time_day";
