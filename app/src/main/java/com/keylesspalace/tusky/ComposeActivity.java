@@ -92,6 +92,7 @@ import com.keylesspalace.tusky.util.SaveTootHelper;
 import com.keylesspalace.tusky.util.SpanUtilsKt;
 import com.keylesspalace.tusky.util.StringUtils;
 import com.keylesspalace.tusky.util.ThemeUtils;
+import com.keylesspalace.tusky.util.VersionUtils;
 import com.keylesspalace.tusky.view.ComposeOptionsListener;
 import com.keylesspalace.tusky.view.ComposeOptionsView;
 import com.keylesspalace.tusky.view.ComposeScheduleView;
@@ -304,10 +305,15 @@ public final class ComposeActivity
             mastodonApi.getInstance().enqueue(new Callback<Instance>() {
                 @Override
                 public void onResponse(@NonNull Call<Instance> call, @NonNull Response<Instance> response) {
-                    if (response.isSuccessful() && response.body().getMaxTootChars() != null) {
-                        maximumTootCharacters = response.body().getMaxTootChars();
-                        updateVisibleCharactersLeft();
-                        cacheInstanceMetadata(activeAccount);
+                    if (response.isSuccessful()) {
+                        if (response.body().getMaxTootChars() != null) {
+                            maximumTootCharacters = response.body().getMaxTootChars();
+                            updateVisibleCharactersLeft();
+                            cacheInstanceMetadata(activeAccount);
+                        }
+                        if (!new VersionUtils(response.body().getVersion()).supportsScheduledToots()) {
+                            scheduleButton.setVisibility(View.GONE);
+                        }
                     }
                 }
 
