@@ -29,6 +29,7 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
@@ -152,7 +153,6 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import kotlin.collections.CollectionsKt;
 import jp.kyori.tusky.EditTextDialogFragment;
-import jp.kyori.tusky.RichTextUtil;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -267,6 +267,17 @@ public final class ComposeActivity
     private Gson gson = new Gson();
 
     private SharedPreferences preferences;
+
+    private Paint counter;
+    private String TOP_LEFT_STRING = "＿";
+    private String TOP_LOOP_STRING = "人";
+    private String TOP_RIGHT_STRING = "＿\n";
+    private String LEFT_LOOP_STRING = "＞";
+    private String TEXT_LOOP_STRING = " ";
+    private String RIGHT_LOOP_STRING = "＜\n";
+    private String BOTTOM_LEFT_STRING = "￣Y";
+    private String BOTTOM_LOOP_STRING = "^Y";
+    private String BOTTOM_RIGHT_STRING = "￣";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -740,6 +751,9 @@ public final class ComposeActivity
             item.preview.setChecked(!TextUtils.isEmpty(item.description));
         }
 
+        counter = new Paint();
+        counter.setTextSize(16);
+
         textEditor.requestFocus();
     }
 
@@ -942,8 +956,53 @@ public final class ComposeActivity
 
     public void returnEditTextValue(String str) {
         if (!str.equals("")) {
-            addStringAfter(new RichTextUtil.GizaText().enrich(str));
+            String[] strs = str.split("\n");
+            float textLength = 0f;
+            for (String string : strs) {
+                float compareLength = counter.measureText(string);
+                if (compareLength > textLength) {
+                    textLength = compareLength;
+                }
+            }
+
+            String output = TOP_LEFT_STRING;
+            output += doLoopString(textLength, TOP_LOOP_STRING);
+            output += TOP_RIGHT_STRING;
+            for (String string : strs) {
+                output += LEFT_LOOP_STRING;
+                output += addLoopString(textLength, string);
+                output += RIGHT_LOOP_STRING;
+            }
+            output += BOTTOM_LEFT_STRING;
+            output += doLoopString(textLength, BOTTOM_LOOP_STRING);
+            output += BOTTOM_RIGHT_STRING;
+            addStringAfter(output);
         }
+    }
+
+    public String doLoopString(float targetLength, String loopStr) {
+        boolean execute = true;
+        String text = "";
+        while (execute) {
+            text += loopStr;
+            if (counter.measureText(text) >= targetLength) {
+                execute = false;
+            }
+        }
+        return text;
+    }
+
+    public String addLoopString(float targetLength, String startStr) {
+        boolean execute = true;
+        String text = startStr;
+        while (execute) {
+            if (counter.measureText(text) >= targetLength) {
+                execute = false;
+            } else {
+                text += TEXT_LOOP_STRING;
+            }
+        }
+        return text;
     }
 
     public void addStringAfter(String str) {
@@ -1369,38 +1428,38 @@ public final class ComposeActivity
         input.setLines(2);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         input.setText(item.description);
-        input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(MEDIA_DESCRIPTION_CHARACTER_LIMIT)});
+        input.setFilters(new InputFilter[] { new InputFilter.LengthFilter(MEDIA_DESCRIPTION_CHARACTER_LIMIT) });
 
         DialogInterface.OnClickListener okListener = (dialog, which) -> {
-            Runnable updateDescription = () -> {
-                mastodonApi.updateMedia(item.id, input.getText().toString()).enqueue(new Callback<Attachment>() {
-                    @Override
-                    public void onResponse(@NonNull Call<Attachment> call, @NonNull Response<Attachment> response) {
-                        Attachment attachment = response.body();
-                        if (response.isSuccessful() && attachment != null) {
-                            item.description = attachment.getDescription();
-                            item.preview.setChecked(item.description != null && !item.description.isEmpty());
-                            dialog.dismiss();
-                        } else {
-                            showFailedCaptionMessage();
+                Runnable updateDescription = () -> {
+                    mastodonApi.updateMedia(item.id, input.getText().toString()).enqueue(new Callback<Attachment>() {
+                        @Override
+                        public void onResponse(@NonNull Call<Attachment> call, @NonNull Response<Attachment> response) {
+                            Attachment attachment = response.body();
+                            if (response.isSuccessful() && attachment != null) {
+                                item.description = attachment.getDescription();
+                                item.preview.setChecked(item.description != null && !item.description.isEmpty());
+                                dialog.dismiss();
+                            } else {
+                                showFailedCaptionMessage();
+                            }
+                            item.updateDescription = null;
                         }
-                        item.updateDescription = null;
-                    }
 
-                    @Override
-                    public void onFailure(@NonNull Call<Attachment> call, @NonNull Throwable t) {
-                        showFailedCaptionMessage();
-                        item.updateDescription = null;
-                    }
-                });
-            };
+                        @Override
+                        public void onFailure(@NonNull Call<Attachment> call, @NonNull Throwable t) {
+                            showFailedCaptionMessage();
+                            item.updateDescription = null;
+                        }
+                    });
+                };
 
-            if (item.readyStage == QueuedMedia.ReadyStage.UPLOADED) {
-                updateDescription.run();
-            } else {
-                // media is still uploading, queue description update for when it finishes
-                item.updateDescription = updateDescription;
-            }
+                if (item.readyStage == QueuedMedia.ReadyStage.UPLOADED) {
+                    updateDescription.run();
+                } else {
+                    // media is still uploading, queue description update for when it finishes
+                    item.updateDescription = updateDescription;
+                }
         };
 
         AlertDialog dialog = new AlertDialog.Builder(this)
