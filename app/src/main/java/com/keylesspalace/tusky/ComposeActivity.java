@@ -73,7 +73,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.keylesspalace.tusky.adapter.EmojiAdapter;
-import com.keylesspalace.tusky.adapter.MentionAutoCompleteAdapter;
+import com.keylesspalace.tusky.adapter.MentionTagAutoCompleteAdapter;
 import com.keylesspalace.tusky.adapter.OnEmojiSelectedListener;
 import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.PreferenceChangedEvent;
@@ -85,6 +85,7 @@ import com.keylesspalace.tusky.entity.Account;
 import com.keylesspalace.tusky.entity.Attachment;
 import com.keylesspalace.tusky.entity.Emoji;
 import com.keylesspalace.tusky.entity.Instance;
+import com.keylesspalace.tusky.entity.SearchResults;
 import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.network.MastodonApi;
 import com.keylesspalace.tusky.network.ProgressRequestBody;
@@ -92,7 +93,7 @@ import com.keylesspalace.tusky.service.SendTootService;
 import com.keylesspalace.tusky.util.CountUpDownLatch;
 import com.keylesspalace.tusky.util.DownsizeImageTask;
 import com.keylesspalace.tusky.util.ListUtils;
-import com.keylesspalace.tusky.util.MentionTokenizer;
+import com.keylesspalace.tusky.util.MentionTagTokenizer;
 import com.keylesspalace.tusky.util.SaveTootHelper;
 import com.keylesspalace.tusky.util.SpanUtilsKt;
 import com.keylesspalace.tusky.util.StringUtils;
@@ -149,6 +150,7 @@ import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import kotlin.collections.CollectionsKt;
 import jp.kyori.tusky.EditTextDialogFragment;
 import jp.kyori.tusky.RichTextUtil;
 import okhttp3.HttpUrl;
@@ -170,7 +172,7 @@ import static com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvid
 public final class ComposeActivity
         extends BaseActivity
         implements ComposeOptionsListener,
-        MentionAutoCompleteAdapter.AccountSearchProvider,
+        MentionTagAutoCompleteAdapter.AutocompletionProvider,
         OnEmojiSelectedListener,
         Injectable, InputConnectionCompat.OnCommitContentListener,
         DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
@@ -609,8 +611,8 @@ public final class ComposeActivity
         });
 
         textEditor.setAdapter(
-                new MentionAutoCompleteAdapter(this, R.layout.item_autocomplete, this));
-        textEditor.setTokenizer(new MentionTokenizer());
+                new MentionTagAutoCompleteAdapter(this));
+        textEditor.setTokenizer(new MentionTagTokenizer());
 
         // Add any mentions to the text field when a reply is first composed.
         if (mentionedUsernames != null) {
@@ -1714,19 +1716,38 @@ public final class ComposeActivity
     }
 
     @Override
-    public List<Account> searchAccounts(String mention) {
-        ArrayList<Account> resultList = new ArrayList<>();
+    public List<MentionTagAutoCompleteAdapter.AutocompleteResult> search(String token) {
         try {
-            List<Account> accountList = mastodonApi.searchAccounts(mention, false, 40)
-                    .execute()
-                    .body();
-            if (accountList != null) {
-                resultList.addAll(accountList);
+            switch (token.charAt(0)) {
+                case '@':
+                    ArrayList<Account> resultList = new ArrayList<>();
+                    List<Account> accountList = mastodonApi
+                            .searchAccounts(token.substring(1), false, 20)
+                            .execute()
+                            .body();
+                    if (accountList != null) {
+                        resultList.addAll(accountList);
+                    }
+                    return CollectionsKt.map(resultList, MentionTagAutoCompleteAdapter.AccountResult::new);
+                case '#':
+                    Response<SearchResults> response = mastodonApi.search(token, false).execute();
+                    if (response.isSuccessful() && response.body() != null) {
+                        return CollectionsKt.map(
+                                response.body().getHashtags(),
+                                MentionTagAutoCompleteAdapter.HashtagResult::new
+                        );
+                    } else {
+                        Log.e(TAG, String.format("Autocomplete search for %s failed.", token));
+                        return Collections.emptyList();
+                    }
+                default:
+                    Log.w(TAG, "Unexpected autocompletion token: " + token);
+                    return Collections.emptyList();
             }
         } catch (IOException e) {
-            Log.e(TAG, String.format("Autocomplete search for %s failed.", mention));
+            Log.e(TAG, String.format("Autocomplete search for %s failed.", token));
+            return Collections.emptyList();
         }
-        return resultList;
     }
 
     @Override

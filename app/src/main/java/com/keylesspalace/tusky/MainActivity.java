@@ -669,7 +669,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
         }
         headerResult.clear();
         headerResult.setProfiles(profiles);
-
+        headerResult.setActiveProfile(accountManager.getActiveAccount().getId());
     }
 
     private void onFetchUserInfoFailure(Exception exception) {

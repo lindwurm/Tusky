@@ -33,7 +33,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
@@ -66,11 +65,14 @@ import com.keylesspalace.tusky.util.CollectionUtil;
 import com.keylesspalace.tusky.util.Either;
 import com.keylesspalace.tusky.util.ListUtils;
 import com.keylesspalace.tusky.util.PairedList;
+import com.keylesspalace.tusky.util.StringUtils;
 import com.keylesspalace.tusky.util.ThemeUtils;
 import com.keylesspalace.tusky.util.ViewDataUtils;
+import com.keylesspalace.tusky.view.BackgroundMessageView;
 import com.keylesspalace.tusky.view.EndlessOnScrollListener;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -86,7 +88,6 @@ import javax.inject.Inject;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.arch.core.util.Function;
 import androidx.core.util.Pair;
 import androidx.lifecycle.Lifecycle;
@@ -101,6 +102,7 @@ import androidx.recyclerview.widget.SimpleItemAnimator;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import at.connyduck.sparkbutton.helpers.Utils;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import kotlin.Unit;
 import kotlin.collections.CollectionsKt;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -153,7 +155,7 @@ public class TimelineFragment extends SFragment implements
     private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
-    private TextView nothingMessageView;
+    private BackgroundMessageView statusView;
 
     private TimelineAdapter adapter;
     private Kind kind;
@@ -249,13 +251,12 @@ public class TimelineFragment extends SFragment implements
         recyclerView = rootView.findViewById(R.id.recycler_view);
         swipeRefreshLayout = rootView.findViewById(R.id.swipe_refresh_layout);
         progressBar = rootView.findViewById(R.id.progress_bar);
-        nothingMessageView = rootView.findViewById(R.id.nothing_message);
+        statusView = rootView.findViewById(R.id.statusView);
 
         setupSwipeRefreshLayout();
         setupRecyclerView();
         updateAdapter();
         setupTimelinePreferences();
-        setupNothingView();
 
         if (statuses.isEmpty()) {
             progressBar.setVisibility(View.VISIBLE);
@@ -458,8 +459,13 @@ public class TimelineFragment extends SFragment implements
             }
         }
         if (statuses.size() == 0) {
-            nothingMessageView.setVisibility(View.VISIBLE);
+            showNothing();
         }
+    }
+
+    private void showNothing() {
+        statusView.setVisibility(View.VISIBLE);
+        statusView.setup(R.drawable.elephant_friend_empty, R.string.message_empty, null);
     }
 
     @Override
@@ -592,14 +598,10 @@ public class TimelineFragment extends SFragment implements
         super.onDestroyView();
     }
 
-    private void setupNothingView() {
-        Drawable top = AppCompatResources.getDrawable(requireContext(), R.drawable.elephant_friend_empty);
-        nothingMessageView.setCompoundDrawablesWithIntrinsicBounds(null, top, null, null);
-        nothingMessageView.setVisibility(View.GONE);
-    }
-
     @Override
     public void onRefresh() {
+        swipeRefreshLayout.setEnabled(true);
+        this.statusView.setVisibility(View.GONE);
         if (this.initialUpdateFailed) {
             updateCurrent();
         } else {
@@ -906,9 +908,7 @@ public class TimelineFragment extends SFragment implements
         Either<Placeholder, Status> last = statuses.get(statuses.size() - 1);
         Placeholder placeholder;
         if (last.isRight()) {
-            final String placeholderId = new BigInteger(last.asRight().getId())
-                    .subtract(BigInteger.ONE)
-                    .toString();
+            final String placeholderId = StringUtils.dec(last.asRight().getId());
             placeholder = new Placeholder(placeholderId);
             statuses.add(new Either.Left<>(placeholder));
         } else {
@@ -982,7 +982,6 @@ public class TimelineFragment extends SFragment implements
 
     private void sendFetchTimelineRequest(@Nullable String fromId, @Nullable String uptoId,
                                           final FetchEnd fetchEnd, final int pos) {
-
         if (kind == Kind.HOME) {
             TimelineRequestMode mode;
             // allow getting old statuses/fallbacks for network only for for bottom loading
@@ -1065,8 +1064,11 @@ public class TimelineFragment extends SFragment implements
         updateBottomLoadingState(fetchEnd);
         progressBar.setVisibility(View.GONE);
         swipeRefreshLayout.setRefreshing(false);
+        swipeRefreshLayout.setEnabled(true);
         if (this.statuses.size() == 0) {
-            nothingMessageView.setVisibility(View.VISIBLE);
+            this.showNothing();
+        } else {
+            this.statusView.setVisibility(View.GONE);
         }
     }
 
@@ -1079,12 +1081,28 @@ public class TimelineFragment extends SFragment implements
                 StatusViewData newViewData;
                 if (placeholder == null) {
                     Status above = statuses.get(position - 1).asRight();
-                    String newId = this.idPlus(above.getId(), -1);
+                    String newId = StringUtils.dec(above.getId());
                     placeholder = new Placeholder(newId);
                 }
                 newViewData = new StatusViewData.Placeholder(placeholder.getId(), false);
                 statuses.setPairedItem(position, newViewData);
                 updateAdapter();
+            } else if (this.statuses.isEmpty()) {
+                swipeRefreshLayout.setEnabled(false);
+                this.statusView.setVisibility(View.VISIBLE);
+                if (exception instanceof IOException) {
+                    this.statusView.setup(R.drawable.elephant_offline, R.string.error_network, __ -> {
+                        this.progressBar.setVisibility(View.VISIBLE);
+                        this.onRefresh();
+                        return Unit.INSTANCE;
+                    });
+                } else {
+                    this.statusView.setup(R.drawable.elephant_error, R.string.error_generic, __ -> {
+                        this.progressBar.setVisibility(View.VISIBLE);
+                        this.onRefresh();
+                        return Unit.INSTANCE;
+                    });
+                }
             }
 
             Log.e(TAG, "Fetch Failure: " + exception.getMessage());
@@ -1137,8 +1155,8 @@ public class TimelineFragment extends SFragment implements
             int newIndex = newStatuses.indexOf(statuses.get(0));
             if (newIndex == -1) {
                 if (index == -1 && fullFetch) {
-                    String placeholderId = idPlus(CollectionsKt.last(newStatuses, Either::isRight)
-                            .asRight().getId(), 1);
+                    String placeholderId = StringUtils.inc(
+                            CollectionsKt.last(newStatuses, Either::isRight).asRight().getId());
                     newStatuses.add(new Either.Left<>(new Placeholder(placeholderId)));
                 }
                 statuses.addAll(0, newStatuses);
@@ -1558,9 +1576,5 @@ public class TimelineFragment extends SFragment implements
                 .apply();
         eventHub.dispatch(new PreferenceChangedEvent("current_visibility"));
         updateVisibilityButton();
-    }
-
-    private String idPlus(String id, int delta) {
-        return new BigInteger(id).add(BigInteger.valueOf(delta)).toString();
     }
 }

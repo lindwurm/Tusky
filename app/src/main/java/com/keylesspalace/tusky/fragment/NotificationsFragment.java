@@ -26,8 +26,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.keylesspalace.tusky.MainActivity;
 import com.keylesspalace.tusky.R;
@@ -51,10 +51,12 @@ import com.keylesspalace.tusky.util.ListUtils;
 import com.keylesspalace.tusky.util.PairedList;
 import com.keylesspalace.tusky.util.ThemeUtils;
 import com.keylesspalace.tusky.util.ViewDataUtils;
+import com.keylesspalace.tusky.view.BackgroundMessageView;
 import com.keylesspalace.tusky.view.EndlessOnScrollListener;
 import com.keylesspalace.tusky.viewdata.NotificationViewData;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.Iterator;
@@ -75,11 +77,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import kotlin.Unit;
 import kotlin.collections.CollectionsKt;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static com.keylesspalace.tusky.util.StringUtils.isLessThan;
 import static com.uber.autodispose.AutoDispose.autoDisposable;
 import static com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from;
 
@@ -123,7 +127,7 @@ public class NotificationsFragment extends SFragment implements
     private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
-    private TextView nothingMessageView;
+    private BackgroundMessageView statusView;
 
     private LinearLayoutManager layoutManager;
     private EndlessOnScrollListener scrollListener;
@@ -175,7 +179,7 @@ public class NotificationsFragment extends SFragment implements
         swipeRefreshLayout = rootView.findViewById(R.id.swipe_refresh_layout);
         recyclerView = rootView.findViewById(R.id.recycler_view);
         progressBar = rootView.findViewById(R.id.progress_bar);
-        nothingMessageView = rootView.findViewById(R.id.nothing_message);
+        statusView = rootView.findViewById(R.id.statusView);
 
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setColorSchemeResources(R.color.tusky_blue);
@@ -206,7 +210,6 @@ public class NotificationsFragment extends SFragment implements
         bottomId = null;
 
         ((SimpleItemAnimator) recyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
-        setupNothingView();
 
         sendFetchNotificationsRequest(null, null, FetchEnd.BOTTOM, -1);
 
@@ -222,13 +225,6 @@ public class NotificationsFragment extends SFragment implements
         rootView.findViewById(R.id.visibility_button).setVisibility(View.GONE);
         rootView.findViewById(R.id.toot_edit_text).setVisibility(View.GONE);
         rootView.findViewById(R.id.toot_button).setVisibility(View.GONE);
-    }
-
-    private void setupNothingView() {
-        Drawable top = AppCompatResources.getDrawable(Objects.requireNonNull(getContext()),
-                R.drawable.elephant_friend_empty);
-        nothingMessageView.setCompoundDrawablesWithIntrinsicBounds(null, top, null, null);
-        nothingMessageView.setVisibility(View.GONE);
     }
 
     private void handleFavEvent(FavoriteEvent event) {
@@ -341,6 +337,8 @@ public class NotificationsFragment extends SFragment implements
 
     @Override
     public void onRefresh() {
+        swipeRefreshLayout.setEnabled(true);
+        this.statusView.setVisibility(View.GONE);
         Either<Placeholder, Notification> first = CollectionsKt.firstOrNull(this.notifications);
         String topId;
         if (first != null && first.isRight()) {
@@ -735,9 +733,9 @@ public class NotificationsFragment extends SFragment implements
         }
 
         if (notifications.size() == 0 && adapter.getItemCount() == 0) {
-            nothingMessageView.setVisibility(View.VISIBLE);
-        } else {
-            nothingMessageView.setVisibility(View.GONE);
+            this.statusView.setVisibility(View.VISIBLE);
+            this.statusView.setup(R.drawable.elephant_friend_empty, R.string.message_empty, null);
+
         }
         swipeRefreshLayout.setRefreshing(false);
         progressBar.setVisibility(View.GONE);
@@ -750,6 +748,22 @@ public class NotificationsFragment extends SFragment implements
                     new NotificationViewData.Placeholder(false);
             notifications.setPairedItem(position, placeholderVD);
             adapter.updateItemWithNotify(position, placeholderVD, true);
+        } else if (this.notifications.isEmpty()) {
+            this.statusView.setVisibility(View.VISIBLE);
+            swipeRefreshLayout.setEnabled(false);
+            if (exception instanceof IOException) {
+                this.statusView.setup(R.drawable.elephant_offline, R.string.error_network, __ -> {
+                    this.progressBar.setVisibility(View.VISIBLE);
+                    this.onRefresh();
+                    return Unit.INSTANCE;
+                });
+            } else {
+                this.statusView.setup(R.drawable.elephant_error, R.string.error_generic, __ -> {
+                    this.progressBar.setVisibility(View.VISIBLE);
+                    this.onRefresh();
+                    return Unit.INSTANCE;
+                });
+            }
         }
         Log.e(TAG, "Fetch failure: " + exception.getMessage());
         progressBar.setVisibility(View.GONE);
@@ -759,26 +773,20 @@ public class NotificationsFragment extends SFragment implements
 
         AccountEntity account = accountManager.getActiveAccount();
         if (account != null) {
-            BigInteger lastNoti = new BigInteger(account.getLastNotificationId());
+            String lastNotificationId = account.getLastNotificationId();
 
             for (Notification noti : notifications) {
-                BigInteger a = new BigInteger(noti.getId());
-                if (isBiggerThan(a, lastNoti)) {
-                    lastNoti = a;
+                if (isLessThan(lastNotificationId, noti.getId())) {
+                    lastNotificationId = noti.getId();
                 }
             }
 
-            String lastNotificationId = lastNoti.toString();
             if (!account.getLastNotificationId().equals(lastNotificationId)) {
                 Log.d(TAG, "saving newest noti id: " + lastNotificationId);
                 account.setLastNotificationId(lastNotificationId);
                 accountManager.saveAccount(account);
             }
         }
-    }
-
-    private boolean isBiggerThan(BigInteger newId, BigInteger lastShownNotificationId) {
-        return lastShownNotificationId.compareTo(newId) < 0;
     }
 
     private void update(@Nullable List<Notification> newNotifications, @Nullable String fromId) {
