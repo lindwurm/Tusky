@@ -29,7 +29,6 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
@@ -152,7 +151,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import kotlin.collections.CollectionsKt;
-import jp.kyori.tusky.EditTextDialogFragment;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -230,7 +228,7 @@ public final class ComposeActivity
     private ImageButton visibilityButton;
     private Button contentWarningButton;
     private ImageButton emojiButton;
-    private ImageButton makerButton;
+    private ImageButton nowPlayingButton;
     private ImageButton hideMediaToggle;
     private ImageButton scheduleButton;
 
@@ -268,17 +266,6 @@ public final class ComposeActivity
 
     private SharedPreferences preferences;
 
-    private Paint counter;
-    private String TOP_LEFT_STRING = "＿";
-    private String TOP_LOOP_STRING = "人";
-    private String TOP_RIGHT_STRING = "＿\n";
-    private String LEFT_LOOP_STRING = "＞";
-    private String TEXT_LOOP_STRING = " ";
-    private String RIGHT_LOOP_STRING = "＜\n";
-    private String BOTTOM_LEFT_STRING = "￣Y";
-    private String BOTTOM_LOOP_STRING = "^Y";
-    private String BOTTOM_RIGHT_STRING = "￣";
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -304,7 +291,6 @@ public final class ComposeActivity
         visibilityButton = findViewById(R.id.composeToggleVisibilityButton);
         contentWarningButton = findViewById(R.id.composeContentWarningButton);
         emojiButton = findViewById(R.id.composeEmojiButton);
-        makerButton = findViewById(R.id.composeMakerButton);
         hideMediaToggle = findViewById(R.id.composeHideMediaButton);
         scheduleButton = findViewById(R.id.composeScheduleButton);
         scheduleView = findViewById(R.id.composeScheduleView);
@@ -440,7 +426,6 @@ public final class ComposeActivity
         visibilityButton.setOnClickListener(v -> showComposeOptions());
         contentWarningButton.setOnClickListener(v -> onContentWarningChanged());
         emojiButton.setOnClickListener(v -> showEmojis());
-        makerButton.setOnClickListener(v -> openEditTextDialog());
         hideMediaToggle.setOnClickListener(v -> toggleHideMedia());
         scheduleButton.setOnClickListener(v -> showScheduleView());
 
@@ -751,9 +736,6 @@ public final class ComposeActivity
             item.preview.setChecked(!TextUtils.isEmpty(item.description));
         }
 
-        counter = new Paint();
-        counter.setTextSize(16);
-
         textEditor.requestFocus();
     }
 
@@ -842,7 +824,7 @@ public final class ComposeActivity
         emojiButton.setClickable(true);
         hideMediaToggle.setClickable(true);
         scheduleButton.setClickable(true);
-        makerButton.setClickable(true);
+        nowPlayingButton.setClickable(true);
         tootButton.setEnabled(true);
     }
 
@@ -947,62 +929,6 @@ public final class ComposeActivity
                 .apply();
         eventHub.dispatch(new PreferenceChangedEvent("use_default_text"));
         eventHub.dispatch(new PreferenceChangedEvent("default_text"));
-    }
-
-    public void openEditTextDialog() {
-        EditTextDialogFragment dialogFragment = new EditTextDialogFragment();
-        dialogFragment.show(getSupportFragmentManager(), "editTextDialog");
-    }
-
-    public void returnEditTextValue(String str) {
-        if (!str.equals("")) {
-            String[] strs = str.split("\n");
-            float textLength = 0f;
-            for (String string : strs) {
-                float compareLength = counter.measureText(string);
-                if (compareLength > textLength) {
-                    textLength = compareLength;
-                }
-            }
-
-            String output = TOP_LEFT_STRING;
-            output += doLoopString(textLength, TOP_LOOP_STRING);
-            output += TOP_RIGHT_STRING;
-            for (String string : strs) {
-                output += LEFT_LOOP_STRING;
-                output += addLoopString(textLength, string);
-                output += RIGHT_LOOP_STRING;
-            }
-            output += BOTTOM_LEFT_STRING;
-            output += doLoopString(textLength, BOTTOM_LOOP_STRING);
-            output += BOTTOM_RIGHT_STRING;
-            addStringAfter(output);
-        }
-    }
-
-    public String doLoopString(float targetLength, String loopStr) {
-        boolean execute = true;
-        String text = "";
-        while (execute) {
-            text += loopStr;
-            if (counter.measureText(text) >= targetLength) {
-                execute = false;
-            }
-        }
-        return text;
-    }
-
-    public String addLoopString(float targetLength, String startStr) {
-        boolean execute = true;
-        String text = startStr;
-        while (execute) {
-            if (counter.measureText(text) >= targetLength) {
-                execute = false;
-            } else {
-                text += TEXT_LOOP_STRING;
-            }
-        }
-        return text;
     }
 
     public void addStringAfter(String str) {

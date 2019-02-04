@@ -368,9 +368,6 @@
     <string name="pref_title_absolute_time">Use absolute time</string>
     <string name="toot_area_hint">Quick Toot Area</string>
     <string name="hint_default_text">Default Hashtag</string>
-    <string name="hint_input_text">Input text…</string>
-    <string name="dialog_button_go">Go!</string>
-    <string name="action_totsuzen_no_shi">突然の死メーカー</string>
     <string name="quote_to">Quote : %s</string>
 
     <string name="label_remote_account">Information below may reflect the user\'s profile incompletely. Press to open full profile in browser.</string>
