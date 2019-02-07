@@ -705,10 +705,8 @@ public final class ComposeActivity
                 } else if (type.equals("text/plain")) {
                     String action = intent.getAction();
                     if (action != null && action.equals(Intent.ACTION_SEND)) {
-                        String subject = intent.getStringExtra(Intent.EXTRA_SUBJECT);
                         String text = intent.getStringExtra(Intent.EXTRA_TEXT);
                         if (text != null) {
-                            text = ((subject != null) ? subject + " | " : "") + text;
                             int start = Math.max(textEditor.getSelectionStart(), 0);
                             int end = Math.max(textEditor.getSelectionEnd(), 0);
                             int left = Math.min(start, end);
