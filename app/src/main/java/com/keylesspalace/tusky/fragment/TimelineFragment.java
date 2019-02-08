@@ -324,14 +324,14 @@ public class TimelineFragment extends SFragment implements
         if (this.kind == Kind.HOME) {
             this.tryCache();
         } else {
-            sendFetchTimelineRequest(null, null, FetchEnd.BOTTOM, -1);
+            sendFetchTimelineRequest(null, null, null, FetchEnd.BOTTOM, -1);
         }
     }
 
     private void tryCache() {
         // Request timeline from disk to make it quick, then replace it with timeline from
         // the server to update it
-        this.timelineRepo.getStatuses(null, null, LOAD_AT_ONCE,
+        this.timelineRepo.getStatuses(null, null, null, LOAD_AT_ONCE,
                 TimelineRequestMode.DISK)
                 .observeOn(AndroidSchedulers.mainThread())
                 .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
@@ -358,7 +358,7 @@ public class TimelineFragment extends SFragment implements
         } else {
             topId = CollectionsKt.first(statuses, Either::isRight).asRight().getId();
         }
-        this.timelineRepo.getStatuses(topId, null, LOAD_AT_ONCE,
+        this.timelineRepo.getStatuses(topId, null, null, LOAD_AT_ONCE,
                 TimelineRequestMode.NETWORK)
                 .observeOn(AndroidSchedulers.mainThread())
                 .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
@@ -610,12 +610,22 @@ public class TimelineFragment extends SFragment implements
     }
 
     private void loadAbove() {
-        Either<Placeholder, Status> firstOrNull =
-                CollectionsKt.firstOrNull(this.statuses, Either::isRight);
+        String firstOrNull = null;
+        String secondOrNull = null;
+        for (int i = 0; i < this.statuses.size(); i++) {
+            Either<Placeholder, Status> status = this.statuses.get(i);
+            if (status.isRight()) {
+                firstOrNull = status.asRight().getId();
+                if (i + 1 < statuses.size() && statuses.get(i + 1).isRight()) {
+                    secondOrNull = statuses.get(i + 1).asRight().getId();
+                }
+                break;
+            }
+        }
         if (firstOrNull != null) {
-            this.sendFetchTimelineRequest(null, firstOrNull.asRight().getId(), FetchEnd.TOP, -1);
+            this.sendFetchTimelineRequest(null, firstOrNull, secondOrNull, FetchEnd.TOP, -1);
         } else {
-            this.sendFetchTimelineRequest(null, null, FetchEnd.BOTTOM, -1);
+            this.sendFetchTimelineRequest(null, null, null, FetchEnd.BOTTOM, -1);
         }
     }
 
@@ -731,11 +741,16 @@ public class TimelineFragment extends SFragment implements
         if (statuses.size() >= position && position > 0) {
             Status fromStatus = statuses.get(position - 1).asRightOrNull();
             Status toStatus = statuses.get(position + 1).asRightOrNull();
+            String maxMinusOne =
+                    statuses.size() > position + 1 && statuses.get(position + 2).isRight()
+                            ? statuses.get(position + 1).asRight().getId()
+                            : null;
             if (fromStatus == null || toStatus == null) {
                 Log.e(TAG, "Failed to load more at " + position + ", wrong placeholder position");
                 return;
             }
-            sendFetchTimelineRequest(fromStatus.getId(), toStatus.getId(), FetchEnd.MIDDLE, position);
+            sendFetchTimelineRequest(fromStatus.getId(), toStatus.getId(), maxMinusOne,
+                    FetchEnd.MIDDLE, position);
 
             Placeholder placeholder = statuses.get(position).asLeft();
             StatusViewData newViewData = new StatusViewData.Placeholder(placeholder.getId(), true);
@@ -929,14 +944,14 @@ public class TimelineFragment extends SFragment implements
                 break;
             }
         }
-        sendFetchTimelineRequest(bottomId, null, FetchEnd.BOTTOM, -1);
+        sendFetchTimelineRequest(bottomId, null, null, FetchEnd.BOTTOM, -1);
     }
 
     private void fullyRefresh() {
         statuses.clear();
         updateAdapter();
         bottomLoading = true;
-        sendFetchTimelineRequest(null, null, FetchEnd.BOTTOM, -1);
+        sendFetchTimelineRequest(null, null, null, FetchEnd.BOTTOM, -1);
     }
 
     private boolean jumpToTopAllowed() {
@@ -980,7 +995,8 @@ public class TimelineFragment extends SFragment implements
         }
     }
 
-    private void sendFetchTimelineRequest(@Nullable String fromId, @Nullable String uptoId,
+    private void sendFetchTimelineRequest(@Nullable String maxId, @Nullable String sinceId,
+                                          @Nullable String sinceIdMinusOne,
                                           final FetchEnd fetchEnd, final int pos) {
         if (kind == Kind.HOME) {
             TimelineRequestMode mode;
@@ -990,7 +1006,7 @@ public class TimelineFragment extends SFragment implements
             } else {
                 mode = TimelineRequestMode.NETWORK;
             }
-            timelineRepo.getStatuses(fromId, uptoId, LOAD_AT_ONCE, mode)
+            timelineRepo.getStatuses(maxId, sinceId, sinceIdMinusOne, LOAD_AT_ONCE, mode)
                     .observeOn(AndroidSchedulers.mainThread())
                     .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
                     .subscribe(
@@ -1014,7 +1030,7 @@ public class TimelineFragment extends SFragment implements
                 }
             };
 
-            Call<List<Status>> listCall = getFetchCallByTimelineType(kind, hashtagOrId, fromId, uptoId);
+            Call<List<Status>> listCall = getFetchCallByTimelineType(kind, hashtagOrId, maxId, sinceId);
             callList.add(listCall);
             listCall.enqueue(callback);
         }

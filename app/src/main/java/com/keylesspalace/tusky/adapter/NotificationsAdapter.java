@@ -20,11 +20,6 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.core.text.BidiFormatter;
-import androidx.recyclerview.widget.RecyclerView;
 import android.text.InputFilter;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -59,6 +54,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.core.text.BidiFormatter;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class NotificationsAdapter extends RecyclerView.Adapter {
     private static final int VIEW_TYPE_MENTION = 0;
@@ -558,8 +559,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             }
 
             Spanned emojifiedText = CustomEmojiHelper.emojifyText(content, emojis, statusContent);
-            LinkHelper.setClickableText(statusContent, emojifiedText, statusViewData.getMentions(), listener,
-                    notificationViewData.getStatusViewData().getQuote() != null);
+            LinkHelper.setClickableText(statusContent, emojifiedText, statusViewData.getMentions(), listener, statusViewData.getQuote() != null);
 
             Spanned emojifiedContentWarning =
                     CustomEmojiHelper.emojifyString(statusViewData.getSpoilerText(), statusViewData.getStatusEmojis(), contentWarningDescriptionTextView);
