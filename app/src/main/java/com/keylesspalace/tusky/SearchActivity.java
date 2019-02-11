@@ -109,7 +109,7 @@ public class SearchActivity extends BottomSheetActivity implements HasSupportFra
     }
 
     private void setupSearchView(SearchView searchView) {
-        searchView.setIconifiedByDefault(true);
+        searchView.setIconifiedByDefault(false);
 
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         if (searchManager != null) {

@@ -3,19 +3,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_search"
-        android:title="@string/action_search"
-        android:icon="@android:drawable/ic_menu_search"
-        app:actionViewClass="androidx.appcompat.widget.SearchView"
-        android:actionLayout="@layout/search_view"
-        app:showAsAction="always" />
-
-    <item
         android:id="@+id/action_notestock"
         android:title="@string/action_search_notestock"
         android:icon="@drawable/ic_searched_for"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         android:actionLayout="@layout/search_view"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_search"
+        android:title="@string/action_search"
+        android:icon="@android:drawable/ic_menu_search"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        android:actionLayout="@layout/search_view"
+        app:showAsAction="always" />
 
 </menu>
