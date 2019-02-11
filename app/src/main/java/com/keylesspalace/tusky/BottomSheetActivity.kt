@@ -45,7 +45,7 @@ abstract class BottomSheetActivity : BaseActivity() {
     @Inject
     lateinit var mastodonApi: MastodonApi
 
-    val FORCE_BROWSER = arrayOf("投票を見る")
+    val FORCE_BROWSER = arrayOf("リモートで結果を表示")
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
