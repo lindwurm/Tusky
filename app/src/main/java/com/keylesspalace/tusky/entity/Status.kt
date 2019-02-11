@@ -34,7 +34,7 @@ data class Status(
         var reblogged: Boolean = false,
         var favourited: Boolean = false,
         var sensitive: Boolean,
-        @SerializedName("spoiler_text") val spoilerText: String,
+        @SerializedName("spoiler_text", alternate = ["summary"]) val spoilerText: String,
         val visibility: Visibility,
         @SerializedName("media_attachments") var attachments: List<Attachment>,
         val mentions: Array<Mention>,
