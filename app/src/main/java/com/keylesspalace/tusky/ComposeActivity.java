@@ -228,7 +228,6 @@ public final class ComposeActivity
     private ImageButton visibilityButton;
     private Button contentWarningButton;
     private ImageButton emojiButton;
-    private ImageButton nowPlayingButton;
     private ImageButton hideMediaToggle;
     private ImageButton scheduleButton;
 
@@ -832,7 +831,6 @@ public final class ComposeActivity
         emojiButton.setClickable(true);
         hideMediaToggle.setClickable(true);
         scheduleButton.setClickable(true);
-        nowPlayingButton.setClickable(true);
         tootButton.setEnabled(true);
     }
 
