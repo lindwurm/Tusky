@@ -558,7 +558,9 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             }
             return true;
         });
-        replyButton.setLongClickable(true);
+        replyButton.setEnabled(!isNotestock);
+        replyButton.setClickable(!isNotestock);
+        replyButton.setLongClickable(!isNotestock);
         reblogButton.setEventListener(new SparkEventListener() {
             @Override
             public void onEvent(ImageView button, boolean buttonState) {
@@ -593,6 +595,8 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             public void onEventAnimationStart(ImageView button, boolean buttonState) {
             }
         });
+        favouriteButton.setEnabled(!isNotestock);
+        favouriteButton.setClickable(!isNotestock);
         quoteButton.setOnClickListener(view -> {
             int position = getAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
@@ -605,6 +609,8 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                 listener.onMore(v, position);
             }
         });
+        moreButton.setEnabled(!isNotestock);
+        moreButton.setClickable(!isNotestock);
         /* Even though the content TextView is a child of the container, it won't respond to clicks
          * if it contains URLSpans without also setting its listener. The surrounding spans will
          * just eat the clicks instead of deferring to the parent listener, but WILL respond to a
@@ -654,8 +660,8 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         }
 
         setupButtons(listener, status.getSenderId(), status.isNotestock(), status.getNickname());
-        setRebloggingEnabled(status.getRebloggingEnabled(), status.getVisibility());
-        setQuoteEnabled(status.getRebloggingEnabled(), status.getVisibility());
+        setRebloggingEnabled(status.getRebloggingEnabled() && !status.isNotestock(), status.getVisibility());
+        setQuoteEnabled(status.getRebloggingEnabled() && !status.isNotestock(), status.getVisibility());
 
         setSpoilerAndContent(status, listener, status.getQuote() != null);
 
