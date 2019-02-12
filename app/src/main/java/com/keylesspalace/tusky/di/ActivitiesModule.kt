@@ -63,13 +63,13 @@ abstract class ActivitiesModule {
     @ContributesAndroidInjector(modules = [FragmentBuildersModule::class])
     abstract fun contribtutesSearchAvtivity(): SearchActivity
 
-    @ContributesAndroidInjector()
+    @ContributesAndroidInjector
     abstract fun contributesAboutActivity(): AboutActivity
 
-    @ContributesAndroidInjector()
+    @ContributesAndroidInjector
     abstract fun contributesLoginActivity(): LoginActivity
 
-    @ContributesAndroidInjector()
+    @ContributesAndroidInjector
     abstract fun contributesSplashActivity(): SplashActivity
 
     @ContributesAndroidInjector

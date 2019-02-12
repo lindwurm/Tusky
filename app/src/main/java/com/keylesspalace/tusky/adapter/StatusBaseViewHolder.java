@@ -163,7 +163,7 @@ abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                     status.getContent(), status.getStatusEmojis(), this.content);
             LinkHelper.setClickableText(this.content, emojifiedText, mentions, listener, removeQuote);
         } else {
-            LinkHelper.setClickableMentions(this.content, mentions, listener);
+                LinkHelper.setClickableMentions(this.content, mentions, listener);
         }
         if (TextUtils.isEmpty(this.content.getText())) {
             this.content.setVisibility(View.GONE);
