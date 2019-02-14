@@ -39,6 +39,7 @@ import com.keylesspalace.tusky.appstore.DrawerFooterClickedEvent;
 import com.keylesspalace.tusky.appstore.EventHub;
 import com.keylesspalace.tusky.appstore.MainTabsChangedEvent;
 import com.keylesspalace.tusky.appstore.ProfileEditedEvent;
+import com.keylesspalace.tusky.components.conversation.ConversationsRepository;
 import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.entity.Account;
 import com.keylesspalace.tusky.entity.Instance;
@@ -112,6 +113,8 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
     public EventHub eventHub;
     @Inject
     public CacheUpdater cacheUpdater;
+    @Inject
+    ConversationsRepository conversationRepository;
 
     private AccountHeader headerResult;
     private Drawer drawer;
@@ -590,6 +593,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
 
                         NotificationHelper.deleteNotificationChannelsForAccount(accountManager.getActiveAccount(), MainActivity.this);
                         cacheUpdater.clearForUser(activeAccount.getId());
+                        conversationRepository.deleteCacheForAccount(activeAccount.getId());
 
                         AccountEntity newAccount = accountManager.logActiveAccountOut();
 

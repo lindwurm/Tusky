@@ -183,5 +183,5 @@ fun Conversation.toEntity(accountId: Long) =
                 id,
                 accounts.map { it.toEntity() },
                 unread,
-                lastStatus.toEntity()
+                lastStatus!!.toEntity()
         )
