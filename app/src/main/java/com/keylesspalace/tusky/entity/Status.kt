@@ -43,7 +43,7 @@ data class Status(
         val quote: Status?
 ) {
 
-    val actionableId: String?
+    val actionableId: String
         get() = reblog?.id ?: id
 
     val actionableStatus: Status

@@ -27,6 +27,8 @@
     <string name="title_notifications">Notifications</string>
     <string name="title_public_local">Local</string>
     <string name="title_public_federated">Federated</string>
+    <string name="title_direct_messages">Direct Messages</string>
+    <string name="title_tab_preferences">Tabs</string>
     <string name="title_view_thread">Toot</string>
     <string name="title_tag">#%s</string>
     <string name="title_statuses">Posts</string>
@@ -111,6 +113,7 @@
     <string name="action_toggle_visibility">Toot visibility</string>
     <string name="action_content_warning">Content warning</string>
     <string name="action_emoji_keyboard">Emoji keyboard</string>
+    <string name="action_add_tab">Add Tab</string>
     <string name="action_schedule_toot">Schedule Toot</string>
 
     <string name="download_image">Downloading %1$s</string>
@@ -406,5 +409,10 @@
     <string name="hint_configure_scheduled_toot">Tap here to configure scheduled toot.</string>
     <string name="toast_send_stack_trace">よければ前回クラッシュ時のエラーレポートを開発者に送信してください</string>
     <string name="action_search_notestock">Search using Notestock</string>
+
+    <string name="conversation_1_recipients">%1$s</string>
+    <string name="conversation_2_recipients">%1$s and %2$s</string>
+    <string name="conversation_more_recipients">%1$s, %2$s and %3$d more</string>
+
 
 </resources>

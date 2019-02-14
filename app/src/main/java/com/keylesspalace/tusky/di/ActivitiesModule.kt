@@ -88,6 +88,9 @@ abstract class ActivitiesModule {
     abstract fun contributesLicenseActivity(): LicenseActivity
 
     @ContributesAndroidInjector
+    abstract fun contributesTabPreferenceActivity(): TabPreferenceActivity
+
+    @ContributesAndroidInjector
     abstract fun contributesAccessTokenLoginActivity(): AccessTokenLoginActivity
 
 }

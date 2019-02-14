@@ -21,14 +21,16 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.util.TypedValue;
+import android.widget.ImageView;
+
 import androidx.annotation.AttrRes;
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
-import androidx.core.content.ContextCompat;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
-import android.util.TypedValue;
-import android.widget.ImageView;
 
 /**
  * Provides runtime compatibility to obtain theme information and re-theme views, especially where
@@ -37,12 +39,12 @@ import android.widget.ImageView;
 public class ThemeUtils {
     public static final String APP_THEME_DEFAULT = ThemeUtils.THEME_NIGHT;
 
-    public static final String THEME_NIGHT = "night";
+    private static final String THEME_NIGHT = "night";
     public static final String THEME_DAY = "day";
-    public static final String THEME_BLACK = "black";
-    public static final String THEME_AUTO = "auto";
+    private static final String THEME_BLACK = "black";
+    private static final String THEME_AUTO = "auto";
 
-    public static Drawable getDrawable(Context context, @AttrRes int attribute,
+    public static Drawable getDrawable(@NonNull Context context, @AttrRes int attribute,
             @DrawableRes int fallbackDrawable) {
         TypedValue value = new TypedValue();
         @DrawableRes int resourceId;
@@ -51,10 +53,10 @@ public class ThemeUtils {
         } else {
             resourceId = fallbackDrawable;
         }
-        return ContextCompat.getDrawable(context, resourceId);
+        return context.getDrawable(resourceId);
     }
 
-    public static @DrawableRes int getDrawableId(Context context, @AttrRes int attribute,
+    public static @DrawableRes int getDrawableId(@NonNull Context context, @AttrRes int attribute,
             @DrawableRes int fallbackDrawableId) {
         TypedValue value = new TypedValue();
         if (context.getTheme().resolveAttribute(attribute, value, true)) {
@@ -64,7 +66,7 @@ public class ThemeUtils {
         }
     }
 
-    public static @ColorInt int getColor(Context context, @AttrRes int attribute) {
+    public static @ColorInt int getColor(@NonNull Context context, @AttrRes int attribute) {
         TypedValue value = new TypedValue();
         if (context.getTheme().resolveAttribute(attribute, value, true)) {
             return value.data;
@@ -73,19 +75,29 @@ public class ThemeUtils {
         }
     }
 
-    public static @ColorRes int getColorId(Context context, @AttrRes int attribute) {
+    public static @ColorRes int getColorId(@NonNull Context context, @AttrRes int attribute) {
         TypedValue value = new TypedValue();
         context.getTheme().resolveAttribute(attribute, value, true);
         return value.resourceId;
     }
 
-    public static @ColorInt int getColorById(Context context, String name) {
+    public static @ColorInt int getColorById(@NonNull Context context, String name) {
         return getColor(context,
                 ResourcesUtils.getResourceIdentifier(context, "attr", name));
     }
 
     public static void setImageViewTint(ImageView view, @AttrRes int attribute) {
         view.setColorFilter(getColor(view.getContext(), attribute), PorterDuff.Mode.SRC_IN);
+    }
+
+    /** this can be replaced with drawableTint in xml once minSdkVersion >= 23 */
+    public static @Nullable Drawable getTintedDrawable(@NonNull Context context, @DrawableRes int drawableId, @AttrRes int colorAttr) {
+        Drawable drawable = context.getDrawable(drawableId);
+        if(drawable == null) {
+            return null;
+        }
+        setDrawableTint(context, drawable, colorAttr);
+        return drawable;
     }
 
     public static void setDrawableTint(Context context, Drawable drawable, @AttrRes int attribute) {
