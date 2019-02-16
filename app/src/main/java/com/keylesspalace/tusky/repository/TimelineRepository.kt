@@ -11,7 +11,10 @@ import com.keylesspalace.tusky.entity.Status
 import com.keylesspalace.tusky.network.MastodonApi
 import com.keylesspalace.tusky.repository.TimelineRequestMode.DISK
 import com.keylesspalace.tusky.repository.TimelineRequestMode.NETWORK
-import com.keylesspalace.tusky.util.*
+import com.keylesspalace.tusky.util.Either
+import com.keylesspalace.tusky.util.HtmlConverter
+import com.keylesspalace.tusky.util.dec
+import com.keylesspalace.tusky.util.inc
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 import java.io.IOException
@@ -64,12 +67,11 @@ class TimelineRepositoryImpl(
     override fun addSingleStatusToDb(status: Status) {
         val acc = accountManager.activeAccount ?: throw IllegalStateException()
         val accountId = acc.id
-        val instance = acc.domain
 
         timelineDao.insertInTransaction(
-                status.toEntity(accountId, instance, htmlConverter, gson),
-                status.account.toEntity(instance, accountId, gson),
-                status.reblog?.account?.toEntity(instance, accountId, gson)
+                status.toEntity(accountId, htmlConverter, gson),
+                status.account.toEntity(accountId, gson),
+                status.reblog?.account?.toEntity(accountId, gson)
         )
     }
 
