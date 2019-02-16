@@ -378,6 +378,9 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
         final int n = Math.min(attachments.size(), Status.MAX_MEDIA_ATTACHMENTS);
 
+        final int maxW = context.getResources().getInteger(R.integer.media_max_width);
+        final int maxH = context.getResources().getInteger(R.integer.media_max_height);
+
         for (int i = 0; i < n; i++) {
             String previewUrl = attachments.get(i).getPreviewUrl();
             String description = attachments.get(i).getDescription();
@@ -393,6 +396,9 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             if (TextUtils.isEmpty(previewUrl)) {
                 Picasso.with(context)
                         .load(mediaPreviewUnloadedId)
+                        .resize(maxW, maxH)
+                        .onlyScaleDown()
+                        .centerInside()
                         .into(mediaPreviews[i]);
             } else {
                 MetaData meta = attachments.get(i).getMeta();
@@ -404,6 +410,9 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                     Picasso.with(context)
                             .load(previewUrl)
                             .placeholder(mediaPreviewUnloadedId)
+                            .resize(maxW, maxH)
+                            .onlyScaleDown()
+                            .centerInside()
                             // Also pass the mediaPreview as a callback to ensure it is called
                             // initially when the image gets loaded:
                             .into(mediaPreviews[i], mediaPreviews[i]);
@@ -413,6 +422,9 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
                     Picasso.with(context)
                             .load(previewUrl)
                             .placeholder(mediaPreviewUnloadedId)
+                            .resize(maxW, maxH)
+                            .onlyScaleDown()
+                            .centerInside()
                             .into(mediaPreviews[i]);
                 }
             }
