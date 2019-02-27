@@ -149,9 +149,6 @@ public final class ViewThreadFragment extends SFragment implements
         recyclerView.setLayoutManager(layoutManager);
         DividerItemDecoration divider = new DividerItemDecoration(
                 context, layoutManager.getOrientation());
-        Drawable dividerDrawable = ThemeUtils.getDrawable(context, R.attr.status_divider_drawable,
-                R.drawable.status_divider_dark);
-        divider.setDrawable(dividerDrawable);
         recyclerView.addItemDecoration(divider);
 
         Drawable threadLineDrawable = ThemeUtils.getDrawable(context, R.attr.conversation_thread_line_drawable,
@@ -254,7 +251,6 @@ public final class ViewThreadFragment extends SFragment implements
     public void onFavourite(final boolean favourite, final int position) {
         final Status status = statuses.get(position);
 
-
         timelineCases.favourite(statuses.get(position), favourite)
                 .observeOn(AndroidSchedulers.mainThread())
                 .as(autoDisposable(from(this)))
@@ -270,11 +266,13 @@ public final class ViewThreadFragment extends SFragment implements
     private void updateStatus(int position, Status status) {
         if(position >= 0 && position < statuses.size()) {
 
+            Status actionableStatus = status.getActionableStatus();
+
             StatusViewData.Concrete viewData = new StatusViewData.Builder(statuses.getPairedItem(position))
-                    .setReblogged(status.getReblogged())
-                    .setReblogsCount(status.getReblogsCount())
-                    .setFavourited(status.getFavourited())
-                    .setFavouritesCount(status.getFavouritesCount())
+                    .setReblogged(actionableStatus.getReblogged())
+                    .setReblogsCount(actionableStatus.getReblogsCount())
+                    .setFavourited(actionableStatus.getFavourited())
+                    .setFavouritesCount(actionableStatus.getFavouritesCount())
                     .createStatusViewData();
             statuses.setPairedItem(position, viewData);
 

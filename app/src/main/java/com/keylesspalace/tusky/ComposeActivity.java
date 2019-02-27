@@ -1645,11 +1645,6 @@ public final class ComposeActivity
     public void onBackPressed() {
         saveDefaultTagStatus();
         // Acting like a teen: deliberately ignoring parent.
-        handleCloseButton();
-    }
-
-    private void handleCloseButton() {
-
         if(composeOptionsBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED ||
                 addMediaBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED ||
                 emojiBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED ||
@@ -1660,6 +1655,11 @@ public final class ComposeActivity
             scheduleBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
             return;
         }
+
+        handleCloseButton();
+    }
+
+    private void handleCloseButton() {
 
         CharSequence contentText = textEditor.getText();
         CharSequence contentWarning = contentWarningEditor.getText();

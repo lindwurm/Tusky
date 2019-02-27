@@ -98,7 +98,8 @@ public abstract class SFragment extends BaseFragment {
     }
 
     protected void viewThread(Status status) {
-        bottomSheetActivity.viewThread(status.getActionableId(), status.getUrl(), status.isNotestock());
+        Status actionableStatus = status.getActionableStatus();
+        bottomSheetActivity.viewThread(actionableStatus.getId(), actionableStatus.getUrl(), actionableStatus.isNotestock());
     }
 
     protected void viewAccount(String accountId) {

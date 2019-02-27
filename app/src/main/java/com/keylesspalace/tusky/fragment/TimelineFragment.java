@@ -437,9 +437,6 @@ public class TimelineFragment extends SFragment implements
         recyclerView.setLayoutManager(layoutManager);
         DividerItemDecoration divider = new DividerItemDecoration(
                 context, layoutManager.getOrientation());
-        Drawable drawable = ThemeUtils.getDrawable(context, R.attr.status_divider_drawable,
-                R.drawable.status_divider_dark);
-        divider.setDrawable(drawable);
         recyclerView.addItemDecoration(divider);
 
         // CWs are expanded without animation, buttons animate itself, we don't need it basically
