@@ -20,7 +20,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -74,6 +73,8 @@ import com.keylesspalace.tusky.view.EndlessOnScrollListener;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -102,6 +103,7 @@ import androidx.recyclerview.widget.SimpleItemAnimator;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import at.connyduck.sparkbutton.helpers.Utils;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import jp.kyori.tusky.TimelineStreamingClient;
 import kotlin.Unit;
 import kotlin.collections.CollectionsKt;
 import retrofit2.Call;
@@ -186,6 +188,8 @@ public class TimelineFragment extends SFragment implements
     private Status inReplyTo = null;
 
     private SharedPreferences preferences;
+
+    private TimelineStreamingClient streamingClient;
 
     @Override
     protected TimelineCases timelineCases() {
@@ -279,6 +283,56 @@ public class TimelineFragment extends SFragment implements
         setupQuickCompose(rootView);
 
         return rootView;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        startStreaming();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        stopStreaming();
+    }
+
+    private void startStreaming() {
+        if (preferences.getBoolean("useHTLStream", false) && kind == Kind.HOME) {
+            connectWebsocket(buildStreamingUrl());
+        }
+    }
+
+    private String buildStreamingUrl() {
+        AccountEntity activeAccount = accountManager.getActiveAccount();
+        if (activeAccount != null) {
+            return "wss://" + activeAccount.getDomain() + "/api/v1/streaming/?" + "stream=user" + "&" + "access_token" + "=" + activeAccount.getAccessToken();
+        } else {
+            return null;
+        }
+    }
+
+    private void connectWebsocket(String endpoint) {
+        if (streamingClient != null) {
+            stopStreaming();
+        }
+
+        try {
+            streamingClient = new TimelineStreamingClient(new URI(endpoint), eventHub);
+        } catch (URISyntaxException e) {
+            Log.e(TAG, "connectWebsocket: ", e);
+            return;
+        }
+
+        streamingClient.connect();
+    }
+
+    private void stopStreaming() {
+        if (streamingClient == null) {
+            return;
+        }
+        streamingClient.close();
+        streamingClient = null;
     }
 
     private boolean quickComposeExists() {
