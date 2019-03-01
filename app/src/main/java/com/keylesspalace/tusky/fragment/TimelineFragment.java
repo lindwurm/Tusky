@@ -75,12 +75,14 @@ import com.keylesspalace.tusky.viewdata.StatusViewData;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -190,6 +192,8 @@ public class TimelineFragment extends SFragment implements
     private SharedPreferences preferences;
 
     private TimelineStreamingClient streamingClient;
+    private boolean shouldWaitForLoad = false;
+    private Queue<Either<Placeholder, Status>> waitForLoading = new ArrayDeque<>();
 
     @Override
     protected TimelineCases timelineCases() {
@@ -412,6 +416,7 @@ public class TimelineFragment extends SFragment implements
         } else {
             topId = CollectionsKt.first(statuses, Either::isRight).asRight().getId();
         }
+        shouldWaitForLoad = kind == Kind.HOME;
         this.timelineRepo.getStatuses(topId, null, null, LOAD_AT_ONCE,
                 TimelineRequestMode.NETWORK)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -439,12 +444,14 @@ public class TimelineFragment extends SFragment implements
                             this.bottomLoading = false;
                             // Get more statuses so that users know that something is there
                             this.loadAbove();
+                            this.releaseQueue();
                         },
                         (e) -> {
                             this.initialUpdateFailed = true;
                             // Indicate that we are not loading anymore
                             this.progressBar.setVisibility(View.GONE);
                             this.swipeRefreshLayout.setRefreshing(false);
+                            this.releaseQueue();
                         });
     }
 
@@ -1050,6 +1057,7 @@ public class TimelineFragment extends SFragment implements
                                           @Nullable String sinceIdMinusOne,
                                           final FetchEnd fetchEnd, final int pos) {
         if (kind == Kind.HOME) {
+            shouldWaitForLoad = fetchEnd == FetchEnd.TOP;
             TimelineRequestMode mode;
             // allow getting old statuses/fallbacks for network only for for bottom loading
             if (fetchEnd == FetchEnd.BOTTOM) {
@@ -1097,6 +1105,7 @@ public class TimelineFragment extends SFragment implements
         switch (fetchEnd) {
             case TOP: {
                 updateStatuses(statuses, fullFetch);
+                releaseQueue();
                 break;
             }
             case MIDDLE: {
@@ -1142,6 +1151,10 @@ public class TimelineFragment extends SFragment implements
     private void onFetchTimelineFailure(Exception exception, FetchEnd fetchEnd, int position) {
         if (isAdded()) {
             swipeRefreshLayout.setRefreshing(false);
+
+            if (fetchEnd == FetchEnd.TOP) {
+                releaseQueue();
+            }
 
             if (fetchEnd == FetchEnd.MIDDLE && !statuses.get(position).isRight()) {
                 Placeholder placeholder = statuses.get(position).asLeftOrNull();
@@ -1265,6 +1278,10 @@ public class TimelineFragment extends SFragment implements
     }
 
     private void addStatus(Either<Placeholder, Status> item) {
+        if (shouldWaitForLoad) {
+            waitForLoading.add(item);
+            return;
+        }
         if (item.isRight()) {
             Status status = item.asRight();
             if (!filterStatus(status)) {
@@ -1278,6 +1295,17 @@ public class TimelineFragment extends SFragment implements
             statuses.add(0, item);
             updateAdapter();
         }
+    }
+
+    private void releaseQueue() {
+        while (true){
+            Either<Placeholder, Status> item = waitForLoading.poll();
+            if (item == null) {
+                break;
+            }
+            addStatus(item);
+        }
+        shouldWaitForLoad = false;
     }
 
     /**
