@@ -127,6 +127,11 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if(accountManager.getActiveAccount() == null) {
+            // will be redirected to LoginActivity by BaseActivity
+            return;
+        }
+
         Intent intent = getIntent();
         boolean showNotificationTab = false;
 

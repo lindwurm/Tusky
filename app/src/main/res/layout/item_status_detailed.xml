@@ -18,6 +18,7 @@
         android:layout_marginTop="14dp"
         android:layout_marginEnd="14dp"
         android:contentDescription="@string/action_view_profile"
+        android:importantForAccessibility="no"
         android:scaleType="centerCrop"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -31,6 +32,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginEnd="14dp"
         android:ellipsize="end"
+        android:importantForAccessibility="no"
         android:maxLines="1"
         android:textColor="?android:textColorPrimary"
         android:textSize="?attr/status_text_medium"
@@ -53,6 +55,7 @@
         android:layout_marginTop="4dp"
         android:layout_marginEnd="14dp"
         android:ellipsize="end"
+        android:importantForAccessibility="no"
         android:maxLines="1"
         android:textColor="?android:textColorSecondary"
         android:textSize="?attr/status_text_medium"
@@ -69,6 +72,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:importantForAccessibility="no"
         android:lineSpacingMultiplier="1.1"
         android:textColor="?android:textColorPrimary"
         android:textSize="?attr/status_text_large"
@@ -83,6 +87,7 @@
         android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
         android:background="?attr/content_warning_button"
+        android:importantForAccessibility="no"
         android:minWidth="160dp"
         android:minHeight="0dp"
         android:paddingLeft="16dp"
@@ -103,6 +108,7 @@
         android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
         android:focusable="true"
+        android:importantForAccessibility="no"
         android:lineSpacingMultiplier="1.1"
         android:textColor="?android:textColorPrimary"
         android:textSize="?attr/status_text_large"
@@ -146,7 +152,6 @@
             android:paddingRight="6dp"
             android:paddingBottom="6dp">
 
-            <!--TODO: check if this needs emoji support-->
             <androidx.emoji.widget.EmojiTextView
                 android:id="@+id/card_title"
                 android:layout_width="wrap_content"
@@ -158,7 +163,6 @@
                 android:textColor="?android:textColorPrimary"
                 android:textSize="?attr/status_text_medium" />
 
-            <!--TODO: Check if this needs emoji support-->
             <androidx.emoji.widget.EmojiTextView
                 android:id="@+id/card_description"
                 android:layout_width="wrap_content"
@@ -188,6 +192,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="4dp"
+        android:importantForAccessibility="noHideDescendants"
         app:layout_constraintTop_toBottomOf="@id/card_view">
 
         <com.keylesspalace.tusky.view.MediaPreviewImageView
@@ -294,8 +299,7 @@
             app:layout_constraintTop_toTopOf="@+id/status_media_preview_container"
             app:srcCompat="@drawable/ic_eye_24dp" />
 
-        <!--TODO: Check if this needs emoji support-->
-        <androidx.emoji.widget.EmojiTextView
+        <TextView
             android:id="@+id/status_sensitive_media_warning"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -313,8 +317,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!--TODO: Check if this needs emoji support-->
-        <androidx.emoji.widget.EmojiTextView
+        <TextView
             android:id="@+id/status_media_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -334,6 +337,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:drawablePadding="4dp"
+        android:importantForAccessibility="no"
         android:textColor="?android:textColorTertiary"
         android:textSize="?attr/status_text_medium"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -347,6 +351,7 @@
         android:layout_height="1dp"
         android:layout_below="@id/status_timestamp_info"
         android:layout_marginTop="6dp"
+        android:importantForAccessibility="no"
         android:background="?android:attr/listDivider"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
@@ -358,6 +363,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:background="?attr/selectableItemBackground"
+        android:importantForAccessibility="no"
         android:padding="4dp"
         android:textSize="?attr/status_text_medium"
         app:layout_constraintStart_toStartOf="@id/status_info_divider"
@@ -372,6 +378,7 @@
         android:layout_marginStart="12dp"
         android:layout_marginTop="6dp"
         android:background="?attr/selectableItemBackground"
+        android:importantForAccessibility="no"
         android:padding="4dp"
         android:textSize="?attr/status_text_medium"
         app:layout_constraintStart_toEndOf="@id/status_reblogs"
@@ -392,6 +399,7 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="6dp"
+        android:importantForAccessibility="no"
         android:background="?android:attr/listDivider"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
@@ -405,6 +413,7 @@
         android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
         android:contentDescription="@string/action_reply"
+        android:importantForAccessibility="no"
         android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/status_reblog"
@@ -419,6 +428,7 @@
         android:layout_height="40dp"
         android:clipToPadding="false"
         android:contentDescription="@string/action_reblog"
+        android:importantForAccessibility="no"
         android:padding="4dp"
         app:layout_constraintEnd_toStartOf="@id/status_favourite"
         app:layout_constraintStart_toEndOf="@id/status_reply"
@@ -435,6 +445,7 @@
         android:layout_height="40dp"
         android:clipToPadding="false"
         android:contentDescription="@string/action_favourite"
+        android:importantForAccessibility="no"
         android:padding="4dp"
         app:layout_constraintEnd_toStartOf="@id/status_quote"
         app:layout_constraintStart_toEndOf="@id/status_reblog"
@@ -465,6 +476,7 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:contentDescription="@string/action_more"
+        android:importantForAccessibility="no"
         android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="@id/status_reply"
         app:layout_constraintEnd_toEndOf="parent"

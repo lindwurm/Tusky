@@ -20,6 +20,8 @@ import android.app.Application;
 import android.app.Service;
 import androidx.room.Room;
 import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.preference.PreferenceManager;
 import androidx.emoji.text.EmojiCompat;
 
@@ -29,8 +31,13 @@ import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.db.AppDatabase;
 import com.keylesspalace.tusky.di.AppInjector;
 import com.keylesspalace.tusky.util.EmojiCompatFont;
+import com.keylesspalace.tusky.util.LocaleManager;
 import com.keylesspalace.tusky.util.NotificationPullJobCreator;
 import com.squareup.picasso.Picasso;
+
+import org.conscrypt.Conscrypt;
+
+import java.security.Security;
 
 import javax.inject.Inject;
 
@@ -58,9 +65,13 @@ public class TuskyApplication extends Application implements HasActivityInjector
 
     private ServiceLocator serviceLocator;
 
+    public static LocaleManager localeManager;
+
     @Override
     public void onCreate() {
         super.onCreate();
+
+        initSecurityProvider();
 
         appDatabase = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "tuskyDB")
                 .allowMainThreadQueries()
@@ -91,6 +102,22 @@ public class TuskyApplication extends Application implements HasActivityInjector
 
         JobManager.create(this).addJobCreator(notificationPullJobCreator);
 
+    }
+
+    protected void initSecurityProvider() {
+        Security.insertProviderAt(Conscrypt.newProvider(), 1);
+    }
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        localeManager = new LocaleManager(base);
+        super.attachBaseContext(localeManager.setLocale(base));
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        localeManager.setLocale(this);
     }
 
     /**

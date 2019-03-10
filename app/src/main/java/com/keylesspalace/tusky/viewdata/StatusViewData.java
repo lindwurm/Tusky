@@ -55,8 +55,8 @@ public abstract class StatusViewData {
 
         private final String id;
         private final Spanned content;
-        private final boolean reblogged;
-        private final boolean favourited;
+        final boolean reblogged;
+        final boolean favourited;
         @Nullable
         private final String spoilerText;
         private final Status.Visibility visibility;
@@ -66,7 +66,7 @@ public abstract class StatusViewData {
         @Nullable
         private final String rebloggedAvatar;
         private final boolean isSensitive;
-        private final boolean isExpanded;
+        final boolean isExpanded;
         private final boolean isShowingContent;
         private final String userFullName;
         private final String nickname;
@@ -87,7 +87,7 @@ public abstract class StatusViewData {
         @Nullable
         private final Card card;
         private final boolean isCollapsible; /** Whether the status meets the requirement to be collapse */
-        private final boolean isCollapsed; /** Whether the status is shown partially or fully */
+        final boolean isCollapsed; /** Whether the status is shown partially or fully */
 
         private final Status quote;
         private final boolean isNotestock;

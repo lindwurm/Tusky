@@ -33,6 +33,7 @@ import com.keylesspalace.tusky.viewdata.StatusViewData;
 import com.mikepenz.iconics.utils.Utils;
 import com.squareup.picasso.Picasso;
 
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,6 +47,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.RecyclerView;
 import at.connyduck.sparkbutton.SparkButton;
 import at.connyduck.sparkbutton.SparkEventListener;
+import kotlin.collections.CollectionsKt;
 import jp.kyori.tusky.RichTextUtil;
 
 public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
@@ -75,6 +77,8 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     private boolean useAbsoluteTime;
     private SimpleDateFormat shortSdf;
     private SimpleDateFormat longSdf;
+
+    private final NumberFormat numberFormat = NumberFormat.getNumberInstance();
 
     protected StatusBaseViewHolder(View itemView, boolean useAbsoluteTime) {
         super(itemView);
@@ -131,10 +135,10 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     }
 
     protected void setSpoilerAndContent(boolean expanded,
-                            @NonNull Spanned content,
+                                        @NonNull Spanned content,
                                         @Nullable String spoilerText,
-                                         @Nullable Status.Mention[] mentions,
-                                         @NonNull List<Emoji> emojis,
+                                        @Nullable Status.Mention[] mentions,
+                                        @NonNull List<Emoji> emojis,
                                         final StatusActionListener listener, boolean removeQuote) {
         if (TextUtils.isEmpty(spoilerText)) {
             contentWarningDescription.setVisibility(View.GONE);
@@ -166,7 +170,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
             Spanned emojifiedText = CustomEmojiHelper.emojifyText(content, emojis, this.content);
             LinkHelper.setClickableText(this.content, emojifiedText, mentions, listener, removeQuote);
         } else {
-                LinkHelper.setClickableMentions(this.content, mentions, listener);
+            LinkHelper.setClickableMentions(this.content, mentions, listener);
         }
         if (TextUtils.isEmpty(this.content.getText())) {
             this.content.setVisibility(View.GONE);
@@ -188,37 +192,52 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
 
     protected void setCreatedAt(@Nullable Date createdAt) {
         if (useAbsoluteTime) {
-            String time;
-            if (createdAt != null) {
-                if (System.currentTimeMillis() - createdAt.getTime() > 86400000L) {
-                    time = longSdf.format(createdAt);
-                } else {
-                    time = shortSdf.format(createdAt);
-                }
-            } else {
-                time = "??:??:??";
-            }
-            timestampInfo.setText(time);
+            timestampInfo.setText(getAbsoluteTime(createdAt));
         } else {
-            // This is the visible timestampInfo.
             String readout;
-            /* This one is for screen-readers. Frequently, they would mispronounce timestamps like "17m"
-             * as 17 meters instead of minutes. */
-            CharSequence readoutAloud;
             if (createdAt != null) {
                 long then = createdAt.getTime();
                 long now = new Date().getTime();
                 readout = DateUtils.getRelativeTimeSpanString(timestampInfo.getContext(), then, now);
-                readoutAloud = android.text.format.DateUtils.getRelativeTimeSpanString(then, now,
+            } else {
+                // unknown minutes~
+                readout = "?m";
+            }
+            timestampInfo.setText(readout);
+        }
+    }
+
+    private String getAbsoluteTime(@Nullable Date createdAt) {
+        String time;
+        if (createdAt != null) {
+            if (System.currentTimeMillis() - createdAt.getTime() > 86400000L) {
+                time = longSdf.format(createdAt);
+            } else {
+                time = shortSdf.format(createdAt);
+            }
+        } else {
+            time = "??:??:??";
+        }
+        return time;
+    }
+
+    private CharSequence getCreatedAtDescription(@Nullable Date createdAt) {
+        if (useAbsoluteTime) {
+            return getAbsoluteTime(createdAt);
+        } else {
+            /* This one is for screen-readers. Frequently, they would mispronounce timestamps like "17m"
+             * as 17 meters instead of minutes. */
+
+            if (createdAt != null) {
+                long then = createdAt.getTime();
+                long now = new Date().getTime();
+                return android.text.format.DateUtils.getRelativeTimeSpanString(then, now,
                         android.text.format.DateUtils.SECOND_IN_MILLIS,
                         android.text.format.DateUtils.FORMAT_ABBREV_RELATIVE);
             } else {
                 // unknown minutes~
-                readout = "?m";
-                readoutAloud = "? minutes";
+                return "? minutes";
             }
-            timestampInfo.setText(readout);
-            timestampInfo.setContentDescription(readoutAloud);
         }
     }
 
@@ -576,7 +595,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         replyButton.setEnabled(!isNotestock);
         replyButton.setClickable(!isNotestock);
         replyButton.setLongClickable(!isNotestock);
-        if(reblogButton != null) {
+        if (reblogButton != null) {
             reblogButton.setEventListener(new SparkEventListener() {
                 @Override
                 public void onEvent(ImageView button, boolean buttonState) {
@@ -683,7 +702,126 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         setQuoteEnabled(status.getRebloggingEnabled() && !status.isNotestock(), status.getVisibility());
 
         setSpoilerAndContent(status.isExpanded(), status.getContent(), status.getSpoilerText(), status.getMentions(), status.getStatusEmojis(), listener, status.getQuote() != null);
+        setContentDescription(status);
+        // Workaround for RecyclerView 1.0.0 / androidx.core 1.0.0
+        // RecyclerView tries to set AccessibilityDelegateCompat to null
+        // but ViewCompat code replaces is with the default one. RecyclerView never
+        // fetches another one from its delegate because it checks that it's set so we remove it
+        // and let RecyclerView ask for a new delegate.
+        itemView.setAccessibilityDelegate(null);
+    }
 
+
+    private void setContentDescription(@Nullable StatusViewData.Concrete status) {
+        if (status == null) {
+            itemView.setContentDescription(
+                    itemView.getContext().getString(R.string.load_more_placeholder_text));
+        } else {
+            setDescriptionForStatus(status);
+        }
+
+    }
+
+    private void setDescriptionForStatus(@NonNull StatusViewData.Concrete status) {
+        Context context = itemView.getContext();
+
+        String description = context.getString(R.string.description_status,
+                status.getUserFullName(),
+                getContentWarningDescription(context, status),
+                (!status.isSensitive() || status.isExpanded() ? status.getContent() : ""),
+                getCreatedAtDescription(status.getCreatedAt()),
+                getReblogDescription(context, status),
+                status.getNickname(),
+                status.isReblogged() ? context.getString(R.string.description_status_reblogged) : "",
+                status.isFavourited() ? context.getString(R.string.description_status_favourited) : "",
+                getMediaDescription(context, status),
+                getVisibilityDescription(context, status.getVisibility()),
+                getFavsText(context, status.getFavouritesCount()),
+                getReblogsText(context, status.getReblogsCount())
+        );
+        itemView.setContentDescription(description);
+    }
+
+    private CharSequence getReblogDescription(Context context,
+                                              @NonNull StatusViewData.Concrete status) {
+        CharSequence reblogDescriontion;
+        String rebloggedUsername = status.getRebloggedByUsername();
+        if (rebloggedUsername != null) {
+            reblogDescriontion = context
+                    .getString(R.string.status_boosted_format, rebloggedUsername);
+        } else {
+            reblogDescriontion = "";
+        }
+        return reblogDescriontion;
+    }
+
+    private CharSequence getMediaDescription(Context context,
+                                             @NonNull StatusViewData.Concrete status) {
+        if (status.getAttachments().isEmpty()) {
+            return "";
+        }
+        StringBuilder mediaDescriptions = CollectionsKt.fold(
+                status.getAttachments(),
+                new StringBuilder(),
+                (builder, a) -> {
+                    if (a.getDescription() == null) {
+                        String placeholder =
+                                context.getString(R.string.description_status_media_no_description_placeholder);
+                        return builder.append(placeholder);
+                    } else {
+                        builder.append("; ");
+                        return builder.append(a.getDescription());
+                    }
+                });
+        return context.getString(R.string.description_status_media, mediaDescriptions);
+    }
+
+    private CharSequence getContentWarningDescription(Context context,
+                                                      @NonNull StatusViewData.Concrete status) {
+        if (!TextUtils.isEmpty(status.getSpoilerText())) {
+            return context.getString(R.string.description_status_cw, status.getSpoilerText());
+        } else {
+            return "";
+        }
+    }
+
+    private CharSequence getVisibilityDescription(Context context, Status.Visibility visibility) {
+        int resource;
+        switch (visibility) {
+            case PUBLIC:
+                resource = R.string.description_visiblity_public;
+                break;
+            case UNLISTED:
+                resource = R.string.description_visiblity_unlisted;
+                break;
+            case PRIVATE:
+                resource = R.string.description_visiblity_private;
+                break;
+            case DIRECT:
+                resource = R.string.description_visiblity_direct;
+                break;
+            default:
+                return "";
+        }
+        return context.getString(resource);
+    }
+
+    protected CharSequence getFavsText(Context context, int count) {
+        if (count > 0) {
+            String countString = numberFormat.format(count);
+            return HtmlUtils.fromHtml(context.getResources().getQuantityString(R.plurals.favs, count, countString));
+        } else {
+            return "";
+        }
+    }
+
+    protected CharSequence getReblogsText(Context context, int count) {
+        if (count > 0) {
+            String countString = numberFormat.format(count);
+            return HtmlUtils.fromHtml(context.getResources().getQuantityString(R.plurals.reblogs, count, countString));
+        } else {
+            return "";
+        }
     }
 
     static class QuoteInlineHelper {

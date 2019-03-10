@@ -47,6 +47,7 @@ import com.keylesspalace.tusky.entity.StatusContext;
 import com.keylesspalace.tusky.interfaces.StatusActionListener;
 import com.keylesspalace.tusky.network.MastodonApi;
 import com.keylesspalace.tusky.network.TimelineCases;
+import com.keylesspalace.tusky.util.ListStatusAccessibilityDelegate;
 import com.keylesspalace.tusky.util.PairedList;
 import com.keylesspalace.tusky.util.SmartLengthInputFilter;
 import com.keylesspalace.tusky.util.ThemeUtils;
@@ -147,6 +148,8 @@ public final class ViewThreadFragment extends SFragment implements
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAccessibilityDelegateCompat(
+                new ListStatusAccessibilityDelegate(recyclerView, this, statuses::getPairedItem));
         DividerItemDecoration divider = new DividerItemDecoration(
                 context, layoutManager.getOrientation());
         recyclerView.addItemDecoration(divider);
@@ -264,7 +267,7 @@ public final class ViewThreadFragment extends SFragment implements
     }
 
     private void updateStatus(int position, Status status) {
-        if(position >= 0 && position < statuses.size()) {
+        if (position >= 0 && position < statuses.size()) {
 
             Status actionableStatus = status.getActionableStatus();
 
