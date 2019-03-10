@@ -1298,7 +1298,10 @@ public class TimelineFragment extends SFragment implements
     }
 
     private void releaseQueue() {
-        while (true){
+        if (kind != Kind.HOME) {
+            return;
+        }
+        while (true) {
             Either<Placeholder, Status> item = waitForLoading.poll();
             if (item == null) {
                 break;
