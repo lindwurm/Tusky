@@ -655,6 +655,9 @@ public class TimelineFragment extends SFragment implements
 
     @Override
     public void onRefresh() {
+        if (shouldWaitForLoad) {
+            return;
+        }
         swipeRefreshLayout.setEnabled(true);
         this.statusView.setVisibility(View.GONE);
         if (this.initialUpdateFailed) {
