@@ -32,7 +32,6 @@ import com.keylesspalace.tusky.BuildConfig
 import com.keylesspalace.tusky.R
 import com.keylesspalace.tusky.ViewTagActivity
 import com.keylesspalace.tusky.adapter.SearchResultsAdapter
-import com.keylesspalace.tusky.di.Injectable
 import com.keylesspalace.tusky.entity.SearchResults
 import com.keylesspalace.tusky.interfaces.StatusActionListener
 import com.keylesspalace.tusky.json.SpannedTypeAdapter
@@ -52,12 +51,8 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import javax.inject.Inject
 
-class SearchFragment : SFragment(), StatusActionListener, Injectable {
-
-    @Inject
-    lateinit var timelineCases: TimelineCases
+class SearchFragment : SFragment(), StatusActionListener {
 
     private lateinit var notestockApi: NotestockApi
 
@@ -181,10 +176,6 @@ class SearchFragment : SFragment(), StatusActionListener, Injectable {
             searchProgressBar.visibility = View.GONE
             searchNoResultsText.visibility = View.GONE
         }
-    }
-
-    override fun timelineCases(): TimelineCases {
-        return timelineCases
     }
 
     override fun removeItem(position: Int) {

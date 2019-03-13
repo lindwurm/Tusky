@@ -37,7 +37,6 @@ import com.keylesspalace.tusky.db.AccountEntity;
 import com.keylesspalace.tusky.db.AccountManager;
 import com.keylesspalace.tusky.di.Injectable;
 import com.keylesspalace.tusky.interfaces.AccountSelectionListener;
-import com.keylesspalace.tusky.network.MastodonApi;
 import com.keylesspalace.tusky.util.ThemeUtils;
 
 import java.util.ArrayList;
@@ -56,9 +55,9 @@ public abstract class BaseActivity extends AppCompatActivity implements Injectab
     protected List<Call> callList;
 
     @Inject
+    public ThemeUtils themeUtils;
+    @Inject
     public AccountManager accountManager;
-
-    ThemeUtils themeUtils = new ThemeUtils();
 
     protected static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
 
