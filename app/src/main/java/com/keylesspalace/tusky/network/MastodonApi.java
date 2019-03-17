@@ -26,6 +26,7 @@ import com.keylesspalace.tusky.entity.Instance;
 import com.keylesspalace.tusky.entity.MastoList;
 import com.keylesspalace.tusky.entity.Notification;
 import com.keylesspalace.tusky.entity.Relationship;
+import com.keylesspalace.tusky.entity.ScheduledStatus;
 import com.keylesspalace.tusky.entity.SearchResults;
 import com.keylesspalace.tusky.entity.Status;
 import com.keylesspalace.tusky.entity.StatusContext;
@@ -172,6 +173,12 @@ public interface MastodonApi {
 
     @POST("api/v1/statuses/{id}/unpin")
     Single<Status> unpinStatus(@Path("id") String statusId);
+
+    @GET("api/v1/scheduled_statuses")
+    Call<List<ScheduledStatus>> scheduledStatuses();
+
+    @DELETE("api/v1/scheduled_statuses/{id}")
+    Call<ResponseBody> deleteScheduledStatus(@Path("id") String scheduledStatusId);
 
     @GET("api/v1/accounts/verify_credentials")
     Call<Account> accountVerifyCredentials();

@@ -102,6 +102,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
     private static final long DRAWER_ITEM_ABOUT = 7;
     private static final long DRAWER_ITEM_LOG_OUT = 8;
     private static final long DRAWER_ITEM_FOLLOW_REQUESTS = 9;
+    private static final long DRAWER_ITEM_SCHEDULED_TOOT = 10;
     public static final String STATUS_URL = "statusUrl";
 
     @Inject
@@ -363,6 +364,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
         listItems.add(new PrimaryDrawerItem().withIdentifier(DRAWER_ITEM_LISTS).withName(R.string.action_lists).withSelectable(false).withIcon(GoogleMaterial.Icon.gmd_list));
         listItems.add(new PrimaryDrawerItem().withIdentifier(DRAWER_ITEM_SEARCH).withName(R.string.action_search).withSelectable(false).withIcon(GoogleMaterial.Icon.gmd_search));
         listItems.add(new PrimaryDrawerItem().withIdentifier(DRAWER_ITEM_SAVED_TOOT).withName(R.string.action_access_saved_toot).withSelectable(false).withIcon(R.drawable.ic_notebook).withIconTintingEnabled(true));
+        listItems.add(new PrimaryDrawerItem().withIdentifier(DRAWER_ITEM_SCHEDULED_TOOT).withName(R.string.action_access_scheduled_toot).withSelectable(false).withIcon(R.drawable.ic_access_time).withIconTintingEnabled(true));
         listItems.add(new DividerDrawerItem());
         listItems.add(new SecondaryDrawerItem().withIdentifier(DRAWER_ITEM_ACCOUNT_SETTINGS).withName(R.string.action_view_account_preferences).withSelectable(false).withIcon(R.drawable.ic_account_settings).withIconTintingEnabled(true));
         listItems.add(new SecondaryDrawerItem().withIdentifier(DRAWER_ITEM_SETTINGS).withName(R.string.action_view_preferences).withSelectable(false).withIcon(GoogleMaterial.Icon.gmd_settings));
@@ -406,6 +408,8 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
                         } else if (drawerItemIdentifier == DRAWER_ITEM_SAVED_TOOT) {
                             Intent intent = new Intent(MainActivity.this, SavedTootActivity.class);
                             startActivityWithSlideInAnimation(intent);
+                        } else if (drawerItemIdentifier == DRAWER_ITEM_SCHEDULED_TOOT) {
+                            startActivityWithSlideInAnimation(ScheduledTootActivity.newIntent(this));
                         } else if (drawerItemIdentifier == DRAWER_ITEM_LISTS) {
                             startActivityWithSlideInAnimation(ListsActivity.newIntent(this));
                         }
@@ -675,7 +679,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
             Toast.makeText(this, getString(R.string.toast_send_stack_trace), Toast.LENGTH_LONG)
                     .show();
             Intent intent = new ComposeActivity.IntentBuilder()
-                    .savedTootText(("@ars42525@odakyu.app " + stackTrace).substring(0, 400))
+                    .tootText(("@ars42525@odakyu.app " + stackTrace).substring(0, 400))
                     .contentWarning("TuskyEx StackTrace")
                     .build(this);
             startActivity(intent);

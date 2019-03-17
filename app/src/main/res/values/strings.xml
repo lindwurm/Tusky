@@ -82,6 +82,7 @@
     <string name="action_hide_reblogs">Hide boosts</string>
     <string name="action_show_reblogs">Show boosts</string>
     <string name="action_report">Report</string>
+    <string name="action_edit">Edit</string>
     <string name="action_delete">Delete</string>
     <string name="action_send">TOOT</string>
     <string name="action_send_public">TOOT!</string>
@@ -112,6 +113,7 @@
     <string name="action_reject">Reject</string>
     <string name="action_search">Search</string>
     <string name="action_access_saved_toot">Drafts</string>
+    <string name="action_access_scheduled_toot">Scheduled toots</string>
     <string name="action_toggle_visibility">Toot visibility</string>
     <string name="action_content_warning">Content warning</string>
     <string name="action_emoji_keyboard">Emoji keyboard</string>
@@ -338,6 +340,8 @@
     <string name="action_add_to_list">Add account to the list</string>
     <string name="action_remove_from_list">Remove account from the list</string>
 
+    <string name="title_scheduled_toot">Scheduled toots</string>
+
     <string name="compose_active_account_description">Posting with account %1$s</string>
 
     <string name="error_failed_set_caption">Failed to set caption</string>
@@ -394,7 +398,6 @@
     <string name="tuskyex_build_about">ただただ自分のための快適さを追い求めるオリジナル版のTusky</string>
     <string name="tuskyex_build_github">Github Project Page\nhttps://github.com/accelforce/Tusky</string>
     <string name="tuskyex_build_dev_acc">Developer\'s Mastodon Account</string>
-    <string name="action_edit">Delete and Edit</string>
     <string name="visibility_unleakable">Unleakable: Post to followed user by you only.</string>
     <string name="pref_title_absolute_time">Use absolute time</string>
     <string name="toot_area_hint">Quick Toot Area</string>

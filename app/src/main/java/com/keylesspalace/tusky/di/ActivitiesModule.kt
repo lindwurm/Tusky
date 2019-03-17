@@ -91,6 +91,9 @@ abstract class ActivitiesModule {
     abstract fun contributesTabPreferenceActivity(): TabPreferenceActivity
 
     @ContributesAndroidInjector
+    abstract fun contributesScheduledTootActivity(): ScheduledTootActivity
+
+    @ContributesAndroidInjector
     abstract fun contributesAccessTokenLoginActivity(): AccessTokenLoginActivity
 
 }

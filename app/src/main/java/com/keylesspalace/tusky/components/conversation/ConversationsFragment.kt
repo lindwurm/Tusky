@@ -263,7 +263,7 @@ class ConversationsFragment : SFragment(), StatusActionListener, Injectable {
             content += " " + preferences.getString("default_text", "")!!
         }
 
-        intentBuilder = intentBuilder.savedVisibility(getCurrentVisibility())
+        intentBuilder = intentBuilder.visibility(getCurrentVisibility())
 
         if (inReplyTo != null) {
             val mentions = inReplyTo!!.mentions
@@ -283,14 +283,14 @@ class ConversationsFragment : SFragment(), StatusActionListener, Injectable {
             content = joinMentions(mentionedUsernames) + content
 
             intentBuilder = intentBuilder.inReplyToId(inReplyTo!!.id)
-                    .savedVisibility(inReplyTo!!.visibility)
+                    .visibility(inReplyTo!!.visibility)
                     .contentWarning(inReplyTo!!.spoilerText)
                     .mentionedUsernames(mentionedUsernames)
                     .replyingStatusAuthor(inReplyTo!!.account.localUsername)
                     .replyingStatusContent(inReplyTo!!.content.toString())
         }
 
-        return intentBuilder.savedTootText(content)
+        return intentBuilder.tootText(content)
     }
 
     private fun joinMentions(mentionedUsernames: Set<String>): String {

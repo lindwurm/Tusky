@@ -36,7 +36,6 @@ import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
-import io.reactivex.Observable;
 import com.keylesspalace.tusky.AccountListActivity;
 import com.keylesspalace.tusky.BaseActivity;
 import com.keylesspalace.tusky.ComposeActivity;
@@ -80,8 +79,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -110,6 +109,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import at.connyduck.sparkbutton.helpers.Utils;
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import jp.kyori.tusky.TimelineStreamingClient;
 import kotlin.Unit;
@@ -1626,7 +1626,7 @@ public class TimelineFragment extends SFragment implements
             content += " " + preferences.getString("default_text", "");
         }
 
-        intentBuilder = intentBuilder.savedVisibility(getCurrentVisibility());
+        intentBuilder = intentBuilder.visibility(getCurrentVisibility());
 
         if (inReplyTo != null) {
             Status.Mention[] mentions = inReplyTo.getMentions();
@@ -1646,14 +1646,14 @@ public class TimelineFragment extends SFragment implements
             content = joinMentions(mentionedUsernames) + content;
 
             intentBuilder = intentBuilder.inReplyToId(inReplyTo.getId())
-                    .savedVisibility(inReplyTo.getVisibility())
+                    .visibility(inReplyTo.getVisibility())
                     .contentWarning(inReplyTo.getSpoilerText())
                     .mentionedUsernames(mentionedUsernames)
                     .replyingStatusAuthor(inReplyTo.getAccount().getLocalUsername())
                     .replyingStatusContent(inReplyTo.getContent().toString());
         }
 
-        return intentBuilder.savedTootText(content);
+        return intentBuilder.tootText(content);
     }
 
     private String joinMentions(Set<String> mentionedUsernames) {

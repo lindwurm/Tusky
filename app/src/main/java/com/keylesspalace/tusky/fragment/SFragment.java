@@ -297,7 +297,7 @@ public abstract class SFragment extends BaseFragment implements Injectable {
                     String editContent = content.toString();
                     timelineCases.delete(id);
                     Intent intent = new ComposeActivity.IntentBuilder()
-                            .savedTootText(editContent)
+                            .tootText(editContent)
                             .build(getContext());
                     startActivity(intent);
                     return true;
