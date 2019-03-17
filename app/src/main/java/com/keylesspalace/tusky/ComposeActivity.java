@@ -596,8 +596,8 @@ public final class ComposeActivity
             statusMarkSensitive = intent.getBooleanExtra(SENSITIVE_EXTRA, false);
 
             if (intent.getBooleanExtra(TOOT_RIGHT_NOW, false)) {
-                if (startingText.length() > 0) {
-                    sendStatus(startingText, Status.Visibility.byNum(tootVisibility), false, "", null, null);
+                if (tootText.length() > 0) {
+                    sendStatus(tootText, Status.Visibility.byNum(tootVisibility), false, "", null, null);
                 }
             }
         }
