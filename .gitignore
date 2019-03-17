@@ -9,3 +9,6 @@
 app/release
 app/green
 app/blue
+app/src/main/gen
+lib/
+tuskyex_kyori.jks
