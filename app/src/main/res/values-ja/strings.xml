@@ -279,7 +279,6 @@
     <string name="action_set_caption">説明を設定</string>
     <string name="action_remove_media">消去</string>
     <string name="action_quote">引用</string>
-    <string name="action_edit">削除して編集</string>
     <string name="visibility_unleakable">限定公開　: フォローしたユーザーに公開</string>
     <string name="lock_account_label">アカウントをロック</string>
     <string name="lock_account_label_description">フォロワーを手動で承認する必要があります</string>

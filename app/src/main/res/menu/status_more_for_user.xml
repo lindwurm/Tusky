@@ -29,6 +29,4 @@
     <item
         android:id="@+id/status_delete"
         android:title="@string/action_delete" />
-    <item android:title="@string/action_edit"
-        android:id="@+id/status_edit" />
 </menu>

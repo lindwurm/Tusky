@@ -19,7 +19,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-
 import android.text.Spanned;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -291,15 +290,6 @@ public abstract class SFragment extends BaseFragment implements Injectable {
                 }
                 case R.id.pin: {
                     timelineCases.pin(status, !status.isPinned());
-                    return true;
-                }
-                case R.id.status_edit: {
-                    String editContent = content.toString();
-                    timelineCases.delete(id);
-                    Intent intent = new ComposeActivity.IntentBuilder()
-                            .tootText(editContent)
-                            .build(getContext());
-                    startActivity(intent);
                     return true;
                 }
             }
