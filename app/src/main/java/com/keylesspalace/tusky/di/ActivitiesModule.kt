@@ -91,6 +91,9 @@ abstract class ActivitiesModule {
     abstract fun contributesTabPreferenceActivity(): TabPreferenceActivity
 
     @ContributesAndroidInjector
+    abstract fun contributesFiltersActivity(): FiltersActivity
+
+    @ContributesAndroidInjector
     abstract fun contributesScheduledTootActivity(): ScheduledTootActivity
 
     @ContributesAndroidInjector

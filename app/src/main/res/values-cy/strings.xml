@@ -170,7 +170,6 @@
     <string name="pref_title_status_tabs">Tabiau</string>
     <string name="pref_title_show_boosts">Dangos hybiadau</string>
     <string name="pref_title_show_replies">Dangos atebion</string>
-    <string name="pref_title_filter_regex">Hidlo drwy fynegiannau arferol </string>
     <string name="pref_title_show_media_preview">Dangos rhagolwg o gyfryngau</string>
     <string name="pref_title_proxy_settings">Procsi</string>
     <string name="pref_title_http_proxy_settings">Procsi HTTP </string>
@@ -217,7 +216,7 @@
          * the url can be changed to link to the localized version of the license.
     -->
     <string name="about_project_site">        Gwefan y prosiect:\n
-        https://tuskyapp.github.io
+        https://tusky.app
     </string>
     <string name="about_bug_feature_request_site">        Adrodd byg &amp; ceisiadau nodwedd:\n
         https://github.com/tuskyapp/Tusky/issues
