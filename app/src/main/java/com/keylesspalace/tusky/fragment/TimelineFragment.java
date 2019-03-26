@@ -78,12 +78,10 @@ import com.keylesspalace.tusky.view.EndlessOnScrollListener;
 import com.keylesspalace.tusky.viewdata.StatusViewData;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -114,9 +112,12 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import at.connyduck.sparkbutton.helpers.Utils;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import jp.kyori.tusky.TimelineStreamingClient;
+import jp.kyori.tusky.TimelineStreamingListener;
 import kotlin.Unit;
 import kotlin.collections.CollectionsKt;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.WebSocket;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -198,7 +199,7 @@ public class TimelineFragment extends SFragment implements
 
     private SharedPreferences preferences;
 
-    private TimelineStreamingClient streamingClient;
+    private WebSocket webSocket;
     private boolean shouldWaitForLoad = false;
     private Queue<Either<Placeholder, Status>> waitForLoading = new ArrayDeque<>();
 
@@ -319,26 +320,26 @@ public class TimelineFragment extends SFragment implements
     }
 
     private void connectWebsocket(String endpoint) {
-        if (streamingClient != null) {
+        if (webSocket != null) {
             stopStreaming();
         }
 
-        try {
-            streamingClient = new TimelineStreamingClient(new URI(endpoint), eventHub);
-        } catch (URISyntaxException e) {
-            Log.e(TAG, "connectWebsocket: ", e);
-            return;
-        }
+        Request request = new Request.Builder()
+                .url(endpoint)
+                .build();
 
-        streamingClient.connect();
+        OkHttpClient client = new OkHttpClient.Builder()
+                .build();
+
+        webSocket = client.newWebSocket(request, new TimelineStreamingListener(eventHub));
     }
 
     private void stopStreaming() {
-        if (streamingClient == null) {
+        if (webSocket == null) {
             return;
         }
-        streamingClient.close();
-        streamingClient = null;
+        webSocket.close(1000, null);
+        webSocket = null;
     }
 
     private boolean quickComposeExists() {
