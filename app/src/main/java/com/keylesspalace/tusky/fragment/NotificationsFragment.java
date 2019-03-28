@@ -26,7 +26,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.keylesspalace.tusky.MainActivity;
 import com.keylesspalace.tusky.R;
@@ -67,7 +66,6 @@ import javax.inject.Inject;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.arch.core.util.Function;
 import androidx.core.util.Pair;
 import androidx.lifecycle.Lifecycle;
@@ -139,7 +137,6 @@ public class NotificationsFragment extends SFragment implements
     private EndlessOnScrollListener scrollListener;
     private NotificationsAdapter adapter;
     private TabLayout.OnTabSelectedListener onTabSelectedListener;
-    private boolean hideFab;
     private boolean topLoading;
     private boolean bottomLoading;
     private String bottomId;
@@ -287,27 +284,10 @@ public class NotificationsFragment extends SFragment implements
          * guaranteed to be set until then.
          * Use a modified scroll listener that both loads more notificationsEnabled as it goes, and hides
          * the compose button on down-scroll. */
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(activity);
-        hideFab = preferences.getBoolean("fabHide", false);
         scrollListener = new EndlessOnScrollListener(layoutManager) {
             @Override
             public void onScrolled(RecyclerView view, int dx, int dy) {
                 super.onScrolled(view, dx, dy);
-
-                /*ActionButtonActivity activity = (ActionButtonActivity) getActivity();
-                FloatingActionButton composeButton = activity.getActionButton();
-
-                if (composeButton != null) {
-                    if (hideFab) {
-                        if (dy > 0 && composeButton.isShown()) {
-                            composeButton.hide(); // hides the button if we're scrolling down
-                        } else if (dy < 0 && !composeButton.isShown()) {
-                            composeButton.show(); // shows it if we are scrolling up
-                        }
-                    } else if (!composeButton.isShown()) {
-                        composeButton.show();
-                    }
-                }*/
             }
 
             @Override
@@ -585,10 +565,6 @@ public class NotificationsFragment extends SFragment implements
 
     public void onPreferenceChanged(String key) {
         switch (key) {
-            case "fabHide": {
-                hideFab = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean("fabHide", false);
-                break;
-            }
             case "mediaPreviewEnabled": {
                 boolean enabled = accountManager.getActiveAccount().getMediaPreviewEnabled();
                 if (enabled != adapter.isMediaPreviewEnabled()) {
