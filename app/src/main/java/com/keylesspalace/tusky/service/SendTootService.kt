@@ -327,7 +327,7 @@ class SendTootService : Service(), Injectable {
 
             intent.putExtra(KEY_TOOT, tootToSend)
 
-            if (mediaUris.isNotEmpty()) {
+            if(mediaUris.isNotEmpty()) {
                 // forward uri permissions
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 val uriClip = ClipData(

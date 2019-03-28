@@ -37,7 +37,8 @@ import dagger.android.AndroidInjector;
 import dagger.android.DispatchingAndroidInjector;
 import dagger.android.support.HasSupportFragmentInjector;
 
-public class SearchActivity extends BottomSheetActivity implements HasSupportFragmentInjector {
+public class SearchActivity extends BottomSheetActivity implements
+        HasSupportFragmentInjector {
 
     @Inject
     public DispatchingAndroidInjector<Fragment> fragmentInjector;

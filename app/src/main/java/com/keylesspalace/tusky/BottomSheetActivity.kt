@@ -50,17 +50,17 @@ abstract class BottomSheetActivity : BaseActivity() {
         super.onPostCreate(savedInstanceState)
 
         val bottomSheetLayout: LinearLayout = findViewById(R.id.item_status_bottom_sheet)
-        bottomSheet = BottomSheetBehavior.from(bottomSheetLayout)
-        bottomSheet.state = BottomSheetBehavior.STATE_HIDDEN
-        bottomSheet.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                    cancelActiveSearch()
+            bottomSheet = BottomSheetBehavior.from(bottomSheetLayout)
+            bottomSheet.state = BottomSheetBehavior.STATE_HIDDEN
+            bottomSheet.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                        cancelActiveSearch()
+                    }
                 }
-            }
 
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {}
-        })
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+            })
 
     }
 
@@ -89,7 +89,7 @@ abstract class BottomSheetActivity : BaseActivity() {
                     // which is good, because pleroma returns a different url
                     // than the public post link
                     val searchResult = response.body()
-                    if (searchResult != null) {
+                    if(searchResult != null) {
                         if (searchResult.statuses.isNotEmpty()) {
                             viewThread(searchResult.statuses[0].id, searchResult.statuses[0].url, false)
                             return
@@ -170,11 +170,11 @@ abstract class BottomSheetActivity : BaseActivity() {
     }
 
     private fun showQuerySheet() {
-        bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+            bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
     }
 
     private fun hideQuerySheet() {
-        bottomSheet.state = BottomSheetBehavior.STATE_HIDDEN
+            bottomSheet.state = BottomSheetBehavior.STATE_HIDDEN
     }
 }
 

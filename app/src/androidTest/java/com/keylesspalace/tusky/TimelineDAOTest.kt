@@ -205,6 +205,7 @@ class TimelineDAOTest {
                 application = null,
                 reblogServerId = null,
                 reblogAccountId = null
+
         )
     }
 

@@ -434,8 +434,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             }
         }
 
-        void setMessage(NotificationViewData.Concrete notificationViewData, LinkListener
-                listener, BidiFormatter bidiFormatter) {
+        void setMessage(NotificationViewData.Concrete notificationViewData, LinkListener listener, BidiFormatter bidiFormatter) {
             this.statusViewData = notificationViewData.getStatusViewData();
 
             String displayName = bidiFormatter.unicodeWrap(notificationViewData.getAccount().getName());
@@ -491,8 +490,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             this.notificationId = notificationId;
         }
 
-        void setAvatars(@Nullable String statusAvatarUrl, @Nullable String
-                notificationAvatarUrl) {
+        void setAvatars(@Nullable String statusAvatarUrl, @Nullable String notificationAvatarUrl) {
             Context context = statusAvatar.getContext();
 
             if (TextUtils.isEmpty(statusAvatarUrl)) {
@@ -539,8 +537,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter {
             }
         }
 
-        private void setupContentAndSpoiler(NotificationViewData.Concrete notificationViewData,
-                                            final LinkListener listener) {
+        private void setupContentAndSpoiler(NotificationViewData.Concrete notificationViewData, final LinkListener listener) {
 
             boolean shouldShowContentIfSpoiler = notificationViewData.isExpanded();
             boolean hasSpoiler = !TextUtils.isEmpty(statusViewData.getSpoilerText());

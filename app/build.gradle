@@ -47,10 +47,10 @@ android {
 
     flavorDimensions "color"
     productFlavors {
-        blue {}
+        blue { }
         green {
             applicationIdSuffix ".test"
-            versionNameSuffix "-" + getGitSha()
+            versionNameSuffix "-"+getGitSha()
         }
     }
 

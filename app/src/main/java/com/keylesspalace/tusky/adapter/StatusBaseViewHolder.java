@@ -390,7 +390,7 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
     }
 
     protected void setMediaPreviews(final List<Attachment> attachments, boolean sensitive,
-                                  final StatusActionListener listener, boolean showingContent) {
+                                    final StatusActionListener listener, boolean showingContent) {
 
         Context context = itemView.getContext();
 

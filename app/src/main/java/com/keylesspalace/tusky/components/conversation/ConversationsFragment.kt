@@ -80,7 +80,7 @@ class ConversationsFragment : SFragment(), StatusActionListener, Injectable {
         val mediaPreviewEnabled = account?.mediaPreviewEnabled ?: true
 
 
-        adapter = ConversationAdapter(useAbsoluteTime, mediaPreviewEnabled, this, ::onTopLoaded, viewModel::retry)
+        adapter = ConversationAdapter(useAbsoluteTime, mediaPreviewEnabled,this, ::onTopLoaded, viewModel::retry)
 
         recyclerView.addItemDecoration(DividerItemDecoration(view.context, DividerItemDecoration.VERTICAL))
         recyclerView.layoutManager = LinearLayoutManager(view.context)

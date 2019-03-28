@@ -88,7 +88,8 @@ import static com.keylesspalace.tusky.util.MediaUtilsKt.deleteStaleCachedMedia;
 import static com.uber.autodispose.AutoDispose.autoDisposable;
 import static com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from;
 
-public final class MainActivity extends BottomSheetActivity implements HasSupportFragmentInjector {
+public final class MainActivity extends BottomSheetActivity implements
+        HasSupportFragmentInjector {
 
     private static final String TAG = "MainActivity"; // logging tag
     private static final long DRAWER_ITEM_ADD_ACCOUNT = -13;
@@ -119,8 +120,6 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private SharedPreferences defPrefs;
-
-    private boolean alreadyKilled = false;
 
     private int notificationTabPosition;
 
@@ -537,7 +536,6 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
         accountManager.setActiveAccount(newSelectedId);
 
         stopStreaming();
-        alreadyKilled = true;
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -627,7 +625,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
                     .withSelectable(false)
                     .withIcon(GoogleMaterial.Icon.gmd_person_add);
             drawer.addItemAtPosition(followRequestsItem, 3);
-        } else if (!me.getLocked()) {
+        }else if(!me.getLocked()) {
             drawer.removeItem(DRAWER_ITEM_FOLLOW_REQUESTS);
         }
 
@@ -639,8 +637,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
 
         List<AccountEntity> allAccounts = accountManager.getAllAccountsOrderedByActive();
 
-
-        List<IProfile> profiles = new ArrayList<>(allAccounts.size() + 1);
+        List<IProfile> profiles = new ArrayList<>(allAccounts.size()+1);
 
         for (AccountEntity acc : allAccounts) {
             CharSequence emojifiedName = CustomEmojiHelper.emojifyString(acc.getDisplayName(), acc.getEmojis(), headerResult.getView());
@@ -658,7 +655,7 @@ public final class MainActivity extends BottomSheetActivity implements HasSuppor
         }
 
         // reuse the already existing "add account" item
-        for (IProfile profile : headerResult.getProfiles()) {
+        for (IProfile profile: headerResult.getProfiles()) {
             if (profile.getIdentifier() == DRAWER_ITEM_ADD_ACCOUNT) {
                 profiles.add(profile);
                 break;

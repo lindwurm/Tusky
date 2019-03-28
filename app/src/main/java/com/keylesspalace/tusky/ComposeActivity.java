@@ -371,26 +371,26 @@ public final class ComposeActivity
                     }
                 });
 
-            mastodonApi.getCustomEmojis().enqueue(new Callback<List<Emoji>>() {
-                @Override
-                public void onResponse(@NonNull Call<List<Emoji>> call, @NonNull Response<List<Emoji>> response) {
-                    List<Emoji> emojiList = response.body();
-                    if(emojiList == null) {
-                        emojiList = Collections.emptyList();
-                    }
-                    Collections.sort(emojiList, (a, b) ->
-                        a.getShortcode().toLowerCase(Locale.ROOT).compareTo(
-                            b.getShortcode().toLowerCase(Locale.ROOT)));
-                    setEmojiList(emojiList);
-                    cacheInstanceMetadata(activeAccount);
-                }
-
+                mastodonApi.getCustomEmojis().enqueue(new Callback<List<Emoji>>() {
                     @Override
-                    public void onFailure(@NonNull Call<List<Emoji>> call, @NonNull Throwable t) {
-                        Log.w(TAG, "error loading custom emojis", t);
-                        loadCachedInstanceMetadata(activeAccount);
+                    public void onResponse(@NonNull Call<List<Emoji>> call, @NonNull Response<List<Emoji>> response) {
+                        List<Emoji> emojiList = response.body();
+                        if(emojiList == null) {
+                            emojiList = Collections.emptyList();
+                        }
+                        Collections.sort(emojiList, (a, b) ->
+                            a.getShortcode().toLowerCase(Locale.ROOT).compareTo(
+                                b.getShortcode().toLowerCase(Locale.ROOT)));
+                        setEmojiList(emojiList);
+                        cacheInstanceMetadata(activeAccount);
                     }
-                });
+
+                        @Override
+                        public void onFailure(@NonNull Call<List<Emoji>> call, @NonNull Throwable t) {
+                            Log.w(TAG, "error loading custom emojis", t);
+                            loadCachedInstanceMetadata(activeAccount);
+                        }
+                    });
             } else {
                 loadCachedInstanceMetadata(activeAccount);
             }
@@ -428,7 +428,7 @@ public final class ComposeActivity
         tootButton.setOnClickListener(v -> onSendClicked());
         pickButton.setOnClickListener(v -> openPickDialog());
         visibilityButton.setOnClickListener(v -> showComposeOptions());
-        contentWarningButton.setOnClickListener(v -> onContentWarningChanged());
+        contentWarningButton.setOnClickListener(v-> onContentWarningChanged());
         emojiButton.setOnClickListener(v -> showEmojis());
         hideMediaToggle.setOnClickListener(v -> toggleHideMedia());
         scheduleButton.setOnClickListener(v -> showScheduleView());
@@ -569,7 +569,7 @@ public final class ComposeActivity
                 replyTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, arrowDownIcon, null);
 
                 replyTextView.setOnClickListener(v -> {
-                    TransitionManager.beginDelayedTransition((ViewGroup) replyContentTextView.getParent());
+                    TransitionManager.beginDelayedTransition((ViewGroup)replyContentTextView.getParent());
 
                     if (replyContentTextView.getVisibility() != View.VISIBLE) {
                         replyContentTextView.setVisibility(View.VISIBLE);
@@ -647,7 +647,7 @@ public final class ComposeActivity
         }
 
         // work around Android platform bug -> https://issuetracker.google.com/issues/67102093
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O || Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1) {
+        if(Build.VERSION.SDK_INT == Build.VERSION_CODES.O || Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1 ) {
             textEditor.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
 
@@ -838,10 +838,10 @@ public final class ComposeActivity
     }
 
     private void updateHideMediaToggle() {
-        TransitionManager.beginDelayedTransition((ViewGroup) hideMediaToggle.getParent());
+        TransitionManager.beginDelayedTransition((ViewGroup)hideMediaToggle.getParent());
 
         @ColorInt int color;
-        if (mediaQueued.size() == 0) {
+        if(mediaQueued.size() == 0) {
             hideMediaToggle.setVisibility(View.GONE);
         } else {
             hideMediaToggle.setVisibility(View.VISIBLE);
@@ -1283,7 +1283,7 @@ public final class ComposeActivity
             // Continue only if the File was successfully created
             if (photoFile != null) {
                 photoUploadUri = FileProvider.getUriForFile(this,
-                        BuildConfig.APPLICATION_ID + ".fileprovider",
+                        BuildConfig.APPLICATION_ID+".fileprovider",
                         photoFile);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUploadUri);
                 startActivityForResult(intent, MEDIA_TAKE_PHOTO_RESULT);
@@ -1410,8 +1410,7 @@ public final class ComposeActivity
                 .as(autoDisposable(from(this, Lifecycle.Event.ON_DESTROY)))
                 .subscribe(new SingleObserver<Bitmap>() {
                     @Override
-                    public void onSubscribe(Disposable d) {
-                    }
+                    public void onSubscribe(Disposable d) {}
 
                     @Override
                     public void onSuccess(Bitmap bitmap) {
@@ -1419,8 +1418,7 @@ public final class ComposeActivity
                     }
 
                     @Override
-                    public void onError(Throwable e) {
-                    }
+                    public void onError(Throwable e) { }
                 });
 
 
@@ -1518,7 +1516,7 @@ public final class ComposeActivity
                     public void onSuccess(File tempFile) {
                         item.uri = FileProvider.getUriForFile(
                                 ComposeActivity.this,
-                                BuildConfig.APPLICATION_ID + ".fileprovider",
+                                BuildConfig.APPLICATION_ID+".fileprovider",
                                 tempFile);
                         uploadMedia(item);
                     }
@@ -1697,7 +1695,7 @@ public final class ComposeActivity
 
     private void showContentWarning(boolean show) {
         statusHideText = show;
-        TransitionManager.beginDelayedTransition((ViewGroup) contentWarningBar.getParent());
+        TransitionManager.beginDelayedTransition((ViewGroup)contentWarningBar.getParent());
         if (show) {
             statusMarkSensitive = true;
             contentWarningBar.setVisibility(View.VISIBLE);
@@ -1855,14 +1853,14 @@ public final class ComposeActivity
 
     @Override
     public void onEmojiSelected(@NotNull String shortcode) {
-        textEditor.getText().insert(textEditor.getSelectionStart(), ":" + shortcode + ": ");
+        textEditor.getText().insert(textEditor.getSelectionStart(), ":"+shortcode+": ");
     }
 
     private void loadCachedInstanceMetadata(@NotNull AccountEntity activeAccount) {
         InstanceEntity instanceEntity = database.instanceDao()
                 .loadMetadataForInstance(activeAccount.getDomain());
 
-        if (instanceEntity != null) {
+        if(instanceEntity != null) {
             Integer max = instanceEntity.getMaximumTootCharacters();
             maximumTootCharacters = (max == null ? STATUS_CHARACTER_LIMIT : max);
             setEmojiList(instanceEntity.getEmojiList());
@@ -1887,7 +1885,8 @@ public final class ComposeActivity
     }
 
     // Accessors for testing, hence package scope
-    int getMaximumTootCharacters() {
+    int getMaximumTootCharacters()
+    {
         return maximumTootCharacters;
     }
 
