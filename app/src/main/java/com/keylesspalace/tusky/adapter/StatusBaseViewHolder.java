@@ -137,6 +137,10 @@ public abstract class StatusBaseViewHolder extends RecyclerView.ViewHolder {
         username.setText(usernameText);
     }
 
+    public void toggleContentWarning() {
+        contentWarningButton.toggle();
+    }
+
     protected void setSpoilerAndContent(boolean expanded,
                                         @NonNull Spanned content,
                                         @Nullable String spoilerText,
